@@ -1,5 +1,7 @@
 # Atelier ML
 
+## Zachary Lewis, 2482928
+
 ## Première partie
 
 Dans le répertoire `apprentissage/`
