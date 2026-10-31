@@ -1,1 +1,3 @@
 .venv/
+analyse_image/**/*.csv
+*.zip
