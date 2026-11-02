@@ -1,1 +1,2 @@
 .venv
+/analyse_image/data/fashion-mnist_test.csv
