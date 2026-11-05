@@ -1,24 +1,19 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	
-// Monter le socket X11 hôte dans le conteneur
-  "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
-  ],
-  
-  // Transmettre la variable d'affichage
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}"
-  },
-  
-  // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
-  "runArgs": [
-    "--net=host"
-  ],
+  "name": "C++",
+  "build": {
+    "dockerfile": "Dockerfile"
+  }
 
+  // Monter le socket X11 hôte dans le conteneur
+  //"mounts": ["source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"],
+
+  // Transmettre la variable d'affichage
+  /*"containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}"
+  },*/
+
+  // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
+  //"runArgs": ["--net=host"]
 }
