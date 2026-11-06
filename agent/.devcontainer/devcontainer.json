@@ -1,24 +1,33 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
+// For format details, see https://aka.ms/devcontainer.json.
 {
-	"name": "C++",
+	"name": "420-5G4 - LLM Agentique & GUI",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	
-// Monter le socket X11 hôte dans le conteneur
-  "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
-  ],
-  
-  // Transmettre la variable d'affichage
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}"
-  },
-  
-  // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
-  "runArgs": [
-    "--net=host"
-  ],
-
+	"features": {
+		"ghcr.io/devcontainers/features/desktop-lite:1": {
+			"password": "vscode"
+		}
+	},
+	"forwardPorts": [6080],
+	"portsAttributes": {
+		"6080": {
+			"label": "CustomTkinter GUI Desktop (noVNC)",
+			"onAutoForward": "openBrowser"
+		}
+	},
+	"runArgs": [
+		"--shm-size=1g"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cmake-tools",
+				"ms-python.python",
+				"Continue.continue"
+			]
+		}
+	},
+	"postCreateCommand": "which opencode || (curl -fsSL https://opencode.ai/v2/install | bash && sudo cp ~/.opencode/bin/opencode /usr/local/bin/opencode 2>/dev/null || true)"
 }
