@@ -18,9 +18,13 @@ add_executable(${PROJECT_NAME} main.cpp ${LIB_SOURCES})
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 
 # Module d'extension Python via pybind11 (Phase 2 du TP)
-# Compilé automatiquement dès que le fichier bindings.cpp est créé
-find_package(pybind11 QUIET)
-if(pybind11_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bindings.cpp")
+# Fait échouer CMake explicitement si bindings.cpp existe mais que pybind11 est manquant
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/bindings.cpp")
+    # Use FindPython so -DPython_EXECUTABLE selects the interpreter that will
+    # actually import the module (important when the GUI runs in a venv).
+    set(PYBIND11_FINDPYTHON ON)
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+    find_package(pybind11 REQUIRED)
     pybind11_add_module(bibliotheque_cpp ${LIB_SOURCES} bindings.cpp)
     target_compile_options(bibliotheque_cpp PRIVATE -Wall -Wextra -Wpedantic)
 endif()

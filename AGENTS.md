@@ -30,7 +30,7 @@ cmake --build build
 ./build/bibliotheque -d data
 ```
 
-`-d/--data-dir` is effectively required: without it `FileManager` opens empty filenames and saving fails. `agent/build/` is gitignored. The `bibliotheque_cpp` pybind11 module only builds when `agent/bindings.cpp` exists (it currently does not).
+`-d/--data-dir` is effectively required: without it `FileManager` opens empty filenames and saving fails. `agent/build/` is gitignored. `agent/bindings.cpp` builds the `bibliotheque_cpp` module; CMake fails at configure time if pybind11 is missing.
 
 ## Gotchas
 
