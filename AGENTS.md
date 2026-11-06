@@ -7,8 +7,9 @@ School assignment (420-5G4 ML) with three independent parts. Notebook prose and 
 - `apprentissage/` — Pokémon win-rate regression (scikit-learn). `partie1_2.ipynb` builds `data/dataset.csv`; `partie3_entrainement.ipynb` trains and writes `modele/modele_pokemon.mod`; `partie3_predictions.ipynb` loads that model.
 - `analyse_image/` — Fashion-MNIST CNN (TensorFlow/Keras). `classification.ipynb` trains and writes `modele/modele.json` + `modele/modele.weights.h5`; `test_model.ipynb` is empty.
 - `agent/` — C++17 library CLI (`bibliotheque`) plus a devcontainer for the GUI/agent phase. `agent/opencode.json` points the Ollama provider at the host (`host.docker.internal:11434`).
+- `agent/gui/` — CustomTkinter GUI (J3, read-only): `app.py` entry point, `service.py` snapshots, `views/`, `components/`. Run `python3 gui/app.py --data-dir data`.
 
-No test, lint, or CI setup yet; Phase 2 adds a standalone `agent/tests/test_bindings.py`.
+Phase 2 has a standalone `agent/tests/test_bindings.py` (no pytest); there is no lint or CI setup.
 
 ## Commands
 
