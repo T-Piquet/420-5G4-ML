@@ -14,6 +14,7 @@ AGENT_DIR = Path(__file__).resolve().parents[1]
 if str(AGENT_DIR) not in sys.path:
     sys.path.insert(0, str(AGENT_DIR))
 
+from gui.components.banner import Banner
 from gui.components.status_bar import StatusBar
 from gui.service import LibraryService
 from gui.views.catalogue_view import CatalogueView
@@ -53,6 +54,10 @@ class BibliothequeApp(ctk.CTk):
 
         self.show_view("dashboard")
         self._update_status()
+        if self.service.load_error:
+            self.banner.show(
+                self.service.load_error, "error", duration=0
+            )
         self.protocol("WM_DELETE_WINDOW", self.destroy)
 
     def _build_sidebar(self) -> None:
@@ -123,7 +128,7 @@ class BibliothequeApp(ctk.CTk):
 
         ctk.CTkLabel(
             sidebar,
-            text="Jalon 3 · Lecture seule",
+            text="Jalon 4 · Sauvegarde automatique",
             anchor="w",
             font=ctk.CTkFont(size=11),
             text_color=("gray50", "gray55"),
@@ -137,7 +142,7 @@ class BibliothequeApp(ctk.CTk):
         )
         main.grid(row=0, column=1, sticky="nsew")
         main.grid_columnconfigure(0, weight=1)
-        main.grid_rowconfigure(1, weight=1)
+        main.grid_rowconfigure(2, weight=1)
 
         header = ctk.CTkFrame(main, fg_color="transparent")
         header.grid(
@@ -162,9 +167,15 @@ class BibliothequeApp(ctk.CTk):
         )
         self.refresh_button.grid(row=0, column=1, sticky="e")
 
+        self.banner = Banner(main)
+        self.banner.grid(
+            row=1, column=0, sticky="ew", padx=24, pady=(0, 10)
+        )
+        self.banner.grid_remove()
+
         self.content = ctk.CTkFrame(main, fg_color="transparent")
         self.content.grid(
-            row=1, column=0, sticky="nsew", padx=24, pady=(0, 20)
+            row=2, column=0, sticky="nsew", padx=24, pady=(0, 20)
         )
         self.content.grid_columnconfigure(0, weight=1)
         self.content.grid_rowconfigure(0, weight=1)
@@ -180,10 +191,18 @@ class BibliothequeApp(ctk.CTk):
 
     def _build_views(self) -> None:
         self.views = {
-            "dashboard": DashboardView(self.content, self.service),
-            "catalogue": CatalogueView(self.content, self.service),
-            "users": UsersView(self.content, self.service),
-            "loans": LoansView(self.content, self.service),
+            "dashboard": DashboardView(
+                self.content, self.service, self.handle_mutation
+            ),
+            "catalogue": CatalogueView(
+                self.content, self.service, self.handle_mutation
+            ),
+            "users": UsersView(
+                self.content, self.service, self.handle_mutation
+            ),
+            "loans": LoansView(
+                self.content, self.service, self.handle_mutation
+            ),
         }
         for view in self.views.values():
             view.grid(row=0, column=0, sticky="nsew")
@@ -233,16 +252,36 @@ class BibliothequeApp(ctk.CTk):
             "success",
         )
 
-    def refresh_current(self) -> None:
-        self.service.reload()
-        self._update_status()
-        if self.current_view is not None:
+    def refresh_visible(self) -> None:
+        """Rafraichit les statistiques et la vue actuellement affichee.
+
+        Les autres vues se rechargent a leur affichage : cela evite de
+        redessiner des tableaux caches et de declencher des mises en page
+        inutiles.
+        """
+        self.views["dashboard"].refresh()
+        if self.current_view not in (None, "dashboard"):
             try:
                 self.views[self.current_view].refresh()
             except Exception as exc:
                 self.status_bar.set_status(
                     f"Erreur d'affichage : {exc}", "error"
                 )
+
+    def handle_mutation(self, message: str) -> None:
+        """Rafraichit la vue courante, les statistiques et signale le succes."""
+        self.refresh_visible()
+        self.status_bar.set_status(message, "success")
+        self.banner.show(message, "success")
+
+    def refresh_current(self) -> None:
+        self.service.reload()
+        self.refresh_visible()
+        self._update_status()
+        if self.service.load_error:
+            self.banner.show(
+                self.service.load_error, "error", duration=0
+            )
 
     def _toggle_theme(self) -> None:
         ctk.set_appearance_mode(

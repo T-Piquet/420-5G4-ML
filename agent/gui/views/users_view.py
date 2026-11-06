@@ -3,18 +3,26 @@
 from __future__ import annotations
 
 import tkinter as tk
+from collections.abc import Callable
 
 import customtkinter as ctk
 
+from gui.components.dialogs import AddUserDialog
 from gui.components.table import ScrollableTable, TableColumn
-from gui.service import LibraryService
+from gui.service import LibraryService, UserView
 
 
 class UsersView(ctk.CTkFrame):
-    def __init__(self, master, service: LibraryService) -> None:
+    def __init__(
+        self,
+        master,
+        service: LibraryService,
+        on_mutation: Callable[[str], None],
+    ) -> None:
         super().__init__(master, fg_color="transparent")
         self.service = service
-        self._users = []
+        self.on_mutation = on_mutation
+        self._users: list[UserView] = []
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
 
@@ -33,6 +41,15 @@ class UsersView(ctk.CTkFrame):
             row=0, column=0, sticky="ew", padx=(0, 10)
         )
 
+        self.add_button = ctk.CTkButton(
+            toolbar,
+            text="Nouvel adhérent",
+            width=150,
+            height=36,
+            command=self._open_add_dialog,
+        )
+        self.add_button.grid(row=0, column=1, padx=(0, 10))
+
         self.refresh_button = ctk.CTkButton(
             toolbar,
             text="Rafraîchir",
@@ -40,7 +57,7 @@ class UsersView(ctk.CTkFrame):
             height=36,
             command=self.refresh,
         )
-        self.refresh_button.grid(row=0, column=1)
+        self.refresh_button.grid(row=0, column=2)
 
         self.count_label = ctk.CTkLabel(
             self,
@@ -97,3 +114,10 @@ class UsersView(ctk.CTkFrame):
         self.count_label.configure(
             text=f"{len(rows)} adhérent(s) affiché(s)"
         )
+
+    def _open_add_dialog(self) -> None:
+        AddUserDialog(self, on_submit=self._add_user)
+
+    def _add_user(self, name: str, user_id: str) -> None:
+        user = self.service.add_user(name, user_id)
+        self.on_mutation(f"Adhérent « {user.name} » ajouté.")

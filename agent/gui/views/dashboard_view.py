@@ -1,17 +1,26 @@
-"""Tableau de bord avec les indicateurs principaux."""
+"""Tableau de bord avec les indicateurs principaux et la sauvegarde."""
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import customtkinter as ctk
 
+from gui.components.dialogs import show_error
 from gui.components.kpi_card import KPICard
-from gui.service import LibraryService
+from gui.service import LibraryError, LibraryService
 
 
 class DashboardView(ctk.CTkFrame):
-    def __init__(self, master, service: LibraryService) -> None:
+    def __init__(
+        self,
+        master,
+        service: LibraryService,
+        on_mutation: Callable[[str], None],
+    ) -> None:
         super().__init__(master, fg_color="transparent")
         self.service = service
+        self.on_mutation = on_mutation
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -72,16 +81,41 @@ class DashboardView(ctk.CTkFrame):
         ctk.CTkLabel(
             info,
             text=(
-                "Cette version présente les données de la bibliothèque en "
-                "lecture seule. Les actions d'ajout, de suppression, "
-                "d'emprunt et de retour seront disponibles au jalon 4."
+                "Les ajouts, suppressions, emprunts et retours sont "
+                "enregistrés automatiquement dans le répertoire de "
+                "données. Utilisez le bouton ci-dessous pour conserver "
+                "une copie de sécurité des fichiers actuels."
             ),
             anchor="w",
             justify="left",
             wraplength=820,
             font=ctk.CTkFont(size=13),
             text_color=("gray40", "gray65"),
-        ).grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 18))
+        ).grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 14))
+
+        self.backup_button = ctk.CTkButton(
+            info,
+            text="Créer une sauvegarde (Backup)",
+            width=250,
+            height=38,
+            command=self._create_backup,
+        )
+        self.backup_button.grid(
+            row=2, column=0, sticky="w", padx=20, pady=(0, 10)
+        )
+
+        ctk.CTkLabel(
+            info,
+            text=(
+                "La sauvegarde copie books.txt et users.txt en "
+                "books.txt.backup et users.txt.backup."
+            ),
+            anchor="w",
+            justify="left",
+            wraplength=820,
+            font=ctk.CTkFont(size=11),
+            text_color=("gray50", "gray55"),
+        ).grid(row=3, column=0, sticky="ew", padx=20, pady=(0, 18))
 
     def refresh(self) -> None:
         stats = self.service.get_stats()
@@ -89,3 +123,14 @@ class DashboardView(ctk.CTkFrame):
         self.cards["available"].set_value(stats.available_books)
         self.cards["checked_out"].set_value(stats.checked_out_books)
         self.cards["users"].set_value(stats.users)
+
+    def _create_backup(self) -> None:
+        try:
+            names = self.service.create_backup()
+        except LibraryError as exc:
+            show_error(self, str(exc), title="Sauvegarde impossible")
+            return
+
+        self.on_mutation(
+            "Sauvegarde créée : " + ", ".join(names) + "."
+        )
