@@ -23,3 +23,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
 
 # ajouter installation ollama et opencode
+RUN curl -fsSL https://ollama.com/install.sh | sh
+RUN su vscode -c "curl -fsSL https://opencode.ai/install | bash"
