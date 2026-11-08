@@ -5,20 +5,20 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Find required packages
 find_package(pybind11 REQUIRED)
 
-# Include directories
-include_directories(${pybind11_INCLUDE_DIR})
+# Les sources C++ de la bibliothèque se trouvent dans le répertoire parent.
+set(LIBRARY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-# Create Python extension module
-pybind11_add_module(bibliotheque 
+pybind11_add_module(bibliotheque
     python_bindings.cpp
-    book.cpp
-    library.cpp
-    user.cpp
-    filemanager.cpp
+    ${LIBRARY_SOURCE_DIR}/book.cpp
+    ${LIBRARY_SOURCE_DIR}/library.cpp
+    ${LIBRARY_SOURCE_DIR}/user.cpp
+    ${LIBRARY_SOURCE_DIR}/filemanager.cpp
 )
 
-# Install target
+target_include_directories(bibliotheque PRIVATE ${LIBRARY_SOURCE_DIR})
+target_compile_options(bibliotheque PRIVATE -Wall -Wextra -Wpedantic)
+
 install(TARGETS bibliotheque DESTINATION .)
