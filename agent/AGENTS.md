@@ -17,7 +17,7 @@ cmake --build build/python_bindings
 
 # GUI (needs an X11 display, forwarded by the dev container)
 python3 -m venv .venv
-.venv/bin/pip install -r requirements-gui.txt
+.venv/bin/pip install -r requirements.txt
 .venv/bin/python main.py -d data
 ```
 
