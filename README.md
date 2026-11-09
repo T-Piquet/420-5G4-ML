@@ -1,4 +1,5 @@
-# Atelier ML
+# Atelier ML 
+# Author `Simon Daigneault`
 
 ## Première partie
 
