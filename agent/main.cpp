@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
                 if (library.removeBook(isbn)) {
                     cout << "Livre supprimé avec succès !\n";
                 } else {
-                    cout << "Livre non trouvé.\n";
+                    cout << "Livre non trouvé ou actuellement emprunté.\n";
                 }
                 pauseForInput();
                 break;

@@ -1,5 +1,7 @@
 # Atelier ML
 
+## Viken M. (2379344)
+
 ## Première partie
 
 Dans le répertoire `apprentissage/`

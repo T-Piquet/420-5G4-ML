@@ -20,7 +20,8 @@ bool Library::removeBook(const string& isbn) {
             return book->getISBN() == isbn;
         });
     
-    if (it != books.end()) {
+    // A book on loan stays in the catalogue so its borrower's record stays valid.
+    if (it != books.end() && (*it)->getAvailability()) {
         books.erase(it);
         return true;
     }
