@@ -1,0 +1,7 @@
+venv/
+apprentissage/venv/
+__pycache__/
+.ipynb_checkpoints/
+analyse_image/datas/*.csv
+*.csv
+.venv/
