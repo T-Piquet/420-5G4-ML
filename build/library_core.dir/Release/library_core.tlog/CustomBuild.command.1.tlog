@@ -1,0 +1,10 @@
+^C:\USERS\ISAAC\DOWNLOADS\PYTHONML\420-5G4-ML-ISAACCLOUTIER\CMAKELISTS.TXT
+setlocal
+C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\.venv\Lib\site-packages\cmake\data\bin\cmake.exe -SC:/Users/isaac/Downloads/pythonML/420-5G4-ML-IsaacCloutier -BC:/Users/isaac/Downloads/pythonML/420-5G4-ML-IsaacCloutier/build --check-stamp-file C:/Users/isaac/Downloads/pythonML/420-5G4-ML-IsaacCloutier/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\bindings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\agent\library.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\agent\filemanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\agent\book.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\agent\user.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\isaac\Downloads\pythonML\420-5G4-ML-IsaacCloutier\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{97D0112D-F1DB-3593-B59F-32F6E53A63B9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
