@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from tkinter import messagebox
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR / "build"))
@@ -78,6 +79,8 @@ class BibliothequeApp(ctk.CTk):
         )
         self.stats_view.pack(fill="both", expand=True, padx=8, pady=8)
 
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+
     def set_status(self, message: str) -> None:
         self.status_var.set(message)
 
@@ -92,6 +95,29 @@ class BibliothequeApp(ctk.CTk):
         return (
             f"{stats['total_books']} livres, {stats['total_users']} utilisateurs chargés"
         )
+
+    def _on_close(self) -> None:
+        """Sauvegarde les données avant de fermer, comme l'option 0 du CLI."""
+        try:
+            saved = self.service.save()
+            detail = ""
+        except Exception as error:
+            saved = False
+            detail = f"\n\nDétail : {error}"
+
+        if saved:
+            self.destroy()
+            return
+
+        self.set_status("Échec de la sauvegarde avant fermeture.")
+        quitter = messagebox.askyesno(
+            "Sauvegarde impossible",
+            "Les données n'ont pas pu être sauvegardées avant la fermeture."
+            f"{detail}\n\nQuitter sans sauvegarder ?",
+            parent=self,
+        )
+        if quitter:
+            self.destroy()
 
 
 def main() -> None:

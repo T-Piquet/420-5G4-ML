@@ -24,9 +24,9 @@ Run it with the real fixtures, from `agent/`:
 ./build/bibliotheque -d ../apprentissage/datas
 ```
 
-- `agent/README.md` refers to `agent/data`, but that directory does not exist; fixtures live in `apprentissage/datas/`.
-- `CMakeLists.txt` globs `*.cpp`; re-run `cmake ..` after adding or removing source files.
-- No tests, linter, or formatter are configured. Verification means compiling (warnings enabled via `-Wall -Wextra -Wpedantic`) and manually exercising the CLI.
+- `agent/data/` is the GUI working copy (gitignored), seeded from `apprentissage/datas/` on first launch; fixtures live in `apprentissage/datas/`.
+- `CMakeLists.txt` lists sources explicitly; re-run `cmake ..` after adding or removing source files.
+- Python service tests: `PYTHONPATH=build python -m unittest discover -s python/tests -v` from `agent/` (headless). No linter or formatter is configured; verification means compiling (warnings enabled via `-Wall -Wextra -Wpedantic`) and running the tests.
 
 ## Data and environment gotchas
 
@@ -37,9 +37,17 @@ Run it with the real fixtures, from `agent/`:
 - Root `.venv/` and `.venv312/` are Windows-layout virtualenvs (from another machine) and are gitignored; do not assume they work on Linux.
 - Keep user-facing strings, comments, and notebook prose in French to match the repo. Git history uses `[FEAT] ...` / `[REMISE] ...` commit prefixes.
 
-## Partie 3 en cours (agent/)
+## Partie 3 — GUI Python (agent/)
 
-- Objectif : créer une GUI Python customtkinter qui remplace le CLI de `agent/main.cpp`.
-- La logique C++ (Library, Book, User, FileManager) est exposée à Python via pybind11.
-- Avancer par petites étapes testables ; tout le travail se fait dans `agent/`.
+- GUI customtkinter terminée : onglets Livres, Utilisateurs, Emprunts, Statistiques et barre de statut. Le CLI `main.cpp` reste disponible comme interface historique.
+- Le cœur C++ (`Library`, `Book`, `User`, `FileManager`) est exposé à Python via le module `bibliotheque_py` (pybind11, compilé dans `agent/build/`).
+- `python/service.py` est l'unique couche d'accès au core pour les vues : conversion des `Book*`/`User*` en dicts Python et API `get_*`, `add_*`, `check_out`, `return_book`, `get_stats`, `save`, `create_backup`.
+- `python/app.py` crée la fenêtre, charge `agent/data/` au démarrage et sauvegarde automatiquement à la fermeture (avec message d'erreur si la sauvegarde échoue).
+- Vues dans `python/views/` (books, users, loans, stats), tests headless dans `python/tests/test_service.py`.
+- Build : depuis `agent/`, `mkdir -p build && cd build && cmake .. && make`.
+- GUI : depuis `agent/` avec `.venv` activé, `python python/app.py` (le module compilé est trouvé via `build/`).
+- Tests : `PYTHONPATH=build python -m unittest discover -s python/tests -v`.
+- CLI : `./build/bibliotheque -d ../apprentissage/datas`.
+- `agent/data/` est gitignored et initialisé depuis `apprentissage/datas/` au premier lancement ; ne pas écraser les fixtures suivies.
+- `create_backup()` refuse d'écraser un `.backup` existant et lève une `ValueError` affichée dans la barre de statut.
 - Les logs de conversation OpenCode sont rangés dans `agent/chatsLogs/`.

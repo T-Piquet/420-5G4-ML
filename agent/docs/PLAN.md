@@ -74,12 +74,12 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 
 ### Étape 8 — Persistance et finition
 
-- [ ] Charger les données au démarrage depuis `agent/data/`.
-- [ ] Implémenter la sauvegarde explicite et la sauvegarde automatique à la fermeture.
-- [ ] Gérer les erreurs C++/fichiers dans la barre de statut, notamment si un `.backup` existe déjà.
-- [ ] Mettre à jour le README et `AGENTS.md`.
-- [ ] Décider du sort final de `main.cpp`.
-- [ ] Tester fermeture/réouverture et vérifier les fichiers écrits.
+- [x] Charger les données au démarrage depuis `agent/data/`.
+- [x] Implémenter la sauvegarde explicite et la sauvegarde automatique à la fermeture.
+- [x] Gérer les erreurs C++/fichiers dans la barre de statut, notamment si un `.backup` existe déjà.
+- [x] Mettre à jour le README et `AGENTS.md`.
+- [x] Décider du sort final de `main.cpp` : conserver le CLI historique.
+- [x] Tester fermeture/réouverture et vérifier les fichiers écrits.
 
 ## Fichiers prévus
 
@@ -103,7 +103,7 @@ agent/
 - [ ] Utilisateurs : tableau (Nom, ID, Nb empruntés, ISBNs), formulaire d'ajout.
 - [x] Emprunts : liste déroulante des livres disponibles + utilisateurs, et liste déroulante des livres empruntés pour le retour.
 - [x] Statistiques : 4 cartes + boutons Sauvegarder et Créer une sauvegarde.
-- [ ] Fermeture de la fenêtre : sauvegarde automatique.
+- [x] Fermeture de la fenêtre : sauvegarde automatique.
 
 ## Points d'attention
 
