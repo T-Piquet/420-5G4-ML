@@ -26,20 +26,20 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 
 ### Étape 2 — Service Python + tests headless
 
-- [ ] Créer `python/service.py` : encapsuler `Library` + `FileManager`.
-- [ ] Convertir immédiatement les `Book*`/`User*` en lignes immuables (`dataclass`/dict) pour éviter les pointeurs C++ persistants côté widgets.
-- [ ] Initialiser `agent/data/` depuis les fixtures si le dossier est vide.
-- [ ] Créer `python/tests/test_service.py` : chargement, ajout/suppression, emprunt/retour, sauvegarde/rechargement, statistiques, doublons.
-- [ ] Tester avec `PYTHONPATH=build python3 -m unittest`, sans fenêtre.
+- [x] Créer `python/service.py` : encapsuler `Library` + `FileManager`.
+- [x] Convertir immédiatement les `Book*`/`User*` en lignes immuables (`dataclass`/dict) pour éviter les pointeurs C++ persistants côté widgets.
+- [x] Initialiser `agent/data/` depuis les fixtures si le dossier est vide.
+- [x] Créer `python/tests/test_service.py` : chargement, ajout/suppression, emprunt/retour, sauvegarde/rechargement, statistiques, doublons.
+- [x] Tester avec `PYTHONPATH=build python3 -m unittest`, sans fenêtre.
 
 ### Étape 3 — Fenêtre customtkinter + onglets
 
-- [ ] Créer un venv `agent/.venv` et `python/requirements.txt` avec `customtkinter`.
-- [ ] Diagnostiquer `DISPLAY`, `/tmp/.X11-unix` et un `tkinter.Tk()` minimal.
-- [ ] Configurer VcXsrv ou WSLg si nécessaire.
-- [ ] Créer `python/app.py` : `CTkTabview` avec Livres, Utilisateurs, Emprunts, Statistiques.
-- [ ] Ajouter la barre de statut en bas pour les messages succès/erreur.
-- [ ] Ajouter des pages vides et tester l'affichage visuel depuis Windows.
+- [x] Créer un venv `agent/.venv` et `python/requirements.txt` avec `customtkinter`.
+- [x] Diagnostiquer `DISPLAY`, `/tmp/.X11-unix` et un `tkinter.Tk()` minimal.
+- [x] Configurer VcXsrv ou WSLg si nécessaire.
+- [x] Créer `python/app.py` : `CTkTabview` avec Livres, Utilisateurs, Emprunts, Statistiques.
+- [x] Ajouter la barre de statut en bas pour les messages succès/erreur.
+- [x] Ajouter des pages vides et tester l'affichage visuel depuis Windows.
 
 ### Étape 4 — Onglet Livres
 
