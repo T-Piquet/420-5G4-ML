@@ -15,14 +15,14 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 
 ### Étape 1 — CMake + module pybind11
 
-- [ ] Remplacer le `GLOB` des `.cpp` par des cibles explicites.
-- [ ] Créer `bibliotheque_core` (STATIC) avec `book.cpp`, `user.cpp`, `library.cpp`, `filemanager.cpp`.
-- [ ] Garder la cible `bibliotheque` (`main.cpp`) liée à `bibliotheque_core`.
-- [ ] Ajouter `option(BUILD_PYTHON_BINDINGS ... ON)` et `find_package(pybind11 CONFIG REQUIRED)`.
-- [ ] Créer le module `bibliotheque_py` lié à `bibliotheque_core`.
-- [ ] Binder `Book`, `User`, `Library`, `FileManager` ; ne pas binder les `display*()`.
-- [ ] Utiliser `return_value_policy::reference_internal` pour les retours de pointeurs (`findBookByISBN`, `findUserById`, `getAllBooks`, `getAllUsers`, `getAvailableBooks`, `searchBooksBy*`).
-- [ ] Tester la compilation et l'import du module avec `../apprentissage/datas`.
+- [x] Remplacer le `GLOB` des `.cpp` par des cibles explicites.
+- [x] Créer `bibliotheque_core` (STATIC) avec `book.cpp`, `user.cpp`, `library.cpp`, `filemanager.cpp`.
+- [x] Garder la cible `bibliotheque` (`main.cpp`) liée à `bibliotheque_core`.
+- [x] Ajouter `option(BUILD_PYTHON_BINDINGS ... ON)` et `find_package(pybind11 CONFIG REQUIRED)`.
+- [x] Créer le module `bibliotheque_py` lié à `bibliotheque_core`.
+- [x] Binder `Book`, `User`, `Library`, `FileManager` ; ne pas binder les `display*()`.
+- [x] Utiliser `return_value_policy::reference_internal` pour les retours de pointeurs (`findBookByISBN`, `findUserById`, `getAllBooks`, `getAllUsers`, `getAvailableBooks`, `searchBooksBy*`).
+- [x] Tester la compilation et l'import du module avec `../apprentissage/datas`.
 
 ### Étape 2 — Service Python + tests headless
 
