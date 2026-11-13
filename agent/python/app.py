@@ -11,6 +11,7 @@ import customtkinter as ctk
 
 from service import LibraryService
 from views.books import BooksView
+from views.users import UsersView
 
 APP_TITLE = "Gestion de bibliothèque"
 TABS = ("Livres", "Utilisateurs", "Emprunts", "Statistiques")
@@ -50,6 +51,11 @@ class BibliothequeApp(ctk.CTk):
             self.tabview.tab("Livres"), self.service, self.set_status
         )
         self.books_view.pack(fill="both", expand=True, padx=8, pady=8)
+
+        self.users_view = UsersView(
+            self.tabview.tab("Utilisateurs"), self.service, self.set_status
+        )
+        self.users_view.pack(fill="both", expand=True, padx=8, pady=8)
 
     def set_status(self, message: str) -> None:
         self.status_var.set(message)

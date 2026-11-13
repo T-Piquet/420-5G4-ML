@@ -43,19 +43,19 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 
 ### Étape 4 — Onglet Livres
 
-- [ ] Ajouter le champ de recherche et le choix Titre/Auteur.
-- [ ] Ajouter le bouton Rechercher et la case « Disponibles seulement ».
-- [ ] Afficher le tableau `ttk.Treeview` : Titre, Auteur, ISBN, Statut.
-- [ ] Ajouter le formulaire Titre/Auteur/ISBN et les boutons Ajouter / Supprimer la sélection.
-- [ ] Vérifier les doublons d'ISBN et afficher les messages dans la barre de statut.
-- [ ] Tester manuellement avec les fixtures.
+- [x] Ajouter le champ de recherche et le choix Titre/Auteur.
+- [x] Ajouter le bouton Rechercher et la case « Disponibles seulement ».
+- [x] Afficher le tableau `ttk.Treeview` : Titre, Auteur, ISBN, Statut.
+- [x] Ajouter le formulaire Titre/Auteur/ISBN et les boutons Ajouter / Supprimer la sélection.
+- [x] Vérifier les doublons d'ISBN et afficher les messages dans la barre de statut.
+- [x] Tester manuellement avec les fixtures.
 
 ### Étape 5 — Onglet Utilisateurs
 
-- [ ] Afficher le tableau : Nom, ID, Nb empruntés, ISBNs.
-- [ ] Ajouter le formulaire Nom/ID et le bouton Ajouter.
-- [ ] Vérifier les doublons d'ID.
-- [ ] Tester manuellement.
+- [x] Afficher le tableau : Nom, ID, Nb empruntés, ISBNs.
+- [x] Ajouter le formulaire Nom/ID et le bouton Ajouter.
+- [x] Vérifier les doublons d'ID.
+- [x] Tester manuellement.
 
 ### Étape 6 — Onglet Emprunts
 
