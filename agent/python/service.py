@@ -91,7 +91,24 @@ class LibraryService:
 
     def create_backup(self) -> None:
         """Cree les fichiers .backup a partir des fichiers courants."""
-        self._file_manager.createBackup()
+        backups = [
+            Path(f"{self.books_file}.backup"),
+            Path(f"{self.users_file}.backup"),
+        ]
+        existing = [backup.name for backup in backups if backup.exists()]
+        if existing:
+            raise ValueError(
+                "Sauvegarde déjà existante ("
+                + ", ".join(existing)
+                + "). Supprimez-la avant d'en créer une nouvelle."
+            )
+
+        try:
+            self._file_manager.createBackup()
+        except RuntimeError as error:
+            raise ValueError(
+                f"Impossible de créer la sauvegarde : {error}"
+            ) from error
 
     # Livres
 

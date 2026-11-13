@@ -16,11 +16,12 @@ COLUMN_LABELS = {
 
 
 class UsersView(ctk.CTkFrame):
-    def __init__(self, master, service, on_status) -> None:
+    def __init__(self, master, service, on_status, on_data_changed=None) -> None:
         super().__init__(master, fg_color="transparent")
 
         self.service = service
         self.on_status = on_status
+        self.on_data_changed = on_data_changed
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -184,4 +185,6 @@ class UsersView(ctk.CTkFrame):
         self.user_id_entry.delete(0, "end")
 
         self.refresh()
+        if self.on_data_changed is not None:
+            self.on_data_changed()
         self.on_status(f"Utilisateur ajouté : {user['name']} ({user['user_id']}).")

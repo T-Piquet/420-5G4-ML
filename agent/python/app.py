@@ -12,6 +12,7 @@ import customtkinter as ctk
 from service import LibraryService
 from views.books import BooksView
 from views.loans import LoansView
+from views.stats import StatsView
 from views.users import UsersView
 
 APP_TITLE = "Gestion de bibliothèque"
@@ -49,12 +50,18 @@ class BibliothequeApp(ctk.CTk):
         self.status_label.grid(row=1, column=0, padx=12, pady=(0, 12), sticky="ew")
 
         self.books_view = BooksView(
-            self.tabview.tab("Livres"), self.service, self.set_status
+            self.tabview.tab("Livres"),
+            self.service,
+            self.set_status,
+            self._on_data_changed,
         )
         self.books_view.pack(fill="both", expand=True, padx=8, pady=8)
 
         self.users_view = UsersView(
-            self.tabview.tab("Utilisateurs"), self.service, self.set_status
+            self.tabview.tab("Utilisateurs"),
+            self.service,
+            self.set_status,
+            self._on_data_changed,
         )
         self.users_view.pack(fill="both", expand=True, padx=8, pady=8)
 
@@ -62,16 +69,23 @@ class BibliothequeApp(ctk.CTk):
             self.tabview.tab("Emprunts"),
             self.service,
             self.set_status,
-            self._on_loans_changed,
+            self._on_data_changed,
         )
         self.loans_view.pack(fill="both", expand=True, padx=8, pady=8)
+
+        self.stats_view = StatsView(
+            self.tabview.tab("Statistiques"), self.service, self.set_status
+        )
+        self.stats_view.pack(fill="both", expand=True, padx=8, pady=8)
 
     def set_status(self, message: str) -> None:
         self.status_var.set(message)
 
-    def _on_loans_changed(self) -> None:
+    def _on_data_changed(self) -> None:
         self.books_view.refresh()
         self.users_view.refresh()
+        self.loans_view.refresh()
+        self.stats_view.refresh()
 
     def _status_message(self) -> str:
         stats = self.service.get_stats()

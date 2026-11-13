@@ -95,6 +95,14 @@ class LibraryServiceTestCase(unittest.TestCase):
         self.assertEqual(len(rechargement.get_books()), 3)
         self.assertEqual(rechargement.find_book("978-3")["author"], "Frank Herbert")
 
+    def test_sauvegarde_de_secours_et_doublon(self) -> None:
+        self.service.create_backup()
+        self.assertTrue((self.data_dir / "books.txt.backup").is_file())
+        self.assertTrue((self.data_dir / "users.txt.backup").is_file())
+
+        with self.assertRaises(ValueError):
+            self.service.create_backup()
+
     def test_statistiques(self) -> None:
         stats = self.service.get_stats()
         self.assertEqual(stats["total_books"], 2)

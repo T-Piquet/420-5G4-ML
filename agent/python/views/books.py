@@ -16,11 +16,12 @@ COLUMN_LABELS = {
 
 
 class BooksView(ctk.CTkFrame):
-    def __init__(self, master, service, on_status) -> None:
+    def __init__(self, master, service, on_status, on_data_changed=None) -> None:
         super().__init__(master, fg_color="transparent")
 
         self.service = service
         self.on_status = on_status
+        self.on_data_changed = on_data_changed
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -253,6 +254,7 @@ class BooksView(ctk.CTkFrame):
             entry.delete(0, "end")
 
         self.refresh()
+        self._notify_change()
         self.on_status(f"Livre ajouté : {book['title']} ({book['isbn']}).")
 
     def _on_delete(self) -> None:
@@ -266,6 +268,11 @@ class BooksView(ctk.CTkFrame):
 
         if self.service.remove_book(isbn):
             self.refresh()
+            self._notify_change()
             self.on_status(f"Livre supprimé : {title} ({isbn}).")
         else:
             self.on_status(f"Impossible de supprimer le livre {isbn}.")
+
+    def _notify_change(self) -> None:
+        if self.on_data_changed is not None:
+            self.on_data_changed()

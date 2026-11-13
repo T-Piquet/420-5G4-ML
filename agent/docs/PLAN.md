@@ -62,15 +62,15 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 - [x] Section Emprunter : liste des livres disponibles + liste des utilisateurs + bouton.
 - [x] Section Retourner : liste des livres empruntés + bouton.
 - [x] Rafraîchir les listes et les tableaux Livres/Utilisateurs après chaque opération.
-- [ ] Rafraîchir les statistiques après chaque opération (avec l'onglet Statistiques).
+- [x] Rafraîchir les statistiques après chaque opération (avec l'onglet Statistiques).
 - [ ] Tester le scénario complet emprunt → retour.
 
 ### Étape 7 — Onglet Statistiques
 
-- [ ] Afficher les 4 cartes : Livres, Disponibles, Empruntés, Utilisateurs.
-- [ ] Ajouter les boutons Sauvegarder et Créer une sauvegarde.
-- [ ] Rafraîchir les cartes après chaque action.
-- [ ] Tester manuellement.
+- [x] Afficher les 4 cartes : Livres, Disponibles, Empruntés, Utilisateurs.
+- [x] Ajouter les boutons Sauvegarder et Créer une sauvegarde.
+- [x] Rafraîchir les cartes après chaque action.
+- [x] Tester manuellement.
 
 ### Étape 8 — Persistance et finition
 
@@ -102,11 +102,11 @@ agent/
 - [ ] Livres : recherche (Titre/Auteur), « Disponibles seulement », tableau (Titre, Auteur, ISBN, Statut), formulaire d'ajout et suppression de la sélection.
 - [ ] Utilisateurs : tableau (Nom, ID, Nb empruntés, ISBNs), formulaire d'ajout.
 - [x] Emprunts : liste déroulante des livres disponibles + utilisateurs, et liste déroulante des livres empruntés pour le retour.
-- [ ] Statistiques : 4 cartes + boutons Sauvegarder et Créer une sauvegarde.
+- [x] Statistiques : 4 cartes + boutons Sauvegarder et Créer une sauvegarde.
 - [ ] Fermeture de la fenêtre : sauvegarde automatique.
 
 ## Points d'attention
 
 - [ ] Le module Python doit être compilé dans le même conteneur Linux que le Python qui l'importe.
 - [ ] Les fichiers `apprentissage/datas/{books,users}.txt` sont suivis par git : ne pas les écraser.
-- [ ] `FileManager::createBackup()` peut échouer si le `.backup` existe déjà ; intercepter l'erreur côté Python.
+- [x] `FileManager::createBackup()` peut échouer si le `.backup` existe déjà ; intercepter l'erreur côté Python.
