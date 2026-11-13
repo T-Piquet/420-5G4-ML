@@ -11,6 +11,7 @@ import customtkinter as ctk
 
 from service import LibraryService
 from views.books import BooksView
+from views.loans import LoansView
 from views.users import UsersView
 
 APP_TITLE = "Gestion de bibliothèque"
@@ -57,8 +58,20 @@ class BibliothequeApp(ctk.CTk):
         )
         self.users_view.pack(fill="both", expand=True, padx=8, pady=8)
 
+        self.loans_view = LoansView(
+            self.tabview.tab("Emprunts"),
+            self.service,
+            self.set_status,
+            self._on_loans_changed,
+        )
+        self.loans_view.pack(fill="both", expand=True, padx=8, pady=8)
+
     def set_status(self, message: str) -> None:
         self.status_var.set(message)
+
+    def _on_loans_changed(self) -> None:
+        self.books_view.refresh()
+        self.users_view.refresh()
 
     def _status_message(self) -> str:
         stats = self.service.get_stats()

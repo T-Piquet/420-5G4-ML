@@ -59,9 +59,10 @@ Remplacement du menu CLI (`main.cpp`) par une GUI Python qui appelle le core C++
 
 ### Étape 6 — Onglet Emprunts
 
-- [ ] Section Emprunter : liste des livres disponibles + liste des utilisateurs + bouton.
-- [ ] Section Retourner : liste des livres empruntés + bouton.
-- [ ] Rafraîchir les listes, les tableaux Livres/Utilisateurs et les statistiques après chaque opération.
+- [x] Section Emprunter : liste des livres disponibles + liste des utilisateurs + bouton.
+- [x] Section Retourner : liste des livres empruntés + bouton.
+- [x] Rafraîchir les listes et les tableaux Livres/Utilisateurs après chaque opération.
+- [ ] Rafraîchir les statistiques après chaque opération (avec l'onglet Statistiques).
 - [ ] Tester le scénario complet emprunt → retour.
 
 ### Étape 7 — Onglet Statistiques
@@ -100,7 +101,7 @@ agent/
 
 - [ ] Livres : recherche (Titre/Auteur), « Disponibles seulement », tableau (Titre, Auteur, ISBN, Statut), formulaire d'ajout et suppression de la sélection.
 - [ ] Utilisateurs : tableau (Nom, ID, Nb empruntés, ISBNs), formulaire d'ajout.
-- [ ] Emprunts : liste déroulante des livres disponibles + utilisateurs, et liste déroulante des livres empruntés pour le retour.
+- [x] Emprunts : liste déroulante des livres disponibles + utilisateurs, et liste déroulante des livres empruntés pour le retour.
 - [ ] Statistiques : 4 cartes + boutons Sauvegarder et Créer une sauvegarde.
 - [ ] Fermeture de la fenêtre : sauvegarde automatique.
 
