@@ -1,1 +1,4 @@
-build/*
+build/
+*.so
+__pycache__/
+data/journal.log
