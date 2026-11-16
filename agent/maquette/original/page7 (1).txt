@@ -1,0 +1,6 @@
+Nom de la personne et Numéro d'utilisateur sont des champs de saisie
+
+Quand tu clique sur retour: aller à la page 5
+
+Quand tu clique sur Ajouter un livre: si les 2 champs ne sont pas vides, tu ajoute un livre et tu va à la page 5
+

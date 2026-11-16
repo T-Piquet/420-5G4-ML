@@ -1,0 +1,6 @@
+Titre du livre, Nom de l'auteur et ISBN sont des champs de saisie
+
+Quand tu clique sur retour: aller à la page 1
+
+Quand tu clique sur Ajouter un livre: si les 3 champs ne sont pas vides, tu ajoute un livre et tu va à la page 1
+

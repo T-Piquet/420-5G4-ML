@@ -1,59 +1,62 @@
+
 #!/usr/bin/env bash
+
 #-------------------------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
 #-------------------------------------------------------------------------------------------------------------
 #
-set -e
 
-CMAKE_VERSION=${1:-"none"}
+set -euo pipefail
 
-if [ "${CMAKE_VERSION}" = "none" ]; then
-    echo "No CMake version specified, skipping CMake reinstallation"
+
+VERSION="${1:-3.22.2}"
+
+if [[ "$VERSION" == "none" ]]; then
+    echo "Skipping CMake installation."
     exit 0
 fi
 
-# Cleanup temporary directory and associated files when exiting the script.
-cleanup() {
-    EXIT_CODE=$?
-    set +e
-    if [[ -n "${TMP_DIR}" ]]; then
-        echo "Executing cleanup of tmp files"
-        rm -Rf "${TMP_DIR}"
-    fi
-    exit $EXIT_CODE
-}
-trap cleanup EXIT
+echo "Installing CMake ${VERSION}..."
 
+ARCH="$(dpkg --print-architecture)"
 
-echo "Installing CMake..."
-apt-get -y purge --auto-remove cmake
-mkdir -p /opt/cmake
-
-architecture=$(dpkg --print-architecture)
-case "${architecture}" in
-    arm64)
-        ARCH=aarch64 ;;
+case "$ARCH" in
     amd64)
-        ARCH=x86_64 ;;
+        CMAKE_ARCH="x86_64"
+        ;;
+    arm64)
+        CMAKE_ARCH="aarch64"
+        ;;
     *)
-        echo "Unsupported architecture ${architecture}."
+        echo "Unsupported architecture: ${ARCH}"
         exit 1
         ;;
 esac
 
-CMAKE_BINARY_NAME="cmake-${CMAKE_VERSION}-linux-${ARCH}.sh"
-CMAKE_CHECKSUM_NAME="cmake-${CMAKE_VERSION}-SHA-256.txt"
-TMP_DIR=$(mktemp -d -t cmake-XXXXXXXXXX)
+URL="https://github.com/Kitware/CMake/releases/download/v${VERSION}/cmake-${VERSION}-linux-${CMAKE_ARCH}.tar.gz"
 
-echo "${TMP_DIR}"
-cd "${TMP_DIR}"
+TEMP_DIR="$(mktemp -d)"
 
-curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_BINARY_NAME}" -O
-curl -sSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_CHECKSUM_NAME}" -O
+trap 'rm -rf "$TEMP_DIR"' EXIT
 
-sha256sum -c --ignore-missing "${CMAKE_CHECKSUM_NAME}"
-sh "${TMP_DIR}/${CMAKE_BINARY_NAME}" --prefix=/opt/cmake --skip-license
+curl -fL --retry 3 "$URL" \
+    -o "$TEMP_DIR/cmake.tar.gz"
 
-ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-ln -s /opt/cmake/bin/ctest /usr/local/bin/ctest
+tar -xzf "$TEMP_DIR/cmake.tar.gz" \
+    -C "$TEMP_DIR"
+
+INSTALL_DIR="/opt/cmake-${VERSION}"
+
+rm -rf "$INSTALL_DIR"
+
+mv "$TEMP_DIR/cmake-${VERSION}-linux-${CMAKE_ARCH}" \
+    "$INSTALL_DIR"
+
+ln -sf "$INSTALL_DIR/bin/cmake" /usr/local/bin/cmake
+ln -sf "$INSTALL_DIR/bin/ctest" /usr/local/bin/ctest
+ln -sf "$INSTALL_DIR/bin/cpack" /usr/local/bin/cpack
+
+echo "CMake installation completed."
+
+cmake --version

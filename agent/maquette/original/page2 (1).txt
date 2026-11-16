@@ -1,0 +1,5 @@
+Quand tu clique sur aucun aucun filtre est appliqué
+
+Qaund tu clique sur emprunté montre seulement les livres qui sont emprunté
+
+Quand tu clique sur Non emprunté montre seulement les livres qui ne sont pas emprunté

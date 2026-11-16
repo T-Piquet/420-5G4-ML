@@ -1,0 +1,11 @@
+Recherche est une barre de recherche pour chercher le nom de l'auteur ou le nom du livre.
+
+Quand on clique sur une boite d'un livre emprunté: voir page 3.
+
+Quand on clique sur une boite d'un livre non emprunté: voir page 4.
+
+Quand on clique sur le bouton de filtre: voir page 2.
+
+Quand on clique sur utilisteur --> : voir page 5.
+
+Quand on clique sur ajouter un livre: voir page 6.

@@ -1,0 +1,3 @@
+Quand tu clique sur retour: aller à la page 1
+
+Quand tu clique sur emprunter un livre: si le champ du nom n'est pas vide et le nom est présent dans la «base de donnée» on emprunte le livre et on se rend à la page 3
