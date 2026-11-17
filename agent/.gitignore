@@ -1,1 +1,8 @@
 build/*
+/analyse_image/datas
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.so
+data/*.backup
