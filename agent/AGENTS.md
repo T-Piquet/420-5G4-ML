@@ -1,8 +1,9 @@
 # AGENTS.md
 
 ## Layout
-Three independent exercises; there is no root build, test runner, CI, or package manifest.
+Three independent exercises; there is no root build, test runner, CI, or package manifest. Paths below are relative to the repository root.
 - `agent/` — C++17 CLI `bibliotheque` (personal library manager), CMake.
+- `agent/gui/` — Python UI test app (customtkinter), single window.
 - `apprentissage/` — scikit-learn notebooks (Pokémon battle prediction).
 - `analyse_image/` — TensorFlow/Keras notebooks (Fashion-MNIST CNN).
 
@@ -20,6 +21,14 @@ Docs, UI strings, comments, and commit messages are in French; keep that convent
   - users: `name|userId|isbn1,isbn2`
 - No tests. Verification = warning-free build (`-Wall -Wextra -Wpedantic`) plus a manual CLI run.
 
+## agent/gui/ (Python UI)
+- Simple customtkinter window (`main.py`); dependencies in `requirements.txt` (`customtkinter==5.2.2`).
+- The virtualenv `agent/gui/.venv/` is local and not versioned. Create and install (from the repo root):
+  - `python3 -m venv agent/gui/.venv`
+  - `agent/gui/.venv/bin/pip install -r agent/gui/requirements.txt`
+- Run: `agent/gui/.venv/bin/python agent/gui/main.py`. A graphical display is required (`DISPLAY` is forwarded by the devcontainer).
+- `tkinter` 8.6 is already installed system-wide; no extra system package needed.
+
 ## Notebooks
 - Run notebooks with the working directory set to their own folder (`apprentissage/` or `analyse_image/`); every data/model path is relative.
 - `apprentissage/`: `datas/dataset.csv` is tab-separated (`delimiter='\t'`). The model is persisted with joblib as `modele/modele_pokemon.mod` (the extension does not indicate the real format).
@@ -29,4 +38,4 @@ Docs, UI strings, comments, and commit messages are in French; keep that convent
 
 ## Git
 - Commit messages use French tags such as `[TACHE]`, `[FIX]`, `[REMISE]`.
-- `agent/build/` is ignored. Large datasets and models under `*/datas/` and `*/modele/` are tracked; do not delete them.
+- `agent/build/` and `agent/gui/.venv/` are ignored. Large datasets and models under `*/datas/` and `*/modele/` are tracked; do not delete them.
