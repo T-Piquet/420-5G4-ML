@@ -1,4 +1,4 @@
-# Atelier ML
+# Atelier ML Tigran Michael Matinyan 202468098
 
 ## Première partie
 

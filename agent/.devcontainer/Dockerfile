@@ -6,7 +6,7 @@ ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="3.22.2"
 COPY ./reinstall-cmake.sh /tmp/
 
 RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
-        chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
+        sed -i 's/\r$//' /tmp/reinstall-cmake.sh && chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
     fi \
     && rm -f /tmp/reinstall-cmake.sh
 
@@ -20,3 +20,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
 
 # ajouter installation ollama et opencode
+RUN curl -fsSL https://ollama.com/install.sh | sh \
+    && curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path \
+    && mv /root/.opencode/bin/opencode /usr/local/bin/opencode \
+    && rm -rf /root/.opencode

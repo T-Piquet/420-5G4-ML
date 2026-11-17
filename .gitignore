@@ -1,0 +1,6 @@
+analyse_image/datas/
+*.csv
+analyse_image/modele/
+*.h5
+*.weights.h5
+.ipynb_checkpoints/
