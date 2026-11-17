@@ -13,3 +13,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # flag pour tous les warnings possible
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+
+# Module Python (interface graphique customtkinter) via pybind11.
+# Mettre -DBUILD_PYTHON_BINDINGS=OFF pour ne compiler que le programme console.
+option(BUILD_PYTHON_BINDINGS "Construire le module Python bibliotheque_py" ON)
+if(BUILD_PYTHON_BINDINGS)
+    find_package(pybind11 CONFIG REQUIRED)
+    add_subdirectory(bindings)
+endif()
