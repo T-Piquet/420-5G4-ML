@@ -21,4 +21,7 @@
     "--net=host"
   ],
 
+  // Créer l'environnement Python de l'interface graphique (partie 4)
+  "postCreateCommand": "python3 -m venv agent/.venv && agent/.venv/bin/pip install --upgrade pip && agent/.venv/bin/pip install -r agent/requirements.txt",
+
 }
