@@ -56,6 +56,7 @@ RUN pip install --no-cache-dir \
     pandas \
     scipy \
     scikit-learn \
+    pybind11 \
     jupyter \
     pyqt5
 

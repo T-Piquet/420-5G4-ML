@@ -73,7 +73,13 @@ string User::toFileFormat() const {
 
 // Parse from file format
 void User::fromFileFormat(const string& line) {
-    stringstream ss(line);
+    // Les fichiers de données peuvent utiliser des fins de ligne Windows (CRLF).
+    string cleanLine = line;
+    if (!cleanLine.empty() && cleanLine.back() == '\r') {
+        cleanLine.pop_back();
+    }
+
+    stringstream ss(cleanLine);
     string token;
     
     getline(ss, name, '|');
