@@ -1,3 +1,5 @@
+Remise de Toni Eliamokhtar
+
 # Bibliothèque personnelle — C++ et interface graphique Python
 
 Le projet contient le programme console C++ `bibliotheque` et, depuis la
