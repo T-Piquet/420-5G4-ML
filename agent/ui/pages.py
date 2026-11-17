@@ -78,6 +78,7 @@ class HomePage(QWidget):
 
     book_activated = pyqtSignal(str)
     users_requested = pyqtSignal()
+    statistics_requested = pyqtSignal()
     add_book_requested = pyqtSignal()
 
     def __init__(self, service, parent=None):
@@ -86,6 +87,8 @@ class HomePage(QWidget):
         self._status_filter = "all"
 
         self.users_button = primary_button("Utilisateur →")
+        self.statistics_button = primary_button("Statistiques")
+        self.statistics_button.setObjectName("StatisticsButton")
         self.add_button = primary_button("Ajouter un livre")
 
         self.search = create_input("Recherche : titre ou auteur")
@@ -113,10 +116,14 @@ class HomePage(QWidget):
 
         self.filter_menu.triggered.connect(self._on_filter_selected)
 
-        header = QHBoxLayout()
-        header.addWidget(self.users_button)
-        header.addStretch(1)
-        header.addWidget(self.add_button)
+        # Trois colonnes de même largeur : « Statistiques » reste centré.
+        header = QGridLayout()
+        header.setContentsMargins(0, 0, 0, 0)
+        header.addWidget(self.users_button, 0, 0, Qt.AlignLeft)
+        header.addWidget(self.statistics_button, 0, 1, Qt.AlignCenter)
+        header.addWidget(self.add_button, 0, 2, Qt.AlignRight)
+        for column in range(3):
+            header.setColumnStretch(column, 1)
 
         search_row = QHBoxLayout()
         search_row.setSpacing(12)
@@ -135,6 +142,7 @@ class HomePage(QWidget):
         self.search.textChanged.connect(self.refresh)
         self.filter_button.clicked.connect(self._show_filter_menu)
         self.users_button.clicked.connect(self.users_requested)
+        self.statistics_button.clicked.connect(self.statistics_requested)
         self.add_button.clicked.connect(self.add_book_requested)
 
     def _show_filter_menu(self) -> None:

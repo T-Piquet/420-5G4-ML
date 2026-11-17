@@ -3,6 +3,7 @@
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget, QVBoxLayout, QWidget
 
 from pages import AddBookPage, AddUserPage, BookDetailPage, HomePage, UsersPage
+from statistics_modal import StatisticsModal
 
 
 class MainWindow(QMainWindow):
@@ -11,6 +12,7 @@ class MainWindow(QMainWindow):
     def __init__(self, service, parent=None):
         super().__init__(parent)
         self._service = service
+        self._statistics_modal = None
 
         self.setWindowTitle("Système de Gestion de Bibliothèque Personnelle")
         self.resize(1240, 820)
@@ -43,6 +45,7 @@ class MainWindow(QMainWindow):
         # Navigation depuis l'accueil.
         self.home_page.book_activated.connect(self.show_book)
         self.home_page.users_requested.connect(self.show_users)
+        self.home_page.statistics_requested.connect(self.show_statistics)
         self.home_page.add_book_requested.connect(self.show_add_book)
 
         # Page de détail.
@@ -81,6 +84,33 @@ class MainWindow(QMainWindow):
     def show_add_user(self) -> None:
         self.add_user_page.reset()
         self.stack.setCurrentWidget(self.add_user_page)
+
+    def show_statistics(self) -> None:
+        """Page 8 : la modale s'ouvre par-dessus la page 1, qui reste visible."""
+        if self._statistics_modal is not None:
+            return
+
+        self._statistics_modal = StatisticsModal(
+            self._service.statistics(), self.centralWidget()
+        )
+        self._statistics_modal.closed.connect(self._close_statistics)
+
+        # La pile est désactivée : la modale est seule à recevoir les clics.
+        self.stack.setEnabled(False)
+        self._statistics_modal.show()
+        self._statistics_modal.raise_()
+        self._statistics_modal.setFocus()
+
+    def _close_statistics(self) -> None:
+        modal = self._statistics_modal
+
+        if modal is None:
+            return
+
+        self._statistics_modal = None
+        self.stack.setEnabled(True)
+        self.home_page.statistics_button.setFocus()
+        modal.deleteLater()
 
     def closeEvent(self, event) -> None:
         self._service.save()

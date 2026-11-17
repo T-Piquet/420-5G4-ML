@@ -17,8 +17,9 @@ pybind11 (`bindings.cpp`, `ui/`).
   de pointeurs bruts vers la bibliothèque C++.
 - `ui/` : interface PyQt5. `service.py` contient les règles de l'interface
   (validation, résolution des noms, sauvegarde automatique) ; `pages.py` décrit
-  les pages ; `window.py` gère la navigation ; `theme.py` la palette et le QSS.
-- `maquette/AiReview/` : maquettes de référence des pages 1 à 7.
+  les pages ; `statistics_modal.py` la modale des statistiques (page 8) ;
+  `window.py` gère la navigation ; `theme.py` la palette et le QSS.
+- `maquette/AiReview/` : maquettes de référence des pages 1 à 8.
 - `data/` : jeu de données de démonstration (41 livres, 25 utilisateurs).
 
 ## Compilation

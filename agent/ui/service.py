@@ -1,8 +1,12 @@
 """Couche applicative autour des classes C++ exposées par pybind11."""
 
+from collections import namedtuple
 from pathlib import Path
 
 import bibliotheque_py
+
+# Chiffres de la fenêtre modale des statistiques (page 8).
+Statistics = namedtuple("Statistics", "users books available borrowed")
 
 
 class LibraryService:
@@ -30,6 +34,15 @@ class LibraryService:
 
     def users(self):
         return self._library.all_users()
+
+    def statistics(self) -> Statistics:
+        """Chiffres toujours à jour de la page 8 (calculés à l'ouverture)."""
+        return Statistics(
+            users=len(self._library.all_users()),
+            books=self._library.total_books,
+            available=self._library.available_count,
+            borrowed=self._library.checked_out_count,
+        )
 
     def find_book(self, isbn: str):
         return self._library.find_book(isbn)

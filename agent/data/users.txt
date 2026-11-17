@@ -23,4 +23,4 @@ Antoine Dubois|USR022|
 Nathalie Guerin|USR023|
 Olivier Masson|USR024|
 Valérie Simon|USR025|
-Zachary Lewis|USR026|9782070612758
+Zachary Lewis|USR026|

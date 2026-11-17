@@ -198,6 +198,59 @@ QMenu::item {
 QMenu::item:selected {
     background-color: $blue;
 }
+
+QWidget#StatisticsOverlay {
+    background-color: rgba(10, 18, 32, 190);
+}
+
+QFrame#StatisticsCard {
+    background-color: $surface;
+    border-radius: 18px;
+}
+QLabel#StatisticsTitle {
+    font-size: 26px;
+    font-weight: 700;
+    color: $text_dark;
+}
+QFrame#StatCard {
+    background-color: $card;
+    border-radius: 12px;
+}
+QLabel#StatisticsValue {
+    font-size: 32px;
+    font-weight: 700;
+    color: $text_dark;
+}
+QLabel#StatisticsLabel {
+    font-size: 14px;
+    color: $text_dark_muted;
+}
+
+QPushButton#StatisticsButton {
+    background-color: $navy_soft;
+    color: $text;
+    border: 1px solid $field_border;
+}
+QPushButton#StatisticsButton:hover {
+    background-color: #22334D;
+}
+
+QPushButton#DialogCloseButton {
+    background: transparent;
+    color: $text_dark_muted;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 15px;
+    min-height: 30px;
+    max-height: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    padding: 0;
+}
+QPushButton#DialogCloseButton:hover {
+    background-color: #E2E8F0;
+    color: $text_dark;
+}
 """
 )
 
