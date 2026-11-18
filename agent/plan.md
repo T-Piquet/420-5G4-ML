@@ -14,11 +14,11 @@ Plan élaboré avec Claude (claude.ai), avec l'accord de l'enseignant.
 ## Étapes (une étape = un commit)
 
 ### A. Liaison C++ ↔ Python (pybind11)
-- [ ] A1. Exposer `Book` (constructeurs + getters) — test : créer un Book en Python et afficher son titre
-- [ ] A2. Exposer `User` (constructeur + getters) — test : créer un User en Python et afficher son nom
-- [ ] A3. Exposer `Library` (ajout, recherche, emprunt, retour, statistiques) — test : ajouter un livre et le retrouver par ISBN
-- [ ] A4. Exposer `FileManager` — test : charger `data/` et afficher le nombre de livres
-- [ ] A5. Exposer `ActivityLogger` — test : écrire une ligne dans `journal.log`
+- [x] A1. Exposer `Book` (constructeurs + getters) — test : créer un Book en Python et afficher son titre
+- [x] A2. Exposer `User` (constructeur + getters) — test : créer un User en Python et afficher son nom
+- [x] A3. Exposer `Library` (ajout, recherche, emprunt, retour, statistiques) — test : ajouter un livre et le retrouver par ISBN
+- [x] A4. Exposer `FileManager` — test : charger `data/` et afficher le nombre de livres
+- [x] A5. Exposer `ActivityLogger` — test : écrire une ligne dans `journal.log`
 
 ### B. Interface customTkinter
 - [ ] B1. Fenêtre principale vide avec des onglets (Livres, Utilisateurs, Emprunts, Statistiques)
