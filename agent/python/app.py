@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
-from tkinter import ttk
-
+from tkinter import ttk, messagebox
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import customtkinter
@@ -22,6 +21,7 @@ class Application(customtkinter.CTk):
             str(DOSSIER_DONNEES / "books.txt"),
             str(DOSSIER_DONNEES / "users.txt"),
         )
+        self.journal = biblio.ActivityLogger(str(DOSSIER_DONNEES / "journal.log"))
 
         if not self.gestionnaire.loadLibraryData(self.bibliotheque):
             print("Erreur : chargement des données impossible.")
@@ -82,6 +82,80 @@ class Application(customtkinter.CTk):
         self.case_disponibles_seulement.configure(command=self.rafraichir_livres)
         self.option_tri_livre.configure(command=lambda _: self.rafraichir_livres())
 
+        cadre_ajout_livre = customtkinter.CTkFrame(onglet_livres)
+        cadre_ajout_livre.pack(fill="x", padx=5, pady=5)
+
+        self.entree_titre_livre = customtkinter.CTkEntry(
+            cadre_ajout_livre, placeholder_text="Titre"
+        )
+        self.entree_titre_livre.pack(side="left", padx=5, pady=5)
+
+        self.entree_auteur_livre = customtkinter.CTkEntry(
+            cadre_ajout_livre, placeholder_text="Auteur"
+        )
+        self.entree_auteur_livre.pack(side="left", padx=5, pady=5)
+
+        self.entree_isbn_livre = customtkinter.CTkEntry(
+            cadre_ajout_livre, placeholder_text="ISBN"
+        )
+        self.entree_isbn_livre.pack(side="left", padx=5, pady=5)
+
+        bouton_ajouter_livre = customtkinter.CTkButton(
+            cadre_ajout_livre, text="Ajouter", command=self.ajouter_livre
+        )
+        bouton_ajouter_livre.pack(side="left", padx=5, pady=5)
+
+        bouton_supprimer_livre = customtkinter.CTkButton(
+            cadre_ajout_livre, text="Supprimer", command=self.supprimer_livre
+        )
+        bouton_supprimer_livre.pack(side="left", padx=5, pady=5)
+
+        self.rafraichir_livres()
+
+    def ajouter_livre(self):
+        titre = self.entree_titre_livre.get().strip()
+        auteur = self.entree_auteur_livre.get().strip()
+        isbn = self.entree_isbn_livre.get().strip()
+
+        if titre == "" or auteur == "" or isbn == "":
+            messagebox.showerror("Erreur", "Tous les champs (Titre, Auteur, ISBN) sont obligatoires.")
+            return
+
+        if self.bibliotheque.findBookByISBN(isbn) is not None:
+            messagebox.showerror("Erreur", "Un livre avec cet ISBN existe déjà.")
+            return
+
+        livre = biblio.Book(titre, auteur, isbn)
+        self.bibliotheque.addBook(livre)
+        self.journal.logBook("AJOUT LIVRE", livre)
+        self.entree_titre_livre.delete(0, "end")
+        self.entree_auteur_livre.delete(0, "end")
+        self.entree_isbn_livre.delete(0, "end")
+        self.rafraichir_livres()
+
+    def supprimer_livre(self):
+        selection = self.tree_livres.selection()
+        if len(selection) == 0:
+            messagebox.showerror("Erreur", "Aucun livre sélectionné.")
+            return
+
+        item = selection[0]
+        valeurs = self.tree_livres.item(item, "values")
+        isbn = valeurs[2]
+        livre = self.bibliotheque.findBookByISBN(isbn)
+        if livre is None:
+            messagebox.showerror("Erreur", "Livre introuvable.")
+            return
+
+        if not livre.getAvailability():
+            messagebox.showerror("Erreur", "Impossible de supprimer un livre emprunté.")
+            return
+
+        if not messagebox.askyesno("Confirmation", "Supprimer ce livre ?"):
+            return
+
+        self.journal.logBook("SUPPRESSION LIVRE", livre)
+        self.bibliotheque.removeBook(isbn)
         self.rafraichir_livres()
 
     def rafraichir_livres(self):

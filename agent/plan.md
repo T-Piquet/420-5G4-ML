@@ -24,7 +24,7 @@ Plan élaboré avec Claude (claude.ai), avec l'accord de l'enseignant.
 - [x] B1. Fenêtre principale vide avec des onglets (Livres, Utilisateurs, Emprunts, Statistiques)
 - [x] B2. Onglet Livres : tableau de tous les livres (titre, auteur, ISBN, disponible)
 - [x] B3. Onglet Livres : recherche par titre / auteur + filtre « disponibles seulement » + tri
-- [ ] B4. Onglet Livres : ajouter / supprimer un livre
+- [x] B4. Onglet Livres : ajouter / supprimer un livre
 - [ ] B5. Onglet Utilisateurs : liste + ajouter un utilisateur
 - [ ] B6. Onglet Emprunts : emprunter / retourner un livre
 - [ ] B7. Onglet Statistiques : total, disponibles, empruntés, utilisateurs
