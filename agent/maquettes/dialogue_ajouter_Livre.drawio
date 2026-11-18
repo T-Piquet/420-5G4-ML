@@ -1,0 +1,53 @@
+<mxfile host="65bd71144e">
+    <diagram id="bktu5I_SsxqBuN46Mp8O" name="Page-1">
+        <mxGraphModel dx="1064" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="X7HifarLOtRibKLwhQIH-1" parent="1" style="rounded=0;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9ca3af;" value="" vertex="1">
+                    <mxGeometry height="420" width="480" x="185" y="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-2" parent="1" style="rounded=0;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#9ca3af;" value="" vertex="1">
+                    <mxGeometry height="36" width="480" x="185" y="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-3" parent="1" style="text;html=1;whiteSpace=wrap;fontFamily=Inter;fontSize=13;fontColor=#1f2937;align=left;verticalAlign=middle;spacingLeft=0;spacing=0;strokeColor=none;fillColor=none;fontStyle=1;" value="Ajouter un livre" vertex="1">
+                    <mxGeometry height="36" width="400" x="199" y="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-4" parent="1" style="text;html=1;whiteSpace=wrap;fontFamily=Inter;fontSize=12;fontColor=#4b5563;align=left;verticalAlign=middle;spacingLeft=0;spacing=0;strokeColor=none;fillColor=none;" value="Titre" vertex="1">
+                    <mxGeometry height="16" width="440" x="205" y="226" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-5" parent="1" style="rounded=1;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontSize=14;fillColor=#ffffff;strokeColor=#9ca3af;align=left;spacingLeft=10;fontColor=#1f2937;" value="" vertex="1">
+                    <mxGeometry height="36" width="440" x="205" y="246" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-6" parent="1" style="text;html=1;whiteSpace=wrap;fontFamily=Inter;fontSize=12;fontColor=#4b5563;align=left;verticalAlign=middle;spacingLeft=0;spacing=0;strokeColor=none;fillColor=none;" value="Auteur" vertex="1">
+                    <mxGeometry height="16" width="440" x="205" y="296" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-7" parent="1" style="rounded=1;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontSize=14;fillColor=#ffffff;strokeColor=#9ca3af;align=left;spacingLeft=10;fontColor=#1f2937;" value="" vertex="1">
+                    <mxGeometry height="36" width="440" x="205" y="316" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-8" parent="1" style="text;html=1;whiteSpace=wrap;fontFamily=Inter;fontSize=12;fontColor=#4b5563;align=left;verticalAlign=middle;spacingLeft=0;spacing=0;strokeColor=none;fillColor=none;" value="ISBN" vertex="1">
+                    <mxGeometry height="16" width="440" x="205" y="366" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-9" parent="1" style="rounded=1;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontSize=14;fillColor=#ffffff;strokeColor=#9ca3af;align=left;spacingLeft=10;fontColor=#1f2937;" value="" vertex="1">
+                    <mxGeometry height="36" width="440" x="205" y="386" as="geometry"/>
+                </mxCell>
+                <mxCell id="X7HifarLOtRibKLwhQIH-10" parent="1" style="text;html=1;whiteSpace=wrap;fontFamily=Inter;fontSize=12;fontColor=#b91c1c;align=left;verticalAlign=middle;spacingLeft=0;spacing=0;strokeColor=none;fillColor=none;" value="Erreur si l&#39;ISBN existe déjà" vertex="1">
+                    <mxGeometry height="18" width="440" x="205" y="436" as="geometry"/>
+                </mxCell>
+                <UserObject label="Annuler" id="X7HifarLOtRibKLwhQIH-11">
+                    <mxCell parent="1" style="rounded=1;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontSize=14;fillColor=#ffffff;strokeColor=#9ca3af;fontColor=#1f2937;" vertex="1">
+                        <mxGeometry height="40" width="100" x="435" y="530" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <UserObject label="Ajouter" id="X7HifarLOtRibKLwhQIH-12">
+                    <mxCell parent="1" style="rounded=1;arcSize=6;absoluteArcSize=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontSize=14;fillColor=#1d4ed8;strokeColor=#1d4ed8;fontColor=#ffffff;fontStyle=1;" vertex="1">
+                        <mxGeometry height="40" width="100" x="545" y="530" as="geometry"/>
+                    </mxCell>
+                </UserObject>
+                <mxCell id="X7HifarLOtRibKLwhQIH-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="X" vertex="1">
+                    <mxGeometry height="36" width="50" x="615" y="170" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
