@@ -34,6 +34,31 @@ class Application(customtkinter.CTk):
         tabview.add("Emprunts")
         tabview.add("Statistiques")
 
+        barre_livres = customtkinter.CTkFrame(onglet_livres)
+        barre_livres.pack(fill="x", padx=5, pady=5)
+
+        self.entree_recherche_livre = customtkinter.CTkEntry(
+            barre_livres, placeholder_text="Recherche..."
+        )
+        self.entree_recherche_livre.pack(side="left", padx=5, pady=5)
+
+        self.option_recherche_livre = customtkinter.CTkOptionMenu(
+            barre_livres, values=["Titre", "Auteur"]
+        )
+        self.option_recherche_livre.set("Titre")
+        self.option_recherche_livre.pack(side="left", padx=5, pady=5)
+
+        self.case_disponibles_seulement = customtkinter.CTkCheckBox(
+            barre_livres, text="Disponibles seulement"
+        )
+        self.case_disponibles_seulement.pack(side="left", padx=5, pady=5)
+
+        self.option_tri_livre = customtkinter.CTkOptionMenu(
+            barre_livres, values=["Titre", "Auteur"]
+        )
+        self.option_tri_livre.set("Titre")
+        self.option_tri_livre.pack(side="left", padx=5, pady=5)
+
         colonnes = ("titre", "auteur", "isbn", "disponible")
         self.tree_livres = ttk.Treeview(
             onglet_livres,
@@ -52,13 +77,36 @@ class Application(customtkinter.CTk):
 
         self.tree_livres.pack(fill="both", expand=True, padx=5, pady=5)
 
+        self.entree_recherche_livre.bind("<KeyRelease>", lambda e: self.rafraichir_livres())
+        self.option_recherche_livre.configure(command=lambda _: self.rafraichir_livres())
+        self.case_disponibles_seulement.configure(command=self.rafraichir_livres)
+        self.option_tri_livre.configure(command=lambda _: self.rafraichir_livres())
+
         self.rafraichir_livres()
 
     def rafraichir_livres(self):
         for item in self.tree_livres.get_children():
             self.tree_livres.delete(item)
 
-        for livre in self.bibliotheque.getAllBooks():
+        texte_recherche = self.entree_recherche_livre.get().strip()
+        if texte_recherche == "":
+            livres = self.bibliotheque.getAllBooks()
+        else:
+            if self.option_recherche_livre.get() == "Auteur":
+                livres = self.bibliotheque.searchBooksByAuthor(texte_recherche)
+            else:
+                livres = self.bibliotheque.searchBooksByTitle(texte_recherche)
+
+        if self.case_disponibles_seulement.get() == 1:
+            livres = [livre for livre in livres if livre.getAvailability()]
+
+        cle_tri = self.option_tri_livre.get()
+        if cle_tri == "Auteur":
+            livres = sorted(livres, key=lambda livre: livre.getAuthor().lower())
+        else:
+            livres = sorted(livres, key=lambda livre: livre.getTitle().lower())
+
+        for livre in livres:
             disponible = "Oui" if livre.getAvailability() else "Non"
             self.tree_livres.insert(
                 "",
