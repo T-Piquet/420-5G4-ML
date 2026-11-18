@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<title>Fiche livre et ajout — Bibliothèque</title>
+<script src="5bcf8982-6b32-4cd2-a0f0-dcfb21683993"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("707c8158-c1e1-420d-a588-bc4c47836922") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("5d1da1cb-44da-439d-8a41-267114fbb573") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("2e947a1c-9e70-411c-bbaf-5a86f8ea5cfe") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("3431fc6f-ce57-43ae-a0a8-469f4cf0f58e") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("8f410c64-4eeb-4a9d-abc9-756b738fa210") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("de40fb43-7a8e-450b-94f8-64e0358f3f10") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("09dcac08-f41d-41d2-af42-73d1e970730a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("707c8158-c1e1-420d-a588-bc4c47836922") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("5d1da1cb-44da-439d-8a41-267114fbb573") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("2e947a1c-9e70-411c-bbaf-5a86f8ea5cfe") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("3431fc6f-ce57-43ae-a0a8-469f4cf0f58e") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("8f410c64-4eeb-4a9d-abc9-756b738fa210") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("de40fb43-7a8e-450b-94f8-64e0358f3f10") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("09dcac08-f41d-41d2-af42-73d1e970730a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("707c8158-c1e1-420d-a588-bc4c47836922") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("5d1da1cb-44da-439d-8a41-267114fbb573") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("2e947a1c-9e70-411c-bbaf-5a86f8ea5cfe") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("3431fc6f-ce57-43ae-a0a8-469f4cf0f58e") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("8f410c64-4eeb-4a9d-abc9-756b738fa210") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("de40fb43-7a8e-450b-94f8-64e0358f3f10") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("09dcac08-f41d-41d2-af42-73d1e970730a") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gW8tenXg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gf8tenXg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gY8tenXg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gU8tenXg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gV8tenXg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gb8tc.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gW8tenXg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gf8tenXg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gY8tenXg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gU8tenXg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gV8tenXg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gb8tc.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#F5EFE3}
+a{color:#7A2E2A}a:hover{color:#5A1F1C}
+.app{font-family:Inter,system-ui,sans-serif;color:#2A211C;background:#F5EFE3;display:flex;flex-wrap:wrap;min-height:900px;font-size:14px}
+.side{flex:1 1 220px;background:#2A211C;color:#F5EFE3;padding:24px 14px;display:flex;flex-direction:column;gap:4px;box-sizing:border-box}
+.brand{display:flex;align-items:center;gap:10px;padding:0 10px 22px}
+.brand b{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:19px;display:block}
+.brand small{color:#B9AC9A;font-size:12px}
+.lbl{color:#B9AC9A;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:16px 12px 6px}
+.nav{display:flex;align-items:center;gap:12px;padding:0 12px;min-height:44px;border-radius:8px;color:#E9E0D0;text-decoration:none;box-sizing:border-box;font-weight:500}
+.nav:hover{color:#fff;background:#3A2E27}
+.nav.on{background:#43352D;color:#fff}
+.main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:20px 32px;border-bottom:1px solid #E2D8C6}
+.crumb{font-size:13px;color:#6B5D52;display:flex;gap:8px;align-items:center}
+.h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:28px;margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn.pri{background:#7A2E2A;color:#fff}
+.btn.pri:hover{background:#5A1F1C;color:#fff}
+.btn.sec{background:#FBF8F2;color:#2A211C;border-color:#D9CDB8}
+.btn.dis{background:#EDE5D6;color:#8A7C6E;cursor:not-allowed}
+.content{padding:28px 32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:28px;align-items:start;flex:1}
+.card{background:#FBF8F2;border:1px solid #E2D8C6;border-radius:14px;padding:24px}
+.card h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:21px;margin:0 0 4px}
+.muted{color:#6B5D52}
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600}
+.out{background:#F6E3CC;color:#8A4A12}
+.dl{display:grid;grid-template-columns:110px 1fr;gap:12px 16px;margin:20px 0}
+.dl dt{color:#6B5D52;font-size:13px}
+.dl dd{margin:0;font-weight:500}
+.isbn{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:13px}
+.field input{font:inherit;color:#2A211C;background:#fff;border:1px solid #D9CDB8;border-radius:10px;min-height:44px;padding:0 12px;box-sizing:border-box;outline:none}
+.field input:focus{border-color:#7A2E2A;box-shadow:0 0 0 3px #7A2E2A22}
+.field .err{border-color:#A3302B;box-shadow:0 0 0 3px #A3302B1F}
+.msg{font-size:12.5px;display:flex;gap:6px;align-items:flex-start}
+.msg.e{color:#9A2B26}
+.msg.h{color:#6B5D52}
+.cover{width:120px;height:170px;border-radius:4px 8px 8px 4px;background:#3B4A6B;color:#F5EFE3;padding:14px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 6px 0 0 #2E3A55,0 6px 14px #2A211C26;flex:none}
+.cover b{font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.15}
+.note{display:flex;gap:10px;background:#F0E7D8;border-radius:10px;padding:12px 14px;font-size:13px;color:#4A3E35}
+.status{display:flex;flex-wrap:wrap;gap:20px;padding:10px 32px;font-size:12px;color:#6B5D52;border-top:1px solid #E2D8C6}
+</style>
+</helmet>
+<div class="app">
+  <nav class="side" aria-label="Navigation principale">
+    <div class="brand">
+      <svg width="30" height="30" sc-camel-view-box="0 0 30 30" aria-hidden="true"><rect x="3" y="6" width="6" height="21" rx="1.5" fill="#B5473F"></rect><rect x="11" y="3" width="6" height="24" rx="1.5" fill="#2F8077"></rect><rect x="19" y="8" width="7" height="19" rx="1.5" fill="#C89545" transform="rotate(-8 22 17)"></rect></svg>
+      <div><b>Bibliothèque</b><small>personnelle</small></div>
+    </div>
+    <a class="nav" href="Main.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>Tableau de bord</a>
+    <a class="nav on" href="Catalogue.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"></path></svg>Catalogue</a>
+    <a class="nav" href="Utilisateurs.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6s7 2 7 6"></path><path d="M16 4a4 4 0 0 1 0 8M22 21c0-3-1.5-5-4-5.6"></path></svg>Utilisateurs</a>
+    <a class="nav" href="Emprunter.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 7h13l-4-4M17 17H4l4 4"></path></svg>Emprunter / Retourner</a>
+    <div class="lbl">Données</div>
+    <a class="nav" href="Etats.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"></path><path d="M8 3v5h7V3M8 21v-7h8v7"></path></svg>Enregistrer</a>
+    <a class="nav" href="Etats.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v11h14V9M10 13h4"></path></svg>Créer une sauvegarde</a>
+    <a class="nav" href="Etats.dc.html"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 4h4v16h-4M10 16l4-4-4-4M14 12H3"></path></svg>Quitter</a>
+  </nav>
+
+  <main class="main">
+    <header class="top">
+      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto">
+        <div class="crumb"><a href="Catalogue.dc.html">Catalogue</a><span aria-hidden="true">›</span><span>Les Misérables</span></div>
+        <h1 class="h1">Fiche livre</h1>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #8A4A12; background: #F6E3CC; border-radius: 999px; padding: 6px 12px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #8A4A12"></span>Modifications non enregistrées</span>
+    </header>
+
+    <div class="content">
+      <section class="card" aria-labelledby="fiche">
+        <div style="display: flex; gap: 22px; flex-wrap: wrap">
+          <div class="cover" aria-hidden="true"><b>Les Misérables</b><span style="font-size: 12px; opacity: .85">Victor Hugo</span></div>
+          <div style="flex: 1 1 200px; min-width: 0">
+            <h2 id="fiche">Les Misérables</h2>
+            <p class="muted" style="margin: 0 0 14px">Victor Hugo</p>
+            <span class="badge out"><svg width="13" height="13" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>Emprunté par Marie Dubois</span>
+          </div>
+        </div>
+        <dl class="dl">
+          <dt>Titre</dt><dd>Les Misérables</dd>
+          <dt>Auteur</dt><dd>Victor Hugo</dd>
+          <dt>ISBN</dt><dd class="isbn">978-2-253-09633-7</dd>
+          <dt>Statut</dt><dd>Emprunté</dd>
+          <dt>Emprunteur</dt><dd><a href="Utilisateurs.dc.html">Marie Dubois</a> <span class="muted">· USR001</span></dd>
+        </dl>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button class="btn pri" type="button">Retourner le livre</button>
+          <button class="btn sec" type="button">Modifier</button>
+          <button class="btn dis" type="button" disabled="" aria-describedby="delhint">Supprimer</button>
+        </div>
+        <div class="note" id="delhint" style="margin-top: 16px">
+          <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.5"></path></svg>
+          <span>Un livre emprunté ne peut pas être supprimé : retournez-le d'abord, pour que la liste de Marie Dubois reste à jour.</span>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="ajout">
+        <h2 id="ajout">Ajouter un livre</h2>
+        <p class="muted" style="margin: 0 0 20px; font-size: 13px">Tous les champs sont obligatoires. Le caractère « | » n'est pas accepté.</p>
+        <form style="display: flex; flex-direction: column; gap: 18px">
+          <div class="field">
+            <label for="t">Titre</label>
+            <input id="t" type="text" value="Le Petit Prince">
+          </div>
+          <div class="field">
+            <label for="a">Auteur</label>
+            <input id="a" type="text" value="Antoine de Saint-Exupéry">
+          </div>
+          <div class="field">
+            <label for="i">ISBN</label>
+            <input id="i" class="err" type="text" value="978-2-07-061275-8" aria-invalid="true" aria-describedby="ierr">
+            <div class="msg e" id="ierr"><svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg><span>Un livre avec l'ISBN 9782070612758 existe déjà : <a href="Catalogue.dc.html" style="color: #9A2B26; font-weight: 600">Le Petit Prince</a>.</span></div>
+            <div class="msg h">Tirets et espaces ignorés — 13 chiffres attendus.</div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 6px">
+            <a class="btn sec" href="Catalogue.dc.html">Annuler</a>
+            <button class="btn dis" type="button" disabled="">Ajouter le livre</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <footer class="status">
+      <span>Dossier de données : agent/data</span>
+      <span>books.txt · users.txt</span>
+      <span style="color: #8A4A12; font-weight: 600">1 modification non enregistrée — Ctrl+S pour enregistrer</span>
+    </footer>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+
+
+</body></html>
