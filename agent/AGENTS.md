@@ -18,9 +18,16 @@ graphique Python (customTkinter) qui appelle la logique C++ via pybind11.
 | `data/` | Données de test (`books.txt`, `users.txt`) |
 | `CMakeLists.txt` | Compilation de l'exécutable `bibliotheque` |
 
-## Compilation (version ligne de commande)
-mkdir build && cd build && cmake .. && make
-./bibliotheque -d ../data
+## Compilation
+Version ligne de commande :
+    mkdir build && cd build && cmake .. && make
+    ./bibliotheque -d ../data
+
+Module Python (depuis `agent/`) :
+    g++ -O2 -shared -std=c++17 -fPIC $(python3 -m pybind11 --includes) python/bindings.cpp book.cpp user.cpp library.cpp filemanager.cpp activitylogger.cpp -o python/biblio$(python3-config --extension-suffix)
+
+Lancer la GUI :
+    cd python && python3 app.py   (fenêtre visible sur http://localhost:6080, mot de passe vscode)
 
 ## Format des fichiers de données
 - `books.txt` : `titre|auteur|isbn|disponible(1/0)|idEmprunteur`

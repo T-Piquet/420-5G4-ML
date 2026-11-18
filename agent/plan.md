@@ -21,7 +21,7 @@ Plan élaboré avec Claude (claude.ai), avec l'accord de l'enseignant.
 - [x] A5. Exposer `ActivityLogger` — test : écrire une ligne dans `journal.log`
 
 ### B. Interface customTkinter
-- [ ] B1. Fenêtre principale vide avec des onglets (Livres, Utilisateurs, Emprunts, Statistiques)
+- [x] B1. Fenêtre principale vide avec des onglets (Livres, Utilisateurs, Emprunts, Statistiques)
 - [ ] B2. Onglet Livres : tableau de tous les livres (titre, auteur, ISBN, disponible)
 - [ ] B3. Onglet Livres : recherche par titre / auteur + filtre « disponibles seulement » + tri
 - [ ] B4. Onglet Livres : ajouter / supprimer un livre
