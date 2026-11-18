@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<title>États et confirmations — Bibliothèque</title>
+<script src="5f1e464f-1086-46e5-bd48-d4abce6dbc2c"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d028d159-53ce-4dbf-8443-46a01dcc2200") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6c823833-a1b5-46ab-9792-6c627649e948") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("92ac821d-da3e-4c3a-8427-28aae72fef3a") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("2d2c4955-0420-4dd3-b89c-d10764327f19") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a6844b81-86fd-4ed7-a5aa-e0939bde3d90") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("e2548623-2325-4494-bf87-88b5e2d91ff7") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("95181d72-3f58-424f-872a-e12da7ca623d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d028d159-53ce-4dbf-8443-46a01dcc2200") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6c823833-a1b5-46ab-9792-6c627649e948") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("92ac821d-da3e-4c3a-8427-28aae72fef3a") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("2d2c4955-0420-4dd3-b89c-d10764327f19") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a6844b81-86fd-4ed7-a5aa-e0939bde3d90") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("e2548623-2325-4494-bf87-88b5e2d91ff7") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("95181d72-3f58-424f-872a-e12da7ca623d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("d028d159-53ce-4dbf-8443-46a01dcc2200") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6c823833-a1b5-46ab-9792-6c627649e948") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("92ac821d-da3e-4c3a-8427-28aae72fef3a") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("2d2c4955-0420-4dd3-b89c-d10764327f19") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a6844b81-86fd-4ed7-a5aa-e0939bde3d90") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("e2548623-2325-4494-bf87-88b5e2d91ff7") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("95181d72-3f58-424f-872a-e12da7ca623d") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gW8tenXg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gf8tenXg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gY8tenXg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gU8tenXg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gV8tenXg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gb8tc.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gW8tenXg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gf8tenXg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gY8tenXg.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gU8tenXg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gV8tenXg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/sourceserif4/v15/vEFI2_tTDB4M7-auWDN0ahZJW1gb8tc.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;background:#EFE7D8}
+a{color:#7A2E2A}a:hover{color:#5A1F1C}
+.wrap{font-family:Inter,system-ui,sans-serif;color:#2A211C;background:#EFE7D8;padding:32px;box-sizing:border-box;min-height:900px;font-size:14px}
+.h1{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:28px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;margin-top:24px;align-items:start}
+.cap{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B5D52;font-weight:600;margin:0 0 10px}
+.dlg{background:#FBF8F2;border:1px solid #E2D8C6;border-radius:16px;padding:22px;box-shadow:0 14px 34px #2A211C22}
+.dlg h2{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:20px;margin:0 0 8px;display:flex;gap:10px;align-items:center}
+.dlg p{margin:0 0 16px;color:#4A3E35;line-height:1.5}
+.ico{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.i-warn{background:#F6E3CC;color:#8A4A12}
+.i-ok{background:#DCEBE6;color:#1E5A55}
+.i-err{background:#F3DAD7;color:#9A2B26}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;border:1px solid transparent;text-decoration:none;box-sizing:border-box;white-space:nowrap}
+.btn.pri{background:#7A2E2A;color:#fff}
+.btn.pri:hover{background:#5A1F1C;color:#fff}
+.btn.sec{background:#FBF8F2;color:#2A211C;border-color:#D9CDB8}
+.btn.dan{background:#FBF8F2;color:#9A2B26;border-color:#E0B7B2}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:#F6E3CC;border:1px solid #E4C59F;border-radius:12px;padding:12px 16px;color:#5E3410}
+.toast{display:flex;align-items:flex-start;gap:12px;background:#2A211C;color:#F5EFE3;border-radius:12px;padding:14px 16px;box-shadow:0 12px 28px #2A211C33}
+.toast .m{color:#C9BCA9;font-size:13px}
+.file{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px;background:#F0E7D8;border-radius:6px;padding:2px 6px}
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.diff div{border:1px solid #E2D8C6;border-radius:10px;padding:10px 12px;background:#fff;font-size:13px}
+.radio{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #E2D8C6;border-radius:10px;margin-bottom:8px;background:#fff;cursor:pointer}
+.radio input{margin-top:3px;accent-color:#7A2E2A}
+.empty{text-align:center;padding:28px 16px;border:1.5px dashed #D9CDB8;border-radius:12px;background:#FBF8F2}
+</style>
+</helmet>
+<div class="wrap">
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px">
+    <h1 class="h1">États : sauvegarde, confirmations, erreurs</h1>
+    <a href="Main.dc.html" style="font-weight: 600">← Retour au tableau de bord</a>
+  </div>
+  <p style="margin: 8px 0 0; color: #6B5D52; max-width: 760px">Ce que le TUI imprimait sous « Appuyez sur Entrée pour continuer… » devient des bandeaux, des notifications et des dialogues.</p>
+
+  <div class="grid">
+    <section>
+      <p class="cap">Menu 12 · Enregistrer</p>
+      <div class="bar" role="status">
+        <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+        <span style="flex: 1 1 200px"><strong>3 modifications non enregistrées</strong><br><span style="font-size: 13px">1 livre ajouté · 2 emprunts</span></span>
+        <button class="btn pri" type="button">Enregistrer <span style="opacity: .7; font-weight: 500">Ctrl+S</span></button>
+      </div>
+      <div class="toast" style="margin-top: 14px" role="status">
+        <span class="ico i-ok" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5 9-10"></path></svg></span>
+        <div><strong>Données enregistrées</strong><div class="m">books.txt (42 livres) · users.txt (25 utilisateurs)</div></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="cap">Menu 13 · Créer une sauvegarde</p>
+      <div class="dlg" role="dialog" aria-labelledby="bk1">
+        <h2 id="bk1"><span class="ico i-warn" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v11h14V9M10 13h4"></path></svg></span>Une sauvegarde existe déjà</h2>
+        <p><span class="file">books.txt.backup</span> et <span class="file">users.txt.backup</span> sont déjà présents dans agent/data.</p>
+        <label class="radio"><input type="radio" name="bk" checked=""><span><strong>Créer une sauvegarde datée</strong><br><span style="font-size: 13px; color: #6B5D52">Conserve l'ancienne, ajoute la date au nom du fichier</span></span></label>
+        <label class="radio"><input type="radio" name="bk"><span><strong>Remplacer l'ancienne sauvegarde</strong></span></label>
+        <div class="row" style="margin-top: 12px"><button class="btn sec" type="button">Annuler</button><button class="btn pri" type="button">Créer la sauvegarde</button></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="cap">Menu 0 · Quitter</p>
+      <div class="dlg" role="dialog" aria-labelledby="q1">
+        <h2 id="q1"><span class="ico i-warn" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h4v16h-4M10 16l4-4-4-4M14 12H3"></path></svg></span>Enregistrer avant de quitter ?</h2>
+        <p>Vous avez 3 modifications non enregistrées. Sans enregistrement, elles seront perdues.</p>
+        <div class="row"><button class="btn dan" type="button">Quitter sans enregistrer</button><button class="btn sec" type="button">Annuler</button><button class="btn pri" type="button">Enregistrer et quitter</button></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="cap">Menu 2 · Supprimer un livre emprunté</p>
+      <div class="dlg" role="dialog" aria-labelledby="d1">
+        <h2 id="d1"><span class="ico i-err" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></span>Supprimer « Les Misérables » ?</h2>
+        <p>Ce livre est actuellement emprunté par <strong>Marie Dubois</strong> (USR001). Le supprimer le retirera aussi de sa liste d'emprunts.</p>
+        <div class="row"><button class="btn sec" type="button">Annuler</button><button class="btn sec" type="button">Retourner d'abord</button><button class="btn pri" type="button" style="background: #9A2B26">Retourner et supprimer</button></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="cap">Au chargement · Incohérence détectée</p>
+      <div class="dlg" role="dialog" aria-labelledby="c1">
+        <h2 id="c1"><span class="ico i-warn" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 21h20z"></path><path d="M12 10v5M12 18v.5"></path></svg></span>Données incohérentes pour Thomas Blanc</h2>
+        <div class="diff">
+          <div><div style="color: #6B5D52; font-size: 12px; margin-bottom: 4px">books.txt dit</div><strong>Indiana</strong> emprunté par USR010</div>
+          <div><div style="color: #6B5D52; font-size: 12px; margin-bottom: 4px">users.txt dit</div>USR010 a emprunté <strong>Corinne</strong></div>
+        </div>
+        <div class="row"><button class="btn sec" type="button">Ignorer</button><button class="btn sec" type="button">Garder Corinne</button><button class="btn pri" type="button">Garder Indiana</button></div>
+      </div>
+    </section>
+
+    <section>
+      <p class="cap">Erreurs et états vides</p>
+      <div class="toast" role="alert" style="background: #5A1F1C">
+        <span class="ico" style="background: #7A2E2A; color: #fff" aria-hidden="true"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg></span>
+        <div style="flex: 1"><strong>Impossible d'écrire books.txt</strong><div class="m" style="color: #EBCFCB">Vérifiez les droits sur le dossier agent/data.</div></div>
+        <button class="btn sec" type="button" style="min-height: 36px; background: transparent; color: #fff; border-color: #B5675F">Réessayer</button>
+      </div>
+      <div class="empty" style="margin-top: 14px">
+        <p style="font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; margin: 0 0 6px">Aucun dossier de données</p>
+        <p style="margin: 0 0 14px; color: #6B5D52">Lancé sans <span class="file">-d</span> : choisissez un dossier contenant books.txt et users.txt.</p>
+        <div class="row" style="justify-content: center"><button class="btn sec" type="button">Nouvelle bibliothèque</button><button class="btn pri" type="button">Ouvrir un dossier…</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+
+
+</body></html>
