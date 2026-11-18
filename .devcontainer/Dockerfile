@@ -47,5 +47,7 @@ RUN arch="$(dpkg --print-architecture)"; \
     rm -f /tmp/node.tar.xz; \
     node -v; \
     pnpm -v
+# Create symlink so bind-mounted DSH workspace paths referencing /home/iodza work seamlessly
+RUN ln -sfn /home/vscode /home/iodza
 
 # ajouter installation ollama et opencode
