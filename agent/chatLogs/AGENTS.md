@@ -34,9 +34,10 @@
 - Setup: `cd agent/UI && python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt`
 - Run: `cd agent/UI && .venv/bin/python main.py`. Requires an X display (`DISPLAY` is forwarded by the devcontainer).
 - Tests: `cd agent/UI && .venv/bin/python -m pytest -q`. GUI smoke tests need a display; use `xvfb-run -a` when `DISPLAY` is unset.
-- MVC layout: `app/models` holds pure state/logic with no Tk imports; `app/views` holds CTk widgets only; `app/controllers` wires the two without creating widgets; `main.py` is the composition root.
+- MVC layout: `app/models` holds `Book`/`User`/`Library` with no Tk imports; `app/repositories` reads/writes `agent/data`; `app/views` contains only CTk widgets and receives `BookRow`/`UserRow`; `app/controllers` wires everything; `main.py` is the composition root.
+- Data: `agent/data/books.txt` (`titre|auteur|isbn|1|` or `0|USRxxx`) and `users.txt` (`nom|id|isbn1,isbn2`). The UI reads at launch and rewrites both files after add/borrow/return/delete; restore with `git checkout -- agent/data`.
+- Screen: sidebar Livres/Utilisateurs/Emprunts/Statistiques (only Livres is active), accent-insensitive search by title/author/ISBN, book table, and Ajouter / Emprunter↔Retourner / Supprimer.
 - UI text and comments are French; identifiers are English.
-- The initial window shows a label and a counter to exercise view → controller → model → view.
 
 ## Verification
 - No formatter or linter. C++ has no automated tests; verify it with a clean CMake build (warnings are strict: `-Wall -Wextra -Wpedantic`). Verify notebook changes by running the affected notebook from its directory with the venv kernel.

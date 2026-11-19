@@ -1,0 +1,143 @@
+"""Tests du modèle de bibliothèque."""
+
+import pytest
+
+from app.models.book import Book
+from app.models.library import Library, LibraryError, LibraryStats
+from app.models.user import User
+
+
+def make_library() -> Library:
+    return Library(
+        books=[
+            Book("Le Petit Prince", "Antoine de Saint-Exupéry", "9782070612758"),
+            Book("L'Étranger", "Albert Camus", "9782070360024"),
+            Book(
+                "Les Misérables",
+                "Victor Hugo",
+                "9782253096337",
+                available=False,
+                borrower_id="USR001",
+            ),
+        ],
+        users=[
+            User("Marie Dubois", "USR001", ["9782253096337"]),
+            User("Jean Martin", "USR002"),
+        ],
+    )
+
+
+def test_search_ignores_case_and_accents() -> None:
+    library = make_library()
+
+    assert [book.isbn for book in library.filtered_books("etranger")] == [
+        "9782070360024"
+    ]
+    assert [book.isbn for book in library.filtered_books("EXUPERY")] == [
+        "9782070612758"
+    ]
+    assert len(library.filtered_books("")) == 3
+
+
+def test_search_matches_isbn() -> None:
+    library = make_library()
+
+    assert [book.isbn for book in library.filtered_books("9782253096337")] == [
+        "9782253096337"
+    ]
+
+
+def test_add_book_strips_fields() -> None:
+    library = make_library()
+
+    book = library.add_book("  Germinal  ", " Émile Zola ", "9782253004226")
+
+    assert book.title == "Germinal"
+    assert book.author == "Émile Zola"
+    assert library.find_book("9782253004226") is book
+
+
+def test_add_book_rejects_duplicate_isbn() -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError, match="existe déjà"):
+        library.add_book("Autre titre", "Autre auteur", "9782070612758")
+
+
+@pytest.mark.parametrize(
+    ("title", "author", "isbn"),
+    [
+        ("", "Auteur", "123"),
+        ("Titre", "", "123"),
+        ("Titre", "Auteur", ""),
+        ("Titre|interdit", "Auteur", "123"),
+    ],
+)
+def test_add_book_rejects_invalid_values(
+    title: str, author: str, isbn: str
+) -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError):
+        library.add_book(title, author, isbn)
+
+
+def test_borrow_book_updates_book_and_user() -> None:
+    library = make_library()
+
+    book = library.borrow("9782070612758", "USR002")
+
+    assert book.available is False
+    assert book.borrower_id == "USR002"
+    assert "9782070612758" in library.find_user("USR002").borrowed_isbns
+
+
+def test_borrow_unavailable_book_is_rejected() -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError, match="déjà emprunté"):
+        library.borrow("9782253096337", "USR002")
+
+
+def test_borrow_unknown_user_is_rejected() -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError, match="Utilisateur introuvable"):
+        library.borrow("9782070612758", "USR999")
+
+
+def test_return_book_clears_borrower() -> None:
+    library = make_library()
+
+    book = library.return_book("9782253096337")
+
+    assert book.available is True
+    assert book.borrower_id == ""
+    assert "9782253096337" not in library.find_user("USR001").borrowed_isbns
+
+
+def test_return_available_book_is_rejected() -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError, match="déjà disponible"):
+        library.return_book("9782070612758")
+
+
+def test_remove_book_detaches_it_from_users() -> None:
+    library = make_library()
+
+    library.remove_book("9782253096337")
+
+    assert library.find_book("9782253096337") is None
+    assert library.find_user("USR001").borrowed_isbns == []
+
+
+def test_statistics() -> None:
+    library = make_library()
+
+    assert library.statistics() == LibraryStats(
+        total=3,
+        available=2,
+        borrowed=1,
+        users=2,
+    )

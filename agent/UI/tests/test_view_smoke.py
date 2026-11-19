@@ -8,6 +8,8 @@ import os
 
 import pytest
 
+from app.views.view_models import BookRow
+
 
 def _display_available() -> bool:
     if os.name == "nt" or os.uname().sysname == "Darwin":
@@ -24,6 +26,35 @@ def test_main_window_smoke() -> None:
     window = MainWindow()
     try:
         window.update()
-        assert window.counter_label.cget("text") == "0"
+
+        assert window.section_title.cget("text") == "Livres"
+        assert window.add_button.cget("text") == "Ajouter"
+        assert window.borrow_button.cget("text") == "Emprunter"
+        assert window.delete_button.cget("text") == "Supprimer"
+        assert window.search_entry.cget("placeholder_text") == (
+            "Rechercher par titre, auteur ou ISBN…"
+        )
+
+        window.set_books(
+            [
+                BookRow(
+                    isbn="9782070612758",
+                    title="Le Petit Prince",
+                    author="Antoine de Saint-Exupéry",
+                    status_label="Disponible",
+                    available=True,
+                )
+            ]
+        )
+        window.set_selected("9782070612758")
+        window.set_actions(
+            can_delete=True, can_borrow=True, borrow_label="Emprunter"
+        )
+        window.set_status("Prêt.", "success")
+        window.set_section("Emprunts")
+        assert window.section_title.cget("text") == "Emprunts"
+
+        window.set_section("Livres")
+        assert window.section_title.cget("text") == "Livres"
     finally:
         window.destroy()
