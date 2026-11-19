@@ -32,7 +32,7 @@ class Application(customtkinter.CTk):
         onglet_livres = tabview.add("Livres")
         onglet_utilisateurs = tabview.add("Utilisateurs")
         onglet_emprunts = tabview.add("Emprunts")
-        tabview.add("Statistiques")
+        onglet_statistiques = tabview.add("Statistiques")
 
         barre_livres = customtkinter.CTkFrame(onglet_livres)
         barre_livres.pack(fill="x", padx=5, pady=5)
@@ -167,9 +167,29 @@ class Application(customtkinter.CTk):
         )
         bouton_retourner.pack(side="left", padx=5, pady=5)
 
+        self.label_stats_total = customtkinter.CTkLabel(onglet_statistiques, text="Total des livres : 0")
+        self.label_stats_total.pack(anchor="w", padx=10, pady=5)
+        self.label_stats_disponibles = customtkinter.CTkLabel(onglet_statistiques, text="Disponibles : 0")
+        self.label_stats_disponibles.pack(anchor="w", padx=10, pady=5)
+        self.label_stats_empruntes = customtkinter.CTkLabel(onglet_statistiques, text="Empruntés : 0")
+        self.label_stats_empruntes.pack(anchor="w", padx=10, pady=5)
+        self.label_stats_utilisateurs = customtkinter.CTkLabel(onglet_statistiques, text="Utilisateurs : 0")
+        self.label_stats_utilisateurs.pack(anchor="w", padx=10, pady=5)
+
         self.rafraichir_livres()
         self.rafraichir_utilisateurs()
         self.rafraichir_emprunts()
+        self.rafraichir_statistiques()
+
+    def rafraichir_statistiques(self):
+        total = self.bibliotheque.getTotalBooks()
+        disponibles = self.bibliotheque.getAvailableBookCount()
+        empruntes = self.bibliotheque.getCheckedOutBookCount()
+        utilisateurs = len(self.bibliotheque.getAllUsers())
+        self.label_stats_total.configure(text=f"Total des livres : {total}")
+        self.label_stats_disponibles.configure(text=f"Disponibles : {disponibles}")
+        self.label_stats_empruntes.configure(text=f"Empruntés : {empruntes}")
+        self.label_stats_utilisateurs.configure(text=f"Utilisateurs : {utilisateurs}")
 
     def rafraichir_emprunts(self):
         livres_disponibles = self.bibliotheque.getAvailableBooks()
@@ -220,6 +240,7 @@ class Application(customtkinter.CTk):
         self.rafraichir_emprunts()
         self.rafraichir_livres()
         self.rafraichir_utilisateurs()
+        self.rafraichir_statistiques()
 
     def retourner_livre(self):
         livre_choisi = self.option_livre_emprunte.get()
@@ -242,6 +263,7 @@ class Application(customtkinter.CTk):
         self.rafraichir_emprunts()
         self.rafraichir_livres()
         self.rafraichir_utilisateurs()
+        self.rafraichir_statistiques()
 
     def ajouter_livre(self):
         titre = self.entree_titre_livre.get().strip()
@@ -264,6 +286,7 @@ class Application(customtkinter.CTk):
         self.entree_isbn_livre.delete(0, "end")
         self.rafraichir_livres()
         self.rafraichir_emprunts()
+        self.rafraichir_statistiques()
 
     def supprimer_livre(self):
         selection = self.tree_livres.selection()
@@ -290,6 +313,7 @@ class Application(customtkinter.CTk):
         self.bibliotheque.removeBook(isbn)
         self.rafraichir_livres()
         self.rafraichir_emprunts()
+        self.rafraichir_statistiques()
 
     def ajouter_utilisateur(self):
         nom = self.entree_nom_utilisateur.get().strip()
@@ -305,6 +329,7 @@ class Application(customtkinter.CTk):
         self.entree_nom_utilisateur.delete(0, "end")
         self.rafraichir_utilisateurs()
         self.rafraichir_emprunts()
+        self.rafraichir_statistiques()
 
     def rafraichir_utilisateurs(self):
         for item in self.tree_utilisateurs.get_children():
