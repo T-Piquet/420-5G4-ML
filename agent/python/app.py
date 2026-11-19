@@ -29,6 +29,24 @@ class Application(customtkinter.CTk):
         tabview = customtkinter.CTkTabview(self)
         tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
+        cadre_fichier = customtkinter.CTkFrame(self)
+        cadre_fichier.pack(fill="x", padx=10, pady=5)
+
+        bouton_sauvegarder = customtkinter.CTkButton(
+            cadre_fichier, text="Sauvegarder", command=self.sauvegarder_donnees
+        )
+        bouton_sauvegarder.pack(side="left", padx=5, pady=5)
+
+        bouton_backup = customtkinter.CTkButton(
+            cadre_fichier, text="Créer une sauvegarde", command=self.creer_sauvegarde
+        )
+        bouton_backup.pack(side="left", padx=5, pady=5)
+
+        bouton_quitter = customtkinter.CTkButton(
+            cadre_fichier, text="Quitter", command=self.quitter_application
+        )
+        bouton_quitter.pack(side="left", padx=5, pady=5)
+
         onglet_livres = tabview.add("Livres")
         onglet_utilisateurs = tabview.add("Utilisateurs")
         onglet_emprunts = tabview.add("Emprunts")
@@ -180,6 +198,8 @@ class Application(customtkinter.CTk):
         self.rafraichir_utilisateurs()
         self.rafraichir_emprunts()
         self.rafraichir_statistiques()
+
+        self.protocol("WM_DELETE_WINDOW", self.quitter_application)
 
     def rafraichir_statistiques(self):
         total = self.bibliotheque.getTotalBooks()
@@ -381,6 +401,28 @@ class Application(customtkinter.CTk):
                     disponible,
                 ),
             )
+
+
+    def sauvegarder_donnees(self):
+        if not self.gestionnaire.saveLibraryData(self.bibliotheque):
+            messagebox.showerror("Erreur", "Échec de la sauvegarde.")
+            return
+        self.journal.log("SAUVEGARDE", "Données sauvegardées")
+        messagebox.showinfo("Sauvegarde", "Données sauvegardées.")
+
+    def creer_sauvegarde(self):
+        try:
+            self.gestionnaire.createBackup()
+        except RuntimeError:
+            messagebox.showerror("Erreur", "Une sauvegarde existe déjà.")
+            return
+        self.journal.log("BACKUP", "Sauvegarde créée")
+        messagebox.showinfo("Sauvegarde", "Sauvegarde créée.")
+
+    def quitter_application(self):
+        if self.gestionnaire.saveLibraryData(self.bibliotheque):
+            self.journal.log("QUITTER", "Fermeture de l'application")
+        self.destroy()
 
 
 def main():
