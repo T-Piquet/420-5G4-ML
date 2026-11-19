@@ -24,7 +24,7 @@ class Application(customtkinter.CTk):
         self.journal = biblio.ActivityLogger(str(DOSSIER_DONNEES / "journal.log"))
 
         if not self.gestionnaire.loadLibraryData(self.bibliotheque):
-            print("Erreur : chargement des données impossible.")
+            messagebox.showwarning("Données introuvables", "Données introuvables, la bibliothèque démarre vide.")
 
         tabview = customtkinter.CTkTabview(self)
         tabview.pack(fill="both", expand=True, padx=10, pady=10)
@@ -420,7 +420,10 @@ class Application(customtkinter.CTk):
         messagebox.showinfo("Sauvegarde", "Sauvegarde créée.")
 
     def quitter_application(self):
-        if self.gestionnaire.saveLibraryData(self.bibliotheque):
+        if not self.gestionnaire.saveLibraryData(self.bibliotheque):
+            if not messagebox.askyesno("Erreur", "La sauvegarde a échoué. Quitter quand même ?"):
+                return
+        else:
             self.journal.log("QUITTER", "Fermeture de l'application")
         self.destroy()
 
