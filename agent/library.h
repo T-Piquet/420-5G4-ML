@@ -32,7 +32,9 @@ public:
     void addUser(const User& user);
     User* findUserById(const string& userId);
     vector<User*> getAllUsers();
-    
+    string generateUserId() const; // +1 prochain id
+
+
     // Library operations
     bool checkOutBook(const string& isbn, const string& userId);
     bool returnBook(const string& isbn);
@@ -41,7 +43,8 @@ public:
     void displayAllBooks();
     void displayAvailableBooks();
     void displayAllUsers();
-    
+    void displaySortedBooks(bool byTitle); // true = par titre, false = par auteur 
+
     // Statistics
     int getTotalBooks() const;
     int getAvailableBookCount() const;

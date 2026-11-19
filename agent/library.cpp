@@ -202,3 +202,68 @@ int Library::getAvailableBookCount() const {
         });
 }
 int Library::getCheckedOutBookCount() const { return getTotalBooks() - getAvailableBookCount(); }
+
+// Genere le prochain ID : USR + 1
+string Library::generateUserId() const{
+    int maxNumber = 0;
+
+    // Parcourir tous les utilisateurs pour trouver + grand 
+    for (size_t i =0; i< users.size();i++){
+        string id = users[i]->getUserId();
+        //id doit avoir minimum 4 caracteres et commencer avec USR        
+        if(id.size() > 3 && id.substr(0, 3) == "USR"){
+            string numberPart = id.substr(3);
+            try{
+                int number = stoi(numberPart);
+                if(number > maxNumber){
+                    maxNumber = number;
+                }
+            }catch(const exception& e){
+                  cout << "Avertissement : l'ID utilisateur '" << id
+         << "' n'a pas un format valide (USRnnn), il est ignoré.\n";
+            }
+        }
+    
+    }
+    //plus grand num + 1
+    int nextNumber = maxNumber +1;
+    string numberText = to_string(nextNumber);
+
+    if(nextNumber<10){
+        numberText = "00" +numberText;
+    }else if (nextNumber < 100){
+        numberText = "0" + numberText;
+    }
+
+    return "USR" + numberText;
+}
+// Met un texte en minuscules pour trier 
+static string toLower(string text) {
+    transform(text.begin(), text.end(), text.begin(), ::tolower);
+    return text;
+}
+
+// Affiche tous les livres tries par titre ou par auteur
+void Library::displaySortedBooks(bool byTitle) {
+    if (books.empty()) {
+        cout << "Aucun livre dans la bibliothèque.\n";
+        return;
+    }
+
+    //Copie de la liste des pointeurs 
+    vector<Book*> sorted = getAllBooks();
+
+    //la lambda dit quel livre vient en premier
+    sort(sorted.begin(), sorted.end(), [byTitle](const Book* a, const Book* b) {
+        if (byTitle) {
+            return toLower(a->getTitle()) < toLower(b->getTitle());
+        }
+        return toLower(a->getAuthor()) < toLower(b->getAuthor());
+    });
+    
+    cout << "\n LIVRES TRIÉS PAR " << (byTitle ? "TITRE" : "AUTEUR") << " \n";
+    for (size_t i = 0; i < sorted.size(); ++i) {
+        cout << "\nLivre " << (i + 1) << " :\n";
+        cout << sorted[i]->toString() << "\n";
+    }
+}

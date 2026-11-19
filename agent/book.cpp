@@ -1,67 +1,80 @@
 #include <sstream>
-#include <iostream>
 
 #include "book.h"
 
-using namespace std; 
+using namespace std;
 
-// Default constructor
-Book::Book() : title(""), author(""), isbn(""), isAvailable(true), borrowerId("") {}
+//constructeur par defaut pour un livre vide qui est disponible
+Book::Book() : title(""), author(""), isbn(""), isAvailable(true), borrowerId(""){}
 
-// Parameterized constructor
-Book::Book(const string& title, const string& author, const string& isbn)
-    : title(title), author(author), isbn(isbn), isAvailable(true), borrowerId("") {}
+//constructeur avec parametre : un nouveau livre est disponible
+Book::Book(const string& title, const string& author, const string& isbn) {
+    this -> title = title;
+    this -> author = author;
+    this -> isbn = isbn;
+    this -> isAvailable = true;
+    this -> borrowerId = "";
+}
 
-// Getters
-string Book::getTitle() const { return title; }
-string Book::getAuthor() const { return author; }
-string Book::getISBN() const { return isbn; }
-bool Book::getAvailability() const { return isAvailable; }
-string Book::getBorrowerId() const { return borrowerId; }
+// GET
+string Book::getTitle() const {return title;}
+string Book::getAuthor() const {return author;}
+string Book::getISBN() const {return isbn;}
+bool Book::getAvailability() const {return isAvailable;}
+string Book::getBorrowerId() const {return borrowerId;}
 
-// Setters
-void Book::setTitle(const string& title) { this->title = title; }
-void Book::setAuthor(const string& author) { this->author = author; }
+// set
+void Book::setTitle(const string& title) {this->title = title;}
+void Book::setAuthor(const string& author) {this->author = author;}
 void Book::setISBN(const string& isbn) { this->isbn = isbn; }
-void Book::setAvailability(bool available) { this->isAvailable = available; }
-void Book::setBorrowerId(const string& id) { this->borrowerId = id; }
+void Book::setAvailability(bool available) {isAvailable = available;}
+void Book::setBorrowerId(const string& id) {borrowerId = id;}
 
-// Check out book
-void Book::checkOut(const string& borrowerId) {
-    if (isAvailable) {
-        isAvailable = false;
-        this->borrowerId = borrowerId;
-    }
+// Emprunter un livre
+void Book::checkOut(const string& borrowerId){
+    isAvailable = false;
+    this->borrowerId = borrowerId;
 }
 
-// Return book
-void Book::returnBook() {
+
+//Retour d'un livre
+void Book::returnBook(){
     isAvailable = true;
-    borrowerId = "";
+    borrowerId.clear();
 }
 
-// Display book information
+// Affichage lisible
 string Book::toString() const {
-    string status = isAvailable ? "Disponible" : "Emprunté par : " + borrowerId;
-    return "Titre: " + title + "\nAuteur: " + author + "\nISBN: " + isbn + "\nStatu: " + status;
+    string result = "Titre: " + title + "\nAuteur: " + author + "\nISBN: " + isbn +
+                    "\nStatut: " + (isAvailable ? "Disponible" : "Emprunté");
+    if (!isAvailable && !borrowerId.empty()) {
+        result += " (par " + borrowerId + ")";
+    }
+    return result;
+}
+// Format du fichier titre|auteur|isbn|disponibilite(0/1)|idEmprunteur
+string Book::toFileFormat() const{
+    return title+"|"+author+"|"+isbn+"|"+(isAvailable ? "1":"0")+"|"+borrowerId;
 }
 
-// Format for file storage (pipe-separated)
-string Book::toFileFormat() const {
-    return title + "|" + author + "|" + isbn + "|" + (isAvailable ? "1" : "0") + "|" + borrowerId;
-}
+// Lecture d'une ligne du fichier
+void Book::fromFileFormat(const string& line){
+    
+    // fichier sous windows terminent par \r\n
+    string clean = line;
+    if(!clean.empty() && clean.back()=='\r'){
+        clean.pop_back();
+    }
 
-// Parse from file format
-void Book::fromFileFormat(const string& line) {
-    stringstream ss(line);
-    string token;
+    // coupe string clean quand on trouve |
+    stringstream ss (clean);
+    string availStr;
 
     getline(ss, title, '|');
     getline(ss, author, '|');
     getline(ss, isbn, '|');
-
-    getline(ss, token, '|');
-    isAvailable = (token == "1");
-
+    getline(ss, availStr, '|');
     getline(ss, borrowerId, '|');
+
+    isAvailable = (availStr != "0");
 }

@@ -72,7 +72,7 @@ string User::toFileFormat() const {
 }
 
 // Parse from file format
-void User::fromFileFormat(const string& line) {
+void User::fromFileFormat(const string& line) { 
     stringstream ss(line);
     string token;
     
