@@ -1,0 +1,3 @@
+analyse_image/datas/*.csv
+analyse_image/datas/
+analyse_image/.venv/
