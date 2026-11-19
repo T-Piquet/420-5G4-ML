@@ -228,12 +228,15 @@ class LibraryApp(ctk.CTk):
 
         actions = {
             1: self._add_book,
+            2: self._remove_book,
             3: self._search_by_title,
             4: self._search_by_author,
             7: self._add_user,
             5: self._show_all_books,
             6: self._show_available_books,
             8: self._show_all_users,
+            9: self._borrow_book,
+            10: self._return_book,
         }
 
         sidebar = ctk.CTkScrollableFrame(self, width=250, corner_radius=0)
@@ -450,6 +453,50 @@ class LibraryApp(ctk.CTk):
         self._refresh_status()
         self._show_all_users()
         self._scroll_to_last_row()
+
+    def _remove_book(self):
+        values = self._prompt_fields("Supprimer un livre", ["ISBN"])
+        if values is None:
+            return
+        isbn = values[0]
+        if self.library.removeBook(isbn):
+            self._log("Livre supprimé avec succès !")
+            self._refresh_status()
+            self._show_all_books()
+        else:
+            self._log("Livre non trouvé.")
+
+    def _borrow_book(self):
+        values = self._prompt_fields(
+            "Emprunter un livre", ["ISBN", "Identifiant utilisateur"]
+        )
+        if values is None:
+            return
+        isbn, user_id = values
+        if self.library.checkOutBook(isbn, user_id):
+            self._log("Livre emprunté avec succès !")
+            self._refresh_status()
+            self._show_all_books()
+        else:
+            self._log(
+                "Erreur : Impossible d'emprunter le livre. Vérifiez l'ISBN, "
+                "l'ID utilisateur et la disponibilité du livre."
+            )
+
+    def _return_book(self):
+        values = self._prompt_fields("Retourner un livre", ["ISBN"])
+        if values is None:
+            return
+        isbn = values[0]
+        if self.library.returnBook(isbn):
+            self._log("Livre retourné avec succès !")
+            self._refresh_status()
+            self._show_all_books()
+        else:
+            self._log(
+                "Erreur : Impossible de retourner le livre. Vérifiez l'ISBN "
+                "et que le livre est bien emprunté."
+            )
 
     def _scroll_to_last_row(self):
         if self.current_tree is None:
