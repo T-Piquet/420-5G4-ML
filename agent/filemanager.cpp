@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <system_error>
 #include "filemanager.h"
 
 using namespace std;
@@ -110,14 +111,29 @@ bool FileManager::fileExists(const string& filename) {
 }
 
 // Create backup
-void FileManager::createBackup() {
-    if (fileExists(booksFileName)) {
-        filesystem::copy_file(booksFileName, booksFileName + ".backup");
-    }
-    
-    if (fileExists(usersFileName)) {
-        filesystem::copy_file(usersFileName, usersFileName + ".backup");
-    }
-    
-    cout << "Fichiers de sauvegarde créés.\n";
+bool FileManager::createBackup() {
+    bool succes = true;
+
+    auto copier = [this, &succes](const string& source) {
+        if (!fileExists(source)) {
+            succes = false;
+            return;
+        }
+
+        error_code erreur;
+        filesystem::copy_file(
+            source,
+            source + ".backup",
+            filesystem::copy_options::overwrite_existing,
+            erreur
+        );
+
+        if (erreur) {
+            succes = false;
+        }
+    };
+
+    copier(booksFileName);
+    copier(usersFileName);
+    return succes;
 }
