@@ -1,9 +1,23 @@
-"""Modèle de la bibliothèque, indépendant de Tkinter."""
+"""Modèle de la bibliothèque : façade Python sur le cœur C++.
+
+L'état des livres et des utilisateurs vit dans le module natif
+``bibliotheque_core``. Cette classe conserve l'API utilisée par le contrôleur
+et convertit les objets C++ en dataclasses prêtes à afficher.
+"""
 
 from __future__ import annotations
 
 import unicodedata
 from dataclasses import dataclass
+from typing import Any
+
+try:
+    from app import bibliotheque_core as _native
+except ImportError as error:  # pragma: no cover - dépend du build natif
+    _native = None
+    _NATIVE_IMPORT_ERROR: ImportError | None = error
+else:
+    _NATIVE_IMPORT_ERROR = None
 
 from app.models.book import Book
 from app.models.user import User
@@ -25,6 +39,16 @@ class LibraryStats:
     users: int
 
 
+def require_native() -> Any:
+    """Renvoie le module C++ ou explique comment le compiler."""
+    if _native is None:
+        raise RuntimeError(
+            "Le module natif « bibliotheque_core » n'a pas pu être importé.\n"
+            "Compilez-le depuis agent/ avec : ./bindings/build.sh"
+        ) from _NATIVE_IMPORT_ERROR
+    return _native
+
+
 def normalize(text: str) -> str:
     """Passe le texte en minuscules et supprime les accents."""
     decomposed = unicodedata.normalize("NFKD", text.casefold())
@@ -32,27 +56,43 @@ def normalize(text: str) -> str:
 
 
 class Library:
-    """Collection de livres et d'utilisateurs avec les règles métier."""
+    """Collection de livres et d'utilisateurs adossée au C++."""
 
     def __init__(
         self,
         books: list[Book] | None = None,
         users: list[User] | None = None,
     ) -> None:
-        self.books = list(books or [])
-        self.users = list(users or [])
+        self._native = require_native()
+        self._core = self._native.Library()
+
+        for book in books or []:
+            self._core.add_book(self._to_native_book(book))
+        for user in users or []:
+            self._core.add_user(self._to_native_user(user))
+
+    @property
+    def native(self) -> Any:
+        """Objet C++ sous-jacent, réservé au dépôt de données."""
+        return self._core
+
+    @property
+    def books(self) -> list[Book]:
+        """Photographie des livres, dans l'ordre du fichier."""
+        return [self._to_book(book) for book in self._core.all_books()]
+
+    @property
+    def users(self) -> list[User]:
+        """Photographie des utilisateurs."""
+        return [self._to_user(user) for user in self._core.all_users()]
 
     def find_book(self, isbn: str) -> Book | None:
-        for book in self.books:
-            if book.isbn == isbn:
-                return book
-        return None
+        book = self._core.find_book(isbn)
+        return None if book is None else self._to_book(book)
 
     def find_user(self, user_id: str) -> User | None:
-        for user in self.users:
-            if user.user_id == user_id:
-                return user
-        return None
+        user = self._core.find_user(user_id)
+        return None if user is None else self._to_user(user)
 
     def borrower_name(self, book: Book) -> str | None:
         """Renvoie le nom de l'emprunteur, ou None s'il est inconnu."""
@@ -65,7 +105,7 @@ class Library:
         """Filtre les livres par titre, auteur ou ISBN, sans tenir compte des accents."""
         query = query.strip()
         if not query:
-            return list(self.books)
+            return self.books
 
         needle = normalize(query)
         return [
@@ -77,12 +117,11 @@ class Library:
         ]
 
     def statistics(self) -> LibraryStats:
-        borrowed = sum(1 for book in self.books if not book.available)
         return LibraryStats(
-            total=len(self.books),
-            available=len(self.books) - borrowed,
-            borrowed=borrowed,
-            users=len(self.users),
+            total=self._core.total_books(),
+            available=self._core.available_count(),
+            borrowed=self._core.checked_out_count(),
+            users=len(self._core.all_users()),
         )
 
     def add_book(self, title: str, author: str, isbn: str) -> Book:
@@ -91,55 +130,81 @@ class Library:
         author = self._clean_field(author, "L'auteur")
         isbn = self._clean_field(isbn, "L'ISBN")
 
-        if self.find_book(isbn) is not None:
+        if self._core.find_book(isbn) is not None:
             raise LibraryError(f"Un livre avec l'ISBN {isbn} existe déjà.")
 
-        book = Book(title=title, author=author, isbn=isbn)
-        self.books.append(book)
-        return book
+        book = self._native.Book(title, author, isbn)
+        self._core.add_book(book)
+        return self._to_book(book)
 
     def remove_book(self, isbn: str) -> Book:
         """Supprime un livre et le retire des emprunts des utilisateurs."""
         book = self.find_book(isbn)
-        if book is None:
+        if book is None or not self._core.remove_book(isbn):
             raise LibraryError("Livre introuvable.")
-
-        self.books.remove(book)
-        for user in self.users:
-            self._detach_isbn(user, isbn)
         return book
 
     def borrow(self, isbn: str, user_id: str) -> Book:
         """Attribue un livre disponible à un utilisateur."""
-        book = self.find_book(isbn)
+        book = self._core.find_book(isbn)
         if book is None:
             raise LibraryError("Livre introuvable.")
         if not book.available:
             raise LibraryError("Ce livre est déjà emprunté.")
-
-        user = self.find_user(user_id)
-        if user is None:
+        if self._core.find_user(user_id) is None:
             raise LibraryError("Utilisateur introuvable.")
+        if not self._core.check_out_book(isbn, user_id):
+            raise LibraryError("Impossible d'emprunter ce livre.")
 
-        book.available = False
-        book.borrower_id = user.user_id
-        if isbn not in user.borrowed_isbns:
-            user.borrowed_isbns.append(isbn)
-        return book
+        borrowed = self.find_book(isbn)
+        if borrowed is None:  # pragma: no cover - incohérence interne
+            raise LibraryError("Livre introuvable.")
+        return borrowed
 
     def return_book(self, isbn: str) -> Book:
         """Rend un livre emprunté disponible."""
-        book = self.find_book(isbn)
+        book = self._core.find_book(isbn)
         if book is None:
             raise LibraryError("Livre introuvable.")
         if book.available:
             raise LibraryError("Ce livre est déjà disponible.")
+        if not self._core.return_book(isbn):
+            raise LibraryError("Impossible de retourner ce livre.")
 
-        for user in self.users:
-            self._detach_isbn(user, isbn)
-        book.available = True
-        book.borrower_id = ""
-        return book
+        returned = self.find_book(isbn)
+        if returned is None:  # pragma: no cover - incohérence interne
+            raise LibraryError("Livre introuvable.")
+        return returned
+
+    def _to_native_book(self, book: Book) -> Any:
+        native_book = self._native.Book(book.title, book.author, book.isbn)
+        native_book.available = book.available
+        native_book.borrower_id = book.borrower_id
+        return native_book
+
+    def _to_native_user(self, user: User) -> Any:
+        native_user = self._native.User(user.name, user.user_id)
+        for isbn in user.borrowed_isbns:
+            native_user.borrow_book(isbn)
+        return native_user
+
+    @staticmethod
+    def _to_book(book: Any) -> Book:
+        return Book(
+            title=book.title,
+            author=book.author,
+            isbn=book.isbn,
+            available=book.available,
+            borrower_id=book.borrower_id,
+        )
+
+    @staticmethod
+    def _to_user(user: Any) -> User:
+        return User(
+            name=user.name,
+            user_id=user.user_id,
+            borrowed_isbns=list(user.borrowed_isbns),
+        )
 
     @staticmethod
     def _clean_field(value: str, label: str) -> str:
@@ -151,8 +216,3 @@ class Library:
                 "Les champs ne peuvent pas contenir « | » ni de retour à la ligne."
             )
         return value
-
-    @staticmethod
-    def _detach_isbn(user: User, isbn: str) -> None:
-        if isbn in user.borrowed_isbns:
-            user.borrowed_isbns.remove(isbn)

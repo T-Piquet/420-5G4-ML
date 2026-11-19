@@ -1,5 +1,11 @@
 """Tests du contrôleur avec une vue et un dépôt factices."""
 
+import pytest
+
+pytest.importorskip(
+    "app.bibliotheque_core", reason="Module natif non compilé"
+)
+
 from app.controllers.main_controller import MainController
 from app.models.book import Book
 from app.models.library import Library
@@ -117,8 +123,8 @@ def make_model() -> Library:
     )
 
 
-def build(repository=None):
-    model = make_model()
+def build(repository=None, model=None):
+    model = model or make_model()
     view = FakeView()
     repository = repository or FakeRepository()
     controller = MainController(model, view, repository)
@@ -272,8 +278,9 @@ def test_return_selected_book() -> None:
 
 
 def test_borrow_without_users_shows_error() -> None:
-    model, view, _, _ = build()
-    model.users.clear()
+    model, view, _, _ = build(
+        model=Library(books=make_model().books, users=[])
+    )
     view.select_callback("9782070612758")
 
     view.borrow_callback()

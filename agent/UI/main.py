@@ -17,7 +17,11 @@ def main() -> None:
     ctk.set_appearance_mode(config.APPEARANCE_MODE)
     ctk.set_default_color_theme(config.COLOR_THEME)
 
-    repository = LibraryRepository(DATA_DIR)
+    try:
+        repository = LibraryRepository(DATA_DIR)
+    except RuntimeError as error:
+        raise SystemExit(str(error)) from error
+
     model = repository.load()
 
     view = MainWindow()

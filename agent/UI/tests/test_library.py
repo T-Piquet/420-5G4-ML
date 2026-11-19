@@ -2,6 +2,10 @@
 
 import pytest
 
+pytest.importorskip(
+    "app.bibliotheque_core", reason="Module natif non compilé"
+)
+
 from app.models.book import Book
 from app.models.library import Library, LibraryError, LibraryStats
 from app.models.user import User
@@ -54,7 +58,7 @@ def test_add_book_strips_fields() -> None:
 
     assert book.title == "Germinal"
     assert book.author == "Émile Zola"
-    assert library.find_book("9782253004226") is book
+    assert library.find_book("9782253004226") == book
 
 
 def test_add_book_rejects_duplicate_isbn() -> None:

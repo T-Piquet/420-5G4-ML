@@ -1,3 +1,4 @@
+#include <cctype>
 #include <iostream>
 #include <algorithm>
 
@@ -21,6 +22,10 @@ bool Library::removeBook(const string& isbn) {
         });
     
     if (it != books.end()) {
+        // Retire aussi l'ISBN des emprunts pour garder les données cohérentes.
+        for (auto& user : users) {
+            user->returnBook(isbn);
+        }
         books.erase(it);
         return true;
     }
@@ -41,11 +46,13 @@ Book* Library::findBookByISBN(const string& isbn) {
 vector<Book*> Library::searchBooksByTitle(const string& title) {
     vector<Book*> results;
     string lowerTitle = title;
-    transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+    transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     
     for (auto& book : books) {
         string bookTitle = book->getTitle();
-        transform(bookTitle.begin(), bookTitle.end(), bookTitle.begin(), ::tolower);
+        transform(bookTitle.begin(), bookTitle.end(), bookTitle.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         
         if (bookTitle.find(lowerTitle) != string::npos) {
             results.push_back(book.get());
@@ -58,11 +65,13 @@ vector<Book*> Library::searchBooksByTitle(const string& title) {
 vector<Book*> Library::searchBooksByAuthor(const string& author) {
     vector<Book*> results;
     string lowerAuthor = author;
-    transform(lowerAuthor.begin(), lowerAuthor.end(), lowerAuthor.begin(), ::tolower);
+    transform(lowerAuthor.begin(), lowerAuthor.end(), lowerAuthor.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     
     for (auto& book : books) {
         string bookAuthor = book->getAuthor();
-        transform(bookAuthor.begin(), bookAuthor.end(), bookAuthor.begin(), ::tolower);
+        transform(bookAuthor.begin(), bookAuthor.end(), bookAuthor.begin(),
+            [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         
         if (bookAuthor.find(lowerAuthor) != string::npos) {
             results.push_back(book.get());

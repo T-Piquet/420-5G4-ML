@@ -2,6 +2,12 @@
 
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip(
+    "app.bibliotheque_core", reason="Module natif non compilé"
+)
+
 from app.models.book import Book
 from app.models.library import Library
 from app.models.user import User

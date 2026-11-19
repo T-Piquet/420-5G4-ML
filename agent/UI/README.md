@@ -4,9 +4,15 @@ Interface de gestion de la bibliothèque personnelle, construite en MVC avec
 customtkinter. La mise en page reprend `agent/maquetteUI.png` : barre latérale,
 en-tête avec recherche, tableau des livres et actions en bas à droite.
 
+Le coeur métier et la persistance sont assurés par le code C++ du projet,
+exposé à Python avec **pybind11**. La couche Python assure la présentation, la
+navigation, la validation des saisies et la recherche accent-insensible ;
+l'état et les opérations de la bibliothèque restent en C++.
+
 ## Prérequis
 
 - Python 3.13 avec Tkinter.
+- Un compilateur C++17 et CMake (3.21 ou plus).
 - Un serveur d'affichage X11 ou Wayland. Le devcontainer transmet déjà
   `DISPLAY` depuis l'hôte.
 
@@ -21,6 +27,31 @@ python3 -m venv .venv
 Le venv est dédié à l'interface et ignoré par Git. Il est distinct du venv
 utilisé par les notebooks à la racine du dépôt.
 
+## Compilation du module natif
+
+Le module `bibliotheque_core` doit être compilé avant de lancer l'interface :
+
+```bash
+cd agent
+./bindings/build.sh
+```
+
+Le script utilise le Python de `UI/.venv`, configure CMake avec pybind11 et
+écrit le module dans `UI/app/`. Il est possible de faire la même chose à la
+main :
+
+```bash
+cd agent
+cmake -S . -B build-pybind11 \
+    -DBUILD_PYTHON_BINDINGS=ON \
+    -DPython_EXECUTABLE="$PWD/UI/.venv/bin/python" \
+    -Dpybind11_DIR="$("$PWD/UI/.venv/bin/python" -m pybind11 --cmakedir)"
+cmake --build build-pybind11 --target bibliotheque_core -j
+```
+
+Le module compilé est ignoré par Git. Après une modification du C++, relancer
+`./bindings/build.sh`.
+
 ## Lancement
 
 ```bash
@@ -28,16 +59,21 @@ cd agent/UI
 .venv/bin/python main.py
 ```
 
+Si le module natif est absent, l'application s'arrête avec un message
+indiquant la commande de compilation à exécuter.
+
 ## Données
 
-L'application lit au démarrage les fichiers du dossier `agent/data/` :
+L'application lit au démarrage les fichiers du dossier `agent/data/` avec le
+`FileManager` C++ :
 
 - `books.txt` : `titre|auteur|isbn|disponible|idEmprunteur` ;
 - `users.txt` : `nom|identifiant|isbn1,isbn2`.
 
 Les actions **Ajouter**, **Emprunter**, **Retourner** et **Supprimer**
-réécrivent ces deux fichiers au même format que le programme C++. Pour revenir
-aux données d'origine :
+réécrivent ces deux fichiers au même format que le programme C++. L'écriture
+se fait dans un fichier temporaire renommé ensuite, afin de ne pas laisser un
+fichier tronqué en cas d'erreur. Pour revenir aux données d'origine :
 
 ```bash
 git checkout -- agent/data
@@ -64,8 +100,9 @@ cd agent/UI
 .venv/bin/python -m pytest -q
 ```
 
-Le test de fumée de la fenêtre nécessite un affichage et est ignoré
-automatiquement s'il n'y en a pas :
+Les tests qui utilisent le modèle natif sont ignorés avec un message explicite
+s'il n'a pas été compilé. Le test de fumée de la fenêtre nécessite un affichage
+et est ignoré automatiquement s'il n'y en a pas :
 
 ```bash
 xvfb-run -a .venv/bin/python -m pytest -q
@@ -74,35 +111,44 @@ xvfb-run -a .venv/bin/python -m pytest -q
 ## Structure MVC
 
 ```text
-UI/
-├── main.py                              # composition root
-├── app/
-│   ├── config.py                        # dimensions, palette, libellés
-│   ├── models/
-│   │   ├── book.py                      # Book
-│   │   ├── user.py                      # User
-│   │   └── library.py                   # règles métier et recherche
-│   ├── repositories/
-│   │   └── library_repository.py        # lecture/écriture de agent/data
-│   ├── views/
-│   │   ├── main_window.py               # fenêtre, sidebar, en-tête, pied
-│   │   ├── book_table.py                # tableau scrollable
-│   │   ├── dialogs.py                   # ajout et choix d'utilisateur
-│   │   └── view_models.py               # BookRow / UserRow
-│   └── controllers/
-│       └── main_controller.py           # câblage vue ↔ modèle ↔ dépôt
-└── tests/
-    ├── test_library.py
-    ├── test_repository.py
-    ├── test_controller.py
-    └── test_view_smoke.py
+agent/
+├── bindings/
+│   ├── library_bindings.cpp             # module pybind11
+│   └── build.sh                         # compilation du module
+├── book.cpp/h, user.cpp/h
+├── library.cpp/h, filemanager.cpp/h     # coeur C++ et persistance
+└── UI/
+    ├── main.py                          # composition root
+    ├── app/
+    │   ├── config.py                    # dimensions, palette, libellés
+    │   ├── bibliotheque_core*.so        # module généré, ignoré
+    │   ├── models/
+    │   │   ├── book.py                  # dataclass Book
+    │   │   ├── user.py                  # dataclass User
+    │   │   └── library.py               # façade Python sur le C++
+    │   ├── repositories/
+    │   │   └── library_repository.py    # FileManager C++
+    │   ├── views/
+    │   │   ├── main_window.py           # fenêtre, sidebar, en-tête, pied
+    │   │   ├── book_table.py            # tableau scrollable
+    │   │   ├── dialogs.py               # ajout et choix d'utilisateur
+    │   │   └── view_models.py           # BookRow / UserRow
+    │   └── controllers/
+    │       └── main_controller.py       # câblage vue ↔ modèle ↔ dépôt
+    └── tests/
+        ├── test_bindings.py
+        ├── test_library.py
+        ├── test_repository.py
+        ├── test_controller.py
+        └── test_view_smoke.py
 ```
 
 Règles de dépendance :
 
-- le modèle n'importe jamais Tkinter ;
+- l'état des livres et des utilisateurs vit dans le C++ ; la façade Python ne
+  fait que convertir et valider les entrées ;
 - la vue n'importe pas le modèle ; elle reçoit des `BookRow` / `UserRow`
   prêts à afficher ;
 - le contrôleur ne crée aucun widget ;
-- le dépôt centralise les accès aux fichiers ;
+- le dépôt centralise les accès aux fichiers via le `FileManager` C++ ;
 - seul `main.py` connaît les trois couches à la fois.
