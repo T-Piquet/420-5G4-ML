@@ -63,6 +63,7 @@ MENU_GROUPS = [
 ]
 
 _libc = ctypes.CDLL(None)
+_JOURNAL_SYNC = "\x00journal-sync"
 
 
 class JournalCpp:
@@ -70,6 +71,7 @@ class JournalCpp:
 
     def __init__(self):
         self._lines: "queue.Queue[str]" = queue.Queue()
+        self._synced = threading.Event()
         self._original_fd = os.dup(1)
         sys.stdout.flush()
         read_fd, write_fd = os.pipe()
@@ -81,7 +83,11 @@ class JournalCpp:
     def _read(self, read_fd):
         with os.fdopen(read_fd, "r", encoding="utf-8", errors="replace") as stream:
             for line in stream:
-                self._lines.put(line.rstrip("\n"))
+                line = line.rstrip("\n")
+                if line == _JOURNAL_SYNC:
+                    self._synced.set()
+                else:
+                    self._lines.put(line)
 
     @staticmethod
     def flush():
@@ -96,6 +102,13 @@ class JournalCpp:
             except queue.Empty:
                 break
         return lines
+
+    def drain_synced(self):
+        self.flush()
+        self._synced.clear()
+        os.write(1, f"{_JOURNAL_SYNC}\n".encode("utf-8"))
+        self._synced.wait(1.0)
+        return self.drain()
 
     def restore(self):
         sys.stdout.flush()
@@ -237,6 +250,9 @@ class LibraryApp(ctk.CTk):
             8: self._show_all_users,
             9: self._borrow_book,
             10: self._return_book,
+            11: self._show_statistics,
+            12: self._save_data,
+            13: self._create_backup,
         }
 
         sidebar = ctk.CTkScrollableFrame(self, width=250, corner_radius=0)
@@ -552,11 +568,38 @@ class LibraryApp(ctk.CTk):
             "Aucun utilisateur enregistré.",
         )
 
+    def _show_statistics(self):
+        self._reset_view("Statistiques de la bibliothèque")
+        tree = self._make_table(("Indicateur", "Valeur"), (320, 160))
+        statistics = (
+            ("Total des livres", self.library.getTotalBooks()),
+            ("Livres disponibles", self.library.getAvailableBookCount()),
+            ("Livres empruntés", self.library.getCheckedOutBookCount()),
+            ("Total des utilisateurs", len(self.library.getAllUsers())),
+        )
+        for label, value in statistics:
+            tree.insert("", "end", values=(label, value))
+
+    def _save_data(self):
+        if self.file_manager.saveLibraryData(self.library):
+            self._log("Données de la bibliothèque sauvegardées avec succès !")
+        else:
+            self._log("Erreur lors de la sauvegarde des données de la bibliothèque.")
+
+    def _create_backup(self):
+        try:
+            self.file_manager.createBackup()
+        except Exception:
+            self._log("Erreur lors de la création de la sauvegarde.")
+        else:
+            for line in self.journal_cpp.drain_synced():
+                self._append_journal(line)
+
     def _load_data(self):
         print(f"Chargement des données depuis {self.data_dir}…")
-        JournalCpp.flush()
         self.file_manager.loadLibraryData(self.library)
-        JournalCpp.flush()
+        for line in self.journal_cpp.drain_synced():
+            self._append_journal(line)
         self._refresh_status()
 
     def _refresh_status(self):
@@ -572,8 +615,7 @@ class LibraryApp(ctk.CTk):
         )
 
     def _log(self, message):
-        JournalCpp.flush()
-        for line in self.journal_cpp.drain():
+        for line in self.journal_cpp.drain_synced():
             self._append_journal(line)
         self._append_journal(message)
 
@@ -592,8 +634,9 @@ class LibraryApp(ctk.CTk):
         if self._poll_id is not None:
             self.after_cancel(self._poll_id)
             self._poll_id = None
-        JournalCpp.flush()
-        for line in self.journal_cpp.drain():
+        self._append_journal("Sauvegarde des données avant la fermeture…")
+        self.file_manager.saveLibraryData(self.library)
+        for line in self.journal_cpp.drain_synced():
             self._append_journal(line)
         self.journal_cpp.restore()
         self.destroy()

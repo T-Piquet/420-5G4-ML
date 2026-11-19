@@ -25,11 +25,12 @@ Docs, UI strings, comments, and commit messages are in French; keep that convent
 
 ## agent/gui/ (Python UI)
 - `main.py` is the customtkinter UI (sidebar with the 13 CLI actions, content area, journal, status bar); dependencies in `requirements.txt` (`customtkinter==5.2.2`).
-- Actions are enabled step by step; actions 3/4 (`FormDialog` query) and 5/6/8 display results in `ttk.Treeview` tables; actions 1 (add book) and 7 (add user) use the modal `FormDialog`, check duplicates via `findBookByISBN`/`findUserById`, log the CLI-style message and refresh the list; the user ID is auto-generated (`USRnnn`, next free number) and shown read-only.
-- Actions 2 (delete by ISBN), 9 (check out with ISBN + user ID) and 10 (return by ISBN) use `FormDialog` too, log the CLI success/error message and refresh the book list on success. Actions 11/12/13 are still disabled.
+- Actions 3/4 (`FormDialog` query) and 5/6/8 display results in `ttk.Treeview` tables; actions 1 (add book) and 7 (add user) use the modal `FormDialog`, check duplicates via `findBookByISBN`/`findUserById`, log the CLI-style message and refresh the list; the user ID is auto-generated (`USRnnn`, next free number) and shown read-only.
+- Actions 2 (delete by ISBN), 9 (check out with ISBN + user ID) and 10 (return by ISBN) use `FormDialog` too, log the CLI success/error message and refresh the book list on success.
+- Action 11 shows statistics in a 2-column `ttk.Treeview`; action 12 saves and logs the CLI message; action 13 creates the `*.backup` files. All 13 actions are now enabled.
 - `FormDialog` grabs the window only once it is visible (`wait_visibility` + `grab_set` in `_build`, never in `__init__`), avoiding `grab failed: window not viewable`.
-- The UI only loads data (no save): additions/removals/loans stay in memory until the save step.
-- C++ `std::cout` messages (loading, saving) are captured for the journal by redirecting file descriptor 1 to a pipe read by a daemon thread; `fflush` is called after each bound call. No temporary files.
+- Changes stay in memory until action 12 or the automatic save on window close (like CLI option 0). Action 13 overwrites existing `*.backup` files (`createBackup()` uses `copy_options::overwrite_existing`); the UI still catches exceptions to log an error instead of crashing.
+- C++ `std::cout` messages (loading, saving) are captured for the journal by redirecting file descriptor 1 to a pipe read by a daemon thread; `fflush` is called after each bound call and `drain_synced()` writes a marker through the pipe so C++ lines are journaled before the Python message. No temporary files.
 - `binding/bindings.cpp` exposes the C++ core (`Book`, `User`, `Library`, `FileManager`) as the `bibliotheque_core` module. It is built with the C++ target above (no separate command); pybind11 is only needed at build time.
 - The UI imports the module by adding `agent/build` to `sys.path` (relative to `main.py`).
 - The data directory defaults to `agent/data` (option `-d/--data-dir`); tests use that directory — keep `git status` clean.
