@@ -58,11 +58,69 @@ Pour connecter le programme C++ à la base de données, j'utiliserais **ODBC** a
 
 Si la bibliothèque devient encore plus grande et que plusieurs personnes doivent utiliser le système en même temps, je pourrais créer une API REST pour permettre à différentes applications d'accéder aux mêmes données. Cela rendrait le système plus facile à faire évoluer.
 
-# Partie 3 : Interface graphique
+# Partie 3 : Interface graphique (customTkinter + pybind11)
 
-## Outils IA utilisés
-- **opencode + Ollama (Gemma 4 E4B, local)** : essais de `/init` et de planification
-  (voir `chatsLogs/`). Le modèle local, trop petit (~4B paramètres), n'arrivait pas
-  à utiliser ses outils pour lire le projet.
-- **Claude (claude.ai)**, avec l'accord:    planification (`plan.md`),
-  rédaction de `AGENTS.md`, explications et une partie du code.
+Le menu en ligne de commande est remplacé par une interface graphique Python
+(customTkinter) qui appelle directement la logique C++ du TP grâce à pybind11.
+La logique C++ (`book`, `user`, `library`, `filemanager`, `activitylogger`) n'a pas été modifiée.
+
+## Lancer l'application
+Dans le devcontainer (dossier `agent/`) :
+
+1. Compiler le module Python `biblio` :
+   ```
+   g++ -O2 -shared -std=c++17 -fPIC $(python3 -m pybind11 --includes) python/bindings.cpp book.cpp user.cpp library.cpp filemanager.cpp activitylogger.cpp -o python/biblio$(python3-config --extension-suffix)
+   ```
+2. Lancer l'interface :
+   ```
+   cd python && python3 app.py
+   ```
+3. La fenêtre s'affiche dans le bureau virtuel : http://localhost:6080 (mot de passe `vscode`).
+
+Test sans interface : `cd python && python3 test_biblio.py`.
+
+## Fonctionnalités
+| Onglet / bouton | Menu d'origine | Fonction |
+|---|---|---|
+| Livres | 1 à 6, 14 | tableau des livres, recherche par titre/auteur, filtre « disponibles seulement », tri, ajout, suppression |
+| Utilisateurs | 7, 8 | liste des utilisateurs, ajout avec ID généré automatiquement |
+| Emprunts | 9, 10 | emprunter un livre disponible, retourner un livre emprunté |
+| Statistiques | 11 | total, disponibles, empruntés, nombre d'utilisateurs (mis à jour après chaque action) |
+| Sauvegarder / Créer une sauvegarde / Quitter | 12, 13, 0 | sauvegarde des fichiers, copie `.backup`, sauvegarde avant de quitter (aussi avec le X) |
+
+Chaque action est consignée dans `data/journal.log` avec `ActivityLogger`.
+
+## Décisions de conception
+- La GUI n'utilise pas les méthodes `display...()` (elles écrivent avec `cout`) : elle utilise
+  les méthodes qui retournent des données (`getAllBooks()`, getters…). Le tri se fait en Python.
+- `Library` possède ses objets (`unique_ptr`) : les méthodes qui retournent `Book*` / `User*`
+  sont exposées avec `return_value_policy::reference_internal` pour que Python ne les détruise pas.
+- La journalisation était faite dans `main.cpp` : la GUI appelle donc `ActivityLogger` elle-même.
+- Les vérifications manquantes du C++ sont faites dans la GUI : `addBook` n'empêche pas un ISBN
+  en double et `removeBook` accepte de supprimer un livre emprunté.
+- `createBackup()` lance une exception si un `.backup` existe déjà (`filesystem::copy_file` sans
+  écrasement) : la GUI l'attrape et affiche un message au lieu de planter.
+
+## Outils IA utilisés et méthode
+- **Claude (claude.ai)**, avec l'accord de l'enseignant : plan de travail (`plan.md`), rédaction
+  de `AGENTS.md`, code des liaisons pybind11 (`python/bindings.cpp`), explications, et
+  vérification du code produit par opencode à chaque étape.
+- **opencode** : `/init` avec Gemma 4 E4B en local (Ollama) a échoué, le modèle (~4B paramètres)
+  n'arrivait pas à utiliser ses outils. Les cloud models d'Ollama demandaient des crédits payants.
+  J'ai ensuite utilisé le modèle gratuit « Big Pickle » d'opencode pour le test du module et
+  tous les écrans de la GUI (sessions 03 à 12 dans `chatsLogs/`).
+- **Méthode** : une petite étape à la fois (une étape de `plan.md` = un commit), un prompt précis
+  par étape, test dans la fenêtre, export de la session, puis commit fait par moi.
+
+## Ce que j'ai appris en vérifiant l'agent
+L'agent a affirmé plusieurs fois que le travail était terminé alors qu'il ne l'était pas
+(la « fausse validation » vue en cours) :
+- **Onglet Utilisateurs (session 08)** : il a écrit les méthodes mais pas les widgets ; quand je
+  lui ai redemandé, il a répondu « Déjà présent… Aucun changement fait », ce qui était faux.
+  Il a fallu lui citer les lignes exactes du fichier pour qu'il corrige.
+- **Onglet Emprunts (session 09)** : même erreur, et cette fois l'application plantait au démarrage
+  (`AttributeError`) parce que `__init__` appelait une méthode qui utilisait des widgets inexistants.
+- **Statistiques (session 10)** : le rafraîchissement n'était ajouté qu'à la moitié des endroits demandés.
+
+Conclusion : avec un modèle non SOTA, il faut des étapes courtes, des prompts très précis
+(« crée les widgets dans `__init__` »), et toujours relire le fichier et tester avant de commiter.

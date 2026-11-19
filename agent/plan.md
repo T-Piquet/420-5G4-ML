@@ -29,8 +29,8 @@ Plan élaboré avec Claude (claude.ai), avec l'accord de l'enseignant.
 - [x] B6. Onglet Emprunts : emprunter / retourner un livre
 - [x] B7. Onglet Statistiques : total, disponibles, empruntés, utilisateurs
 - [x] B8. Boutons Sauvegarder / Créer une sauvegarde / Quitter (sauvegarde avant de quitter)
-- [ ] B9. Journalisation de chaque action via `ActivityLogger`
+- [x] B9. Journalisation de chaque action via `ActivityLogger`
 
 ### C. Finition
-- [ ] C1. Messages d'erreur clairs (ISBN déjà existant, livre introuvable, livre déjà emprunté…)
-- [ ] C2. Mettre à jour `AGENTS.md` et `README.md` (comment lancer la GUI)
+- [x] C1. Messages d'erreur clairs (ISBN déjà existant, livre introuvable, livre déjà emprunté…)
+- [x] C2. Mettre à jour `AGENTS.md` et `README.md` (comment lancer la GUI)

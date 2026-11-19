@@ -49,10 +49,10 @@ Lancer la GUI :
    Le tri (option 14) doit retourner une liste triée au lieu de l'afficher.
 2. **La journalisation est faite dans `main.cpp`**, pas dans `Library`.
    Si la GUI appelle seulement `Library`, rien ne sera journalisé.
-   → Décision à prendre : la GUI appelle `ActivityLogger`, ou on déplace la journalisation dans `Library`.
+   → **Décision prise** : la GUI appelle `ActivityLogger` après chaque action (comme `main.cpp`).
 3. **`Library` possède les objets** (`unique_ptr`) : les méthodes qui retournent `Book*` / `User*`
    doivent être exposées dans pybind11 avec une politique de retour qui **ne détruit pas** les objets
-   (`return_value_policy::reference`).
+   (`return_value_policy::reference_internal`, fait dans `python/bindings.cpp`).
 4. Ne pas modifier le comportement de la logique C++ existante sans raison : la GUI s'appuie dessus.
 
 ## Méthode de travail
@@ -66,8 +66,8 @@ Lancer la GUI :
 ## État d'avancement
 - [x] Logique C++ (TP) terminée
 - [x] Environnement : devcontainer, opencode + Ollama, bureau noVNC (port 6080) pour afficher la GUI
-- [ ] Phase 1 : plan validé (`plan.md`)
-- [ ] Test pybind11 minimal (une fonction)
-- [ ] Exposer `Book` et `User`
-- [ ] Exposer `Library`, `FileManager`, `ActivityLogger`
-- [ ] Écrans de la GUI
+- [x] Phase 1 : plan validé (`plan.md`)
+- [x] Exposer `Book` et `User`
+- [x] Exposer `Library`, `FileManager`, `ActivityLogger` (testé avec `python/test_biblio.py`)
+- [x] Écrans de la GUI : Livres, Utilisateurs, Emprunts, Statistiques, Sauvegarder / Quitter
+- [x] Messages d'erreur et documentation (`README.md`)
