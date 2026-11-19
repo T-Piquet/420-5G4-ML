@@ -136,6 +136,8 @@ class LibraryApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         actions = {
+            3: self._search_by_title,
+            4: self._search_by_author,
             5: self._show_all_books,
             6: self._show_available_books,
             8: self._show_all_users,
@@ -306,6 +308,32 @@ class LibraryApp(ctk.CTk):
                     ", ".join(isbns) or "—",
                 ),
             )
+
+    def _prompt_search(self, title, text):
+        query = ctk.CTkInputDialog(title=title, text=text).get_input()
+        if query is None:
+            return None
+        return query.strip() or None
+
+    def _search_by_title(self):
+        query = self._prompt_search("Recherche par titre", "Entrez le titre à rechercher :")
+        if query is None:
+            return
+        self._display_books(
+            f"Recherche par titre : « {query} »",
+            self.library.searchBooksByTitle(query),
+            "Aucun livre trouvé avec ce titre.",
+        )
+
+    def _search_by_author(self):
+        query = self._prompt_search("Recherche par auteur", "Entrez l'auteur à rechercher :")
+        if query is None:
+            return
+        self._display_books(
+            f"Recherche par auteur : « {query} »",
+            self.library.searchBooksByAuthor(query),
+            "Aucun livre trouvé de cet auteur.",
+        )
 
     def _show_all_books(self):
         self._display_books(
