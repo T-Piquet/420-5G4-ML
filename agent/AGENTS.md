@@ -24,7 +24,9 @@ Docs, UI strings, comments, and commit messages are in French; keep that convent
 - No tests. Verification = warning-free build (`-Wall -Wextra -Wpedantic`) plus a manual CLI run.
 
 ## agent/gui/ (Python UI)
-- `main.py` is the customtkinter UI; dependencies in `requirements.txt` (`customtkinter==5.2.2`).
+- `main.py` is the customtkinter UI (sidebar with the 13 CLI actions, content area, journal, status bar); dependencies in `requirements.txt` (`customtkinter==5.2.2`).
+- Actions are enabled step by step; at this stage they are disabled and the UI only loads data (no save).
+- C++ `std::cout` messages (loading, saving) are captured for the journal by redirecting file descriptor 1 to a pipe read by a daemon thread; `fflush` is called after each bound call. No temporary files.
 - `binding/bindings.cpp` exposes the C++ core (`Book`, `User`, `Library`, `FileManager`) as the `bibliotheque_core` module. It is built with the C++ target above (no separate command); pybind11 is only needed at build time.
 - The UI imports the module by adding `agent/build` to `sys.path` (relative to `main.py`).
 - The data directory defaults to `agent/data` (option `-d/--data-dir`); tests use that directory — keep `git status` clean.
