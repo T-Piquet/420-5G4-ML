@@ -25,7 +25,9 @@ Docs, UI strings, comments, and commit messages are in French; keep that convent
 
 ## agent/gui/ (Python UI)
 - `main.py` is the customtkinter UI (sidebar with the 13 CLI actions, content area, journal, status bar); dependencies in `requirements.txt` (`customtkinter==5.2.2`).
-- Actions are enabled step by step; actions 3 (search by title) and 4 (search by author) prompt for a query (`CTkInputDialog`) and display the results in the same table as action 5 (all books), 6 (available books) and 8 (all users) with `ttk.Treeview`; the others are still disabled. The UI only loads data (no save).
+- Actions are enabled step by step; actions 3/4 (`FormDialog` query) and 5/6/8 display results in `ttk.Treeview` tables; actions 1 (add book) and 7 (add user) use the modal `FormDialog`, check duplicates via `findBookByISBN`/`findUserById`, log the CLI-style message and refresh the list; the user ID is auto-generated (`USRnnn`, next free number) and shown read-only. The others are still disabled.
+- `FormDialog` grabs the window only once it is visible (`wait_visibility` + `grab_set` in `_build`, never in `__init__`), avoiding `grab failed: window not viewable`.
+- The UI only loads data (no save): additions stay in memory until the save step.
 - C++ `std::cout` messages (loading, saving) are captured for the journal by redirecting file descriptor 1 to a pipe read by a daemon thread; `fflush` is called after each bound call. No temporary files.
 - `binding/bindings.cpp` exposes the C++ core (`Book`, `User`, `Library`, `FileManager`) as the `bibliotheque_core` module. It is built with the C++ target above (no separate command); pybind11 is only needed at build time.
 - The UI imports the module by adding `agent/build` to `sys.path` (relative to `main.py`).

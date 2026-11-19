@@ -4,6 +4,7 @@ import argparse
 import ctypes
 import os
 import queue
+import re
 import sys
 import threading
 from pathlib import Path
@@ -104,6 +105,96 @@ class JournalCpp:
             os.close(self._original_fd)
 
 
+class FormDialog(ctk.CTkToplevel):
+    """Boîte de dialogue modale avec plusieurs champs de saisie."""
+
+    def __init__(self, master, title, fields, presets=None):
+        super().__init__(master)
+        self._fields = fields
+        self._presets = presets or {}
+        self._entries = []
+        self._result = None
+        self.title(title)
+        self.resizable(False, False)
+        self.transient(master)
+        self.protocol("WM_DELETE_WINDOW", self._cancel)
+        self.bind("<Return>", lambda event: self._ok())
+        self.bind("<Escape>", lambda event: self._cancel())
+        self.after(10, self._build)
+
+    def _build(self):
+        self.grid_columnconfigure(0, weight=1)
+        row = 0
+        for index, label in enumerate(self._fields):
+            ctk.CTkLabel(self, text=label, anchor="w").grid(
+                row=row,
+                column=0,
+                sticky="ew",
+                padx=16,
+                pady=(16 if index == 0 else 8, 0),
+            )
+            row += 1
+            entry = ctk.CTkEntry(self, width=300)
+            if index in self._presets:
+                entry.insert(0, self._presets[index])
+                entry.configure(state="disabled", text_color=("#dce4ee", "#dce4ee"))
+            entry.grid(row=row, column=0, sticky="ew", padx=16, pady=(2, 0))
+            self._entries.append(entry)
+            row += 1
+
+        self._error_label = ctk.CTkLabel(
+            self, text="", anchor="w", text_color="#e07a7a"
+        )
+        self._error_label.grid(row=row, column=0, sticky="ew", padx=16, pady=(8, 0))
+        row += 1
+
+        buttons = ctk.CTkFrame(self, fg_color="transparent")
+        buttons.grid(row=row, column=0, sticky="e", padx=16, pady=16)
+        ctk.CTkButton(
+            buttons, text="Annuler", width=100, command=self._cancel
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(buttons, text="Valider", width=100, command=self._ok).pack(
+            side="left"
+        )
+
+        editable = [
+            entry
+            for index, entry in enumerate(self._entries)
+            if index not in self._presets
+        ]
+        if editable:
+            editable[0].focus_set()
+
+        self.update_idletasks()
+        x = self.master.winfo_rootx() + (self.master.winfo_width() - self.winfo_width()) // 2
+        y = self.master.winfo_rooty() + (self.master.winfo_height() - self.winfo_height()) // 3
+        self.geometry(f"+{max(x, 0)}+{max(y, 0)}")
+
+        try:
+            self.wait_visibility()
+            self.grab_set()
+        except TclError:
+            pass
+
+    def _ok(self):
+        if not self._entries:
+            return
+        values = [entry.get().strip() for entry in self._entries]
+        if any(not value for value in values):
+            self._error_label.configure(text="Tous les champs sont obligatoires.")
+            return
+        self._result = values
+        self.destroy()
+
+    def _cancel(self):
+        self._result = None
+        self.destroy()
+
+    def show(self):
+        self.wait_window(self)
+        return self._result
+
+
 class LibraryApp(ctk.CTk):
     def __init__(self, data_dir):
         super().__init__()
@@ -136,8 +227,10 @@ class LibraryApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         actions = {
+            1: self._add_book,
             3: self._search_by_title,
             4: self._search_by_author,
+            7: self._add_user,
             5: self._show_all_books,
             6: self._show_available_books,
             8: self._show_all_users,
@@ -309,14 +402,70 @@ class LibraryApp(ctk.CTk):
                 ),
             )
 
-    def _prompt_search(self, title, text):
-        query = ctk.CTkInputDialog(title=title, text=text).get_input()
-        if query is None:
+    def _prompt_fields(self, title, fields, presets=None):
+        return FormDialog(self, title, fields, presets).show()
+
+    def _add_book(self):
+        values = self._prompt_fields("Ajouter un livre", ["Titre", "Auteur", "ISBN"])
+        if values is None:
+            return
+        title, author, isbn = values
+        if self.library.findBookByISBN(isbn):
+            self._log(f"Erreur : Un livre avec l'ISBN {isbn} existe déjà.")
+            return
+        self.library.addBook(core.Book(title, author, isbn))
+        self._log("Livre ajouté avec succès !")
+        self._refresh_status()
+        self._show_all_books()
+        self._scroll_to_last_row()
+
+    def _next_user_id(self):
+        highest = 0
+        for user in self.library.getAllUsers():
+            match = re.fullmatch(r"USR(\d+)", user.getUserId())
+            if match:
+                highest = max(highest, int(match.group(1)))
+        number = highest + 1
+        candidate = f"USR{number:03d}"
+        while self.library.findUserById(candidate):
+            number += 1
+            candidate = f"USR{number:03d}"
+        return candidate
+
+    def _add_user(self):
+        user_id = self._next_user_id()
+        values = self._prompt_fields(
+            "Ajouter un utilisateur",
+            ["Nom", "Identifiant"],
+            presets={1: user_id},
+        )
+        if values is None:
+            return
+        name, user_id = values
+        if self.library.findUserById(user_id):
+            self._log(f"Erreur : Un utilisateur avec l'ID {user_id} existe déjà.")
+            return
+        self.library.addUser(core.User(name, user_id))
+        self._log("Utilisateur ajouté avec succès !")
+        self._refresh_status()
+        self._show_all_users()
+        self._scroll_to_last_row()
+
+    def _scroll_to_last_row(self):
+        if self.current_tree is None:
+            return
+        children = self.current_tree.get_children()
+        if children:
+            self.current_tree.see(children[-1])
+
+    def _prompt_search(self, title, label):
+        values = FormDialog(self, title, [label]).show()
+        if values is None:
             return None
-        return query.strip() or None
+        return values[0].strip() or None
 
     def _search_by_title(self):
-        query = self._prompt_search("Recherche par titre", "Entrez le titre à rechercher :")
+        query = self._prompt_search("Recherche par titre", "Titre à rechercher")
         if query is None:
             return
         self._display_books(
@@ -326,7 +475,7 @@ class LibraryApp(ctk.CTk):
         )
 
     def _search_by_author(self):
-        query = self._prompt_search("Recherche par auteur", "Entrez l'auteur à rechercher :")
+        query = self._prompt_search("Recherche par auteur", "Auteur à rechercher")
         if query is None:
             return
         self._display_books(
@@ -374,6 +523,12 @@ class LibraryApp(ctk.CTk):
                 f"{empruntes} empruntés · {utilisateurs} utilisateurs"
             )
         )
+
+    def _log(self, message):
+        JournalCpp.flush()
+        for line in self.journal_cpp.drain():
+            self._append_journal(line)
+        self._append_journal(message)
 
     def _append_journal(self, line):
         self.journal.configure(state="normal")
