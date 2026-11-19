@@ -30,7 +30,7 @@ class Application(customtkinter.CTk):
         tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
         onglet_livres = tabview.add("Livres")
-        tabview.add("Utilisateurs")
+        onglet_utilisateurs = tabview.add("Utilisateurs")
         tabview.add("Emprunts")
         tabview.add("Statistiques")
 
@@ -110,7 +110,37 @@ class Application(customtkinter.CTk):
         )
         bouton_supprimer_livre.pack(side="left", padx=5, pady=5)
 
+        colonnes_utilisateurs = ("id", "nom", "nb_emprunts")
+        self.tree_utilisateurs = ttk.Treeview(
+            onglet_utilisateurs,
+            columns=colonnes_utilisateurs,
+            show="headings",
+        )
+        self.tree_utilisateurs.heading("id", text="ID")
+        self.tree_utilisateurs.heading("nom", text="Nom")
+        self.tree_utilisateurs.heading("nb_emprunts", text="Livres empruntés")
+        self.tree_utilisateurs.column("id", width=120)
+        self.tree_utilisateurs.column("nom", width=300)
+        self.tree_utilisateurs.column("nb_emprunts", width=180)
+        self.tree_utilisateurs.pack(fill="both", expand=True, padx=5, pady=5)
+
+        cadre_ajout_utilisateur = customtkinter.CTkFrame(onglet_utilisateurs)
+        cadre_ajout_utilisateur.pack(fill="x", padx=5, pady=5)
+
+        self.entree_nom_utilisateur = customtkinter.CTkEntry(
+            cadre_ajout_utilisateur, placeholder_text="Nom"
+        )
+        self.entree_nom_utilisateur.pack(side="left", padx=5, pady=5)
+
+        bouton_ajouter_utilisateur = customtkinter.CTkButton(
+            cadre_ajout_utilisateur,
+            text="Ajouter un utilisateur",
+            command=self.ajouter_utilisateur,
+        )
+        bouton_ajouter_utilisateur.pack(side="left", padx=5, pady=5)
+
         self.rafraichir_livres()
+        self.rafraichir_utilisateurs()
 
     def ajouter_livre(self):
         titre = self.entree_titre_livre.get().strip()
@@ -157,6 +187,36 @@ class Application(customtkinter.CTk):
         self.journal.logBook("SUPPRESSION LIVRE", livre)
         self.bibliotheque.removeBook(isbn)
         self.rafraichir_livres()
+
+    def ajouter_utilisateur(self):
+        nom = self.entree_nom_utilisateur.get().strip()
+        if nom == "":
+            messagebox.showerror("Erreur", "Le nom est obligatoire.")
+            return
+
+        identifiant = self.bibliotheque.generateUserId()
+        utilisateur = biblio.User(nom, identifiant)
+        self.bibliotheque.addUser(utilisateur)
+        self.journal.log("AJOUT UTILISATEUR", f"{identifiant} - {nom}")
+        messagebox.showinfo("Utilisateur ajouté", f"ID créé : {identifiant}")
+        self.entree_nom_utilisateur.delete(0, "end")
+        self.rafraichir_utilisateurs()
+
+    def rafraichir_utilisateurs(self):
+        for item in self.tree_utilisateurs.get_children():
+            self.tree_utilisateurs.delete(item)
+
+        utilisateurs = sorted(self.bibliotheque.getAllUsers(), key=lambda u: u.getUserId())
+        for utilisateur in utilisateurs:
+            self.tree_utilisateurs.insert(
+                "",
+                "end",
+                values=(
+                    utilisateur.getUserId(),
+                    utilisateur.getName(),
+                    utilisateur.getNumberOfBorrowedBooks(),
+                ),
+            )
 
     def rafraichir_livres(self):
         for item in self.tree_livres.get_children():
