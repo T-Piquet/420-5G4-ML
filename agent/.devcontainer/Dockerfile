@@ -20,3 +20,14 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
 
 # ajouter installation ollama et opencode
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y \
+    curl \
+    nodejs \
+    npm
+
+RUN npm install -g @opencode/cli
+
+RUN apt-get update && apt-get install -y curl
+
+RUN curl -fsSL https://ollama.com/install.sh | sh
