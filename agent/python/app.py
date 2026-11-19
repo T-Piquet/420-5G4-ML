@@ -31,7 +31,7 @@ class Application(customtkinter.CTk):
 
         onglet_livres = tabview.add("Livres")
         onglet_utilisateurs = tabview.add("Utilisateurs")
-        tabview.add("Emprunts")
+        onglet_emprunts = tabview.add("Emprunts")
         tabview.add("Statistiques")
 
         barre_livres = customtkinter.CTkFrame(onglet_livres)
@@ -139,6 +139,107 @@ class Application(customtkinter.CTk):
         )
         bouton_ajouter_utilisateur.pack(side="left", padx=5, pady=5)
 
+        cadre_emprunt = customtkinter.CTkFrame(onglet_emprunts)
+        cadre_emprunt.pack(fill="x", padx=5, pady=5)
+
+        self.option_livre_disponible = customtkinter.CTkOptionMenu(cadre_emprunt, values=[""])
+        self.option_livre_disponible.set("")
+        self.option_livre_disponible.pack(side="left", padx=5, pady=5)
+
+        self.option_utilisateur_emprunt = customtkinter.CTkOptionMenu(cadre_emprunt, values=[""])
+        self.option_utilisateur_emprunt.set("")
+        self.option_utilisateur_emprunt.pack(side="left", padx=5, pady=5)
+
+        bouton_emprunter = customtkinter.CTkButton(
+            cadre_emprunt, text="Emprunter", command=self.emprunter_livre
+        )
+        bouton_emprunter.pack(side="left", padx=5, pady=5)
+
+        cadre_retour = customtkinter.CTkFrame(onglet_emprunts)
+        cadre_retour.pack(fill="x", padx=5, pady=5)
+
+        self.option_livre_emprunte = customtkinter.CTkOptionMenu(cadre_retour, values=[""])
+        self.option_livre_emprunte.set("")
+        self.option_livre_emprunte.pack(side="left", padx=5, pady=5)
+
+        bouton_retourner = customtkinter.CTkButton(
+            cadre_retour, text="Retourner", command=self.retourner_livre
+        )
+        bouton_retourner.pack(side="left", padx=5, pady=5)
+
+        self.rafraichir_livres()
+        self.rafraichir_utilisateurs()
+        self.rafraichir_emprunts()
+
+    def rafraichir_emprunts(self):
+        livres_disponibles = self.bibliotheque.getAvailableBooks()
+        valeurs_livres_disponibles = []
+        for livre in livres_disponibles:
+            valeurs_livres_disponibles.append(f"{livre.getISBN()} - {livre.getTitle()}")
+        if len(valeurs_livres_disponibles) == 0:
+            valeurs_livres_disponibles = [""]
+        self.option_livre_disponible.configure(values=valeurs_livres_disponibles)
+        self.option_livre_disponible.set(valeurs_livres_disponibles[0])
+
+        utilisateurs = sorted(self.bibliotheque.getAllUsers(), key=lambda u: u.getUserId())
+        valeurs_utilisateurs = []
+        for utilisateur in utilisateurs:
+            valeurs_utilisateurs.append(f"{utilisateur.getUserId()} - {utilisateur.getName()}")
+        if len(valeurs_utilisateurs) == 0:
+            valeurs_utilisateurs = [""]
+        self.option_utilisateur_emprunt.configure(values=valeurs_utilisateurs)
+        self.option_utilisateur_emprunt.set(valeurs_utilisateurs[0])
+
+        livres_empruntes = []
+        for livre in self.bibliotheque.getAllBooks():
+            if not livre.getAvailability():
+                livres_empruntes.append(f"{livre.getISBN()} - {livre.getTitle()}")
+        if len(livres_empruntes) == 0:
+            livres_empruntes = [""]
+        self.option_livre_emprunte.configure(values=livres_empruntes)
+        self.option_livre_emprunte.set(livres_empruntes[0])
+
+    def emprunter_livre(self):
+        livre_choisi = self.option_livre_disponible.get()
+        utilisateur_choisi = self.option_utilisateur_emprunt.get()
+        if livre_choisi == "" or utilisateur_choisi == "":
+            messagebox.showerror("Erreur", "Veuillez choisir un livre disponible et un utilisateur.")
+            return
+        isbn = livre_choisi.split(" - ", 1)[0]
+        identifiant = utilisateur_choisi.split(" - ", 1)[0]
+        if not self.bibliotheque.checkOutBook(isbn, identifiant):
+            messagebox.showerror("Erreur", "Emprunt impossible.")
+            return
+        livre = self.bibliotheque.findBookByISBN(isbn)
+        utilisateur = self.bibliotheque.findUserById(identifiant)
+        nom_utilisateur = ""
+        if utilisateur is not None:
+            nom_utilisateur = utilisateur.getName()
+        if livre is not None:
+            self.journal.logBook("EMPRUNT", livre, nom_utilisateur)
+        self.rafraichir_emprunts()
+        self.rafraichir_livres()
+        self.rafraichir_utilisateurs()
+
+    def retourner_livre(self):
+        livre_choisi = self.option_livre_emprunte.get()
+        if livre_choisi == "":
+            messagebox.showerror("Erreur", "Veuillez choisir un livre emprunté.")
+            return
+        isbn = livre_choisi.split(" - ", 1)[0]
+        livre = self.bibliotheque.findBookByISBN(isbn)
+        if livre is None:
+            messagebox.showerror("Erreur", "Livre introuvable.")
+            return
+        nom_utilisateur = ""
+        utilisateur = self.bibliotheque.findUserById(livre.getBorrowerId())
+        if utilisateur is not None:
+            nom_utilisateur = utilisateur.getName()
+        if not self.bibliotheque.returnBook(isbn):
+            messagebox.showerror("Erreur", "Retour impossible.")
+            return
+        self.journal.logBook("RETOUR", livre, nom_utilisateur)
+        self.rafraichir_emprunts()
         self.rafraichir_livres()
         self.rafraichir_utilisateurs()
 
@@ -162,6 +263,7 @@ class Application(customtkinter.CTk):
         self.entree_auteur_livre.delete(0, "end")
         self.entree_isbn_livre.delete(0, "end")
         self.rafraichir_livres()
+        self.rafraichir_emprunts()
 
     def supprimer_livre(self):
         selection = self.tree_livres.selection()
@@ -187,6 +289,7 @@ class Application(customtkinter.CTk):
         self.journal.logBook("SUPPRESSION LIVRE", livre)
         self.bibliotheque.removeBook(isbn)
         self.rafraichir_livres()
+        self.rafraichir_emprunts()
 
     def ajouter_utilisateur(self):
         nom = self.entree_nom_utilisateur.get().strip()
@@ -201,6 +304,7 @@ class Application(customtkinter.CTk):
         messagebox.showinfo("Utilisateur ajouté", f"ID créé : {identifiant}")
         self.entree_nom_utilisateur.delete(0, "end")
         self.rafraichir_utilisateurs()
+        self.rafraichir_emprunts()
 
     def rafraichir_utilisateurs(self):
         for item in self.tree_utilisateurs.get_children():
