@@ -1,6 +1,8 @@
 #ifndef FILEMANAGER_H
 #define FILEMANAGER_H
 
+#include <functional>
+#include <iostream>
 #include <string>
 
 #include "library.h"
@@ -11,10 +13,13 @@ class FileManager {
 private:
     string booksFileName;
     string usersFileName;
+    function<void(const string&)> report;
 
 public:
-    // Constructor
-    FileManager(const string& booksFile, const string& usersFile);
+    // Constructor (le rapporteur par défaut garde les messages du CLI)
+    FileManager(const string& booksFile, const string& usersFile,
+                function<void(const string&)> reporter =
+                    [](const string& message) { cout << message << '\n'; });
     
     // File operations
     bool saveLibraryData(Library& library);

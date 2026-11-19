@@ -6,8 +6,9 @@
 using namespace std;
 
 // Constructor
-FileManager::FileManager(const string& booksFile, const string& usersFile)
-    : booksFileName(booksFile), usersFileName(usersFile) {}
+FileManager::FileManager(const string& booksFile, const string& usersFile,
+                         function<void(const string&)> reporter)
+    : booksFileName(booksFile), usersFileName(usersFile), report(reporter) {}
 
 // Save all library data
 bool FileManager::saveLibraryData(Library& library) {
@@ -25,7 +26,7 @@ bool FileManager::loadLibraryData(Library& library) {
 bool FileManager::saveBooksToFile(Library& library) {
     ofstream file(booksFileName);
     if (!file.is_open()) {
-        cout << "Erreur : Impossible d'ouvrir " << booksFileName << " en écriture.\n";
+        report("Erreur : Impossible d'ouvrir " + booksFileName + " en écriture.");
         return false;
     }
     
@@ -42,7 +43,7 @@ bool FileManager::saveBooksToFile(Library& library) {
 bool FileManager::saveUsersToFile(Library& library) {
     ofstream file(usersFileName);
     if (!file.is_open()) {
-        cout << "Erreur : Impossible d'ouvrir " << usersFileName << " en écriture.\n";
+        report("Erreur : Impossible d'ouvrir " + usersFileName + " en écriture.");
         return false;
     }
     
@@ -59,7 +60,7 @@ bool FileManager::saveUsersToFile(Library& library) {
 bool FileManager::loadBooksFromFile(Library& library) {
     ifstream file(booksFileName);
     if (!file.is_open()) {
-        cout << "Aucun fichier de livres existant trouvé. Démarrage avec une bibliothèque vide.\n";
+        report("Aucun fichier de livres existant trouvé. Démarrage avec une bibliothèque vide.");
         return false;
     }
     
@@ -75,7 +76,7 @@ bool FileManager::loadBooksFromFile(Library& library) {
     }
     
     file.close();
-    cout << "Chargé " << count << " livre(s) depuis le fichier.\n";
+    report("Chargé " + to_string(count) + " livre(s) depuis le fichier.");
     return true;
 }
 
@@ -83,7 +84,7 @@ bool FileManager::loadBooksFromFile(Library& library) {
 bool FileManager::loadUsersFromFile(Library& library) {
     ifstream file(usersFileName);
     if (!file.is_open()) {
-        cout << "Aucun fichier d'utilisateurs existant trouvé. Démarrage sans utilisateurs enregistrés.\n";
+        report("Aucun fichier d'utilisateurs existant trouvé. Démarrage sans utilisateurs enregistrés.");
         return false;
     }
     
@@ -99,7 +100,7 @@ bool FileManager::loadUsersFromFile(Library& library) {
     }
     
     file.close();
-    cout << "Chargé " << count << " utilisateur(s) depuis le fichier.\n";
+    report("Chargé " + to_string(count) + " utilisateur(s) depuis le fichier.");
     return true;
 }
 
@@ -119,5 +120,5 @@ void FileManager::createBackup() {
         filesystem::copy_file(usersFileName, usersFileName + ".backup");
     }
     
-    cout << "Fichiers de sauvegarde créés.\n";
+    report("Fichiers de sauvegarde créés.");
 }
