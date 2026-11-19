@@ -7,6 +7,7 @@ import queue
 import sys
 import threading
 from pathlib import Path
+from tkinter import TclError, ttk
 
 import customtkinter as ctk
 
@@ -120,6 +121,9 @@ class LibraryApp(ctk.CTk):
         )
 
         self._poll_id = None
+        self.current_tree = None
+        self.buttons = {}
+        self._style_tables()
         self._build_layout()
         self._load_data()
 
@@ -130,6 +134,12 @@ class LibraryApp(ctk.CTk):
         self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
+
+        actions = {
+            5: self._show_all_books,
+            6: self._show_available_books,
+            8: self._show_all_users,
+        }
 
         sidebar = ctk.CTkScrollableFrame(self, width=250, corner_radius=0)
         sidebar.grid(row=0, column=0, sticky="nsw")
@@ -149,30 +159,174 @@ class LibraryApp(ctk.CTk):
                 font=ctk.CTkFont(size=12, weight="bold"),
             ).pack(fill="x", padx=12, pady=(12, 4))
             for number, label in items:
-                ctk.CTkButton(
+                command = actions.get(number)
+                button = ctk.CTkButton(
                     sidebar,
                     text=f"{number}. {label}",
                     anchor="w",
-                    state="disabled",
-                ).pack(fill="x", padx=10, pady=2)
+                    command=command,
+                    state="normal" if command else "disabled",
+                )
+                button.pack(fill="x", padx=10, pady=2)
+                self.buttons[number] = button
 
         content = ctk.CTkFrame(self, corner_radius=0)
         content.grid(row=0, column=1, sticky="nsew")
         content.grid_columnconfigure(0, weight=1)
         content.grid_rowconfigure(1, weight=1)
 
+        self.view_title = ctk.CTkLabel(
+            content,
+            text="Bienvenue",
+            anchor="w",
+            font=ctk.CTkFont(size=18, weight="bold"),
+        )
+        self.view_title.grid(row=0, column=0, sticky="ew", padx=16, pady=(16, 8))
+
+        self.result_frame = ctk.CTkFrame(content, corner_radius=0, fg_color="transparent")
+        self.result_frame.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 8))
+        self.result_frame.grid_rowconfigure(0, weight=1)
+        self.result_frame.grid_columnconfigure(0, weight=1)
+
         ctk.CTkLabel(
             content,
             text="Journal",
             anchor="w",
-            font=ctk.CTkFont(size=18, weight="bold"),
-        ).grid(row=0, column=0, sticky="ew", padx=16, pady=(16, 8))
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 4))
 
-        self.journal = ctk.CTkTextbox(content, wrap="word", state="disabled")
-        self.journal.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
+        self.journal = ctk.CTkTextbox(content, wrap="word", state="disabled", height=110)
+        self.journal.grid(row=3, column=0, sticky="ew", padx=16, pady=(0, 16))
 
         self.status = ctk.CTkLabel(self, text="Chargement…", anchor="w", height=28)
         self.status.grid(row=1, column=0, columnspan=2, sticky="ew", padx=12)
+
+        self._show_message("Sélectionnez une action dans le menu de gauche.")
+
+    def _style_tables(self):
+        style = ttk.Style(self)
+        try:
+            style.theme_use("clam")
+        except TclError:
+            pass
+        style.configure(
+            "Treeview",
+            background="#2b2b2b",
+            foreground="#dce4ee",
+            fieldbackground="#2b2b2b",
+            bordercolor="#3a3a3a",
+            borderwidth=0,
+            rowheight=26,
+        )
+        style.configure(
+            "Treeview.Heading",
+            background="#333333",
+            foreground="#dce4ee",
+            relief="flat",
+        )
+        style.map("Treeview", background=[("selected", "#1f6aa5")])
+        style.map("Treeview.Heading", background=[("active", "#3a3a3a")])
+
+    def _reset_view(self, title):
+        self.view_title.configure(text=title)
+        self.current_tree = None
+        for child in self.result_frame.winfo_children():
+            child.destroy()
+
+    def _show_message(self, text):
+        for child in self.result_frame.winfo_children():
+            child.destroy()
+        self.current_tree = None
+        ctk.CTkLabel(self.result_frame, text=text, anchor="w").grid(
+            row=0, column=0, sticky="nw", padx=4, pady=4
+        )
+
+    def _make_table(self, columns, widths):
+        container = ctk.CTkFrame(self.result_frame, corner_radius=0)
+        container.grid(row=0, column=0, sticky="nsew")
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        tree = ttk.Treeview(container, columns=columns, show="headings", selectmode="browse")
+        for column, width in zip(columns, widths):
+            tree.heading(column, text=column)
+            tree.column(column, width=width, anchor="w", stretch=True)
+
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
+        tree.configure(yscrollcommand=scrollbar.set)
+        tree.grid(row=0, column=0, sticky="nsew")
+        scrollbar.grid(row=0, column=1, sticky="ns")
+
+        self.current_tree = tree
+        return tree
+
+    def _display_books(self, title, books, empty_message):
+        self._reset_view(f"{title} ({len(books)})")
+        if not books:
+            self._show_message(empty_message)
+            return
+
+        tree = self._make_table(
+            ("Titre", "Auteur", "ISBN", "Statut", "Emprunteur"),
+            (260, 180, 140, 100, 110),
+        )
+        for book in books:
+            disponible = book.getAvailability()
+            tree.insert(
+                "",
+                "end",
+                values=(
+                    book.getTitle(),
+                    book.getAuthor(),
+                    book.getISBN(),
+                    "Disponible" if disponible else "Emprunté",
+                    "—" if disponible else (book.getBorrowerId() or "—"),
+                ),
+            )
+
+    def _display_users(self, title, users, empty_message):
+        self._reset_view(f"{title} ({len(users)})")
+        if not users:
+            self._show_message(empty_message)
+            return
+
+        tree = self._make_table(
+            ("Nom", "Identifiant", "Emprunts", "ISBN empruntés"),
+            (200, 130, 90, 380),
+        )
+        for user in users:
+            isbns = list(user.getBorrowedBooks())
+            tree.insert(
+                "",
+                "end",
+                values=(
+                    user.getName(),
+                    user.getUserId(),
+                    len(isbns),
+                    ", ".join(isbns) or "—",
+                ),
+            )
+
+    def _show_all_books(self):
+        self._display_books(
+            "Tous les livres",
+            self.library.getAllBooks(),
+            "Aucun livre dans la bibliothèque.",
+        )
+
+    def _show_available_books(self):
+        self._display_books(
+            "Livres disponibles",
+            self.library.getAvailableBooks(),
+            "Aucun livre disponible pour emprunt.",
+        )
+
+    def _show_all_users(self):
+        self._display_users(
+            "Tous les utilisateurs",
+            self.library.getAllUsers(),
+            "Aucun utilisateur enregistré.",
+        )
 
     def _load_data(self):
         print(f"Chargement des données depuis {self.data_dir}…")
