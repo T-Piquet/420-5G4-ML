@@ -126,7 +126,7 @@ class MainWindow(ctk.CTk):
 
         self.save_button = ctk.CTkButton(
             save_block,
-            text="Sauvegarder",
+            text="Sauvegarder données",
             height=40,
             corner_radius=8,
             fg_color=config.COLOR_ACCENT,
