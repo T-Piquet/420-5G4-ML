@@ -45,7 +45,7 @@ L'interface s'ouvre sur `agent/data/` et avertit que la sauvegarde réécrit ces
 
 L'interface et le module Python (`.so`) restent dans le conteneur Linux ; seule la fenêtre tk est affichée sur Windows via un serveur X.
 
-1. Sur Windows, installer **VcXsrv** (ou Xming). Le lancer avec `Multiple windows` → `Start no client` et cocher **Disable access control** : le conteneur se connecte depuis une autre IP. Autoriser VcXsrv dans le pare-feu Windows.
+1. Sur Windows, installer **VcXsrv** https://github.com/marchaesen/vcxsrv/releases. Le lancer avec `Multiple windows` → `Start no client` et cocher **Disable access control** : le conteneur se connecte depuis une autre IP. Autoriser VcXsrv dans le pare-feu Windows.
 2. `.devcontainer/devcontainer.json` est déjà configuré :
 
    ```jsonc
