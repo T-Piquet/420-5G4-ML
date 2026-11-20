@@ -31,3 +31,5 @@ cd UI
 ```
 
 Voir `UI/README.md` pour la structure MVC, le format des données et les tests.
+
+Fin du vibecoding de l'interface UI en Python et connexion entre UI et le code C++ par Thomas Vo.
