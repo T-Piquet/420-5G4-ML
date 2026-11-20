@@ -19,4 +19,11 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     zstd \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
 
-# ajouter installation ollama et opencode
+# Installation de opencode (Ollama tourne sur la machine hote, voir opencode.json)
+RUN su vscode -c "curl -fsSL https://opencode.ai/install | bash"
+
+# customtkinter dans un venv qui voit les paquets systeme (tkinter, pybind11)
+RUN python3 -m venv --system-site-packages /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir customtkinter
+
+ENV PATH="/opt/venv/bin:/home/vscode/.opencode/bin:${PATH}"

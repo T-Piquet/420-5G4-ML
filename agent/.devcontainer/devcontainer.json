@@ -7,13 +7,14 @@
 	},
 	
 // Monter le socket X11 hôte dans le conteneur
+  // (Windows + Docker Desktop : le serveur X de WSLg)
   "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
+    "source=/run/desktop/mnt/host/wslg/.X11-unix,target=/tmp/.X11-unix,type=bind"
   ],
-  
+
   // Transmettre la variable d'affichage
   "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}"
+    "DISPLAY": ":0"
   },
   
   // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
