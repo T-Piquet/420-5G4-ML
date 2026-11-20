@@ -2,6 +2,7 @@
 #include <iostream>
 #include <filesystem>
 #include "filemanager.h"
+#include "console_color.h"
 
 using namespace std;
 
@@ -25,7 +26,7 @@ bool FileManager::loadLibraryData(Library& library) {
 bool FileManager::saveBooksToFile(Library& library) {
     ofstream file(booksFileName);
     if (!file.is_open()) {
-        cout << "Erreur : Impossible d'ouvrir " << booksFileName << " en écriture.\n";
+        cout << Color::bold_red() << "Erreur : Impossible d'ouvrir " << booksFileName << " en écriture." << Color::reset() << "\n";
         return false;
     }
     
@@ -42,7 +43,7 @@ bool FileManager::saveBooksToFile(Library& library) {
 bool FileManager::saveUsersToFile(Library& library) {
     ofstream file(usersFileName);
     if (!file.is_open()) {
-        cout << "Erreur : Impossible d'ouvrir " << usersFileName << " en écriture.\n";
+        cout << Color::bold_red() << "Erreur : Impossible d'ouvrir " << usersFileName << " en écriture." << Color::reset() << "\n";
         return false;
     }
     
@@ -59,7 +60,7 @@ bool FileManager::saveUsersToFile(Library& library) {
 bool FileManager::loadBooksFromFile(Library& library) {
     ifstream file(booksFileName);
     if (!file.is_open()) {
-        cout << "Aucun fichier de livres existant trouvé. Démarrage avec une bibliothèque vide.\n";
+        cout << Color::yellow() << "Aucun fichier de livres existant trouvé. Démarrage avec une bibliothèque vide." << Color::reset() << "\n";
         return false;
     }
     
@@ -75,7 +76,7 @@ bool FileManager::loadBooksFromFile(Library& library) {
     }
     
     file.close();
-    cout << "Chargé " << count << " livre(s) depuis le fichier.\n";
+    cout << Color::green() << "Chargé " << count << " livre(s) depuis le fichier." << Color::reset() << "\n";
     return true;
 }
 
@@ -83,7 +84,7 @@ bool FileManager::loadBooksFromFile(Library& library) {
 bool FileManager::loadUsersFromFile(Library& library) {
     ifstream file(usersFileName);
     if (!file.is_open()) {
-        cout << "Aucun fichier d'utilisateurs existant trouvé. Démarrage sans utilisateurs enregistrés.\n";
+        cout << Color::yellow() << "Aucun fichier d'utilisateurs existant trouvé. Démarrage sans utilisateurs enregistrés." << Color::reset() << "\n";
         return false;
     }
     
@@ -99,7 +100,7 @@ bool FileManager::loadUsersFromFile(Library& library) {
     }
     
     file.close();
-    cout << "Chargé " << count << " utilisateur(s) depuis le fichier.\n";
+    cout << Color::green() << "Chargé " << count << " utilisateur(s) depuis le fichier." << Color::reset() << "\n";
     return true;
 }
 
@@ -119,5 +120,5 @@ void FileManager::createBackup() {
         filesystem::copy_file(usersFileName, usersFileName + ".backup");
     }
     
-    cout << "Fichiers de sauvegarde créés.\n";
+    cout << Color::green() << "Fichiers de sauvegarde créés." << Color::reset() << "\n";
 }

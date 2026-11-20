@@ -1,24 +1,20 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	
-// Monter le socket X11 hôte dans le conteneur
-  "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
-  ],
-  
-  // Transmettre la variable d'affichage
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}"
+  "name": "C++",
+  "build": {
+    "dockerfile": "Dockerfile"
   },
-  
-  // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
-  "runArgs": [
-    "--net=host"
-  ],
 
+  // Sur un hote Windows, /tmp/.X11-unix n'existe pas : on garde ce mount commente
+  // et on passe par le serveur X de Windows en TCP (host.docker.internal).
+  // "mounts": ["source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"],
+
+  // VcXsrv / Xming sur Windows, affichage :0.0
+  "containerEnv": {
+    "DISPLAY": "host.docker.internal:0.0"
+  }
+
+  // Docker Desktop resout deja host.docker.internal. Si besoin, ajouter :
+  // "runArgs": ["--add-host=host.docker.internal:host-gateway"]
 }

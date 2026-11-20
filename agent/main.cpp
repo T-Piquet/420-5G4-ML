@@ -5,6 +5,7 @@
 
 #include "library.h"
 #include "filemanager.h"
+#include "console_color.h"
 
 using namespace std;
 
@@ -13,29 +14,29 @@ void clearScreen() {
 }
 
 void pauseForInput() {
-    cout << "\nAppuyez sur Entrée pour continuer...";
+    cout << "\n" << Color::dim() << "Appuyez sur Entrée pour continuer..." << Color::reset();
     cin.ignore();
     cin.get();
 }
 
 void displayMenu() {
-    cout << "\n=== SYSTÈME DE GESTION DE BIBLIOTHÈQUE PERSONNELLE ===\n";
-    cout << "1.  Ajouter un Livre\n";
-    cout << "2.  Supprimer un Livre\n";
-    cout << "3.  Rechercher des Livres par Titre\n";
-    cout << "4.  Rechercher des Livres par Auteur\n";
-    cout << "5.  Afficher Tous les Livres\n";
-    cout << "6.  Afficher les Livres Disponibles\n";
-    cout << "7.  Ajouter un Utilisateur\n";
-    cout << "8.  Afficher Tous les Utilisateurs\n";
-    cout << "9.  Emprunter un Livre\n";
-    cout << "10. Retourner un Livre\n";
-    cout << "11. Statistiques de la Bibliothèque\n";
-    cout << "12. Sauvegarder les Données\n";
-    cout << "13. Créer une Sauvegarde\n";
-    cout << "0.  Quitter\n";
-    cout << "======================================================\n";
-    cout << "Entrez votre choix : ";
+    cout << "\n" << Color::bold_cyan() << "=== SYSTÈME DE GESTION DE BIBLIOTHÈQUE PERSONNELLE ===" << Color::reset() << "\n";
+    cout << Color::cyan() << "1."  << Color::reset() << "  Ajouter un Livre\n";
+    cout << Color::cyan() << "2."  << Color::reset() << "  Supprimer un Livre\n";
+    cout << Color::cyan() << "3."  << Color::reset() << "  Rechercher des Livres par Titre\n";
+    cout << Color::cyan() << "4."  << Color::reset() << "  Rechercher des Livres par Auteur\n";
+    cout << Color::cyan() << "5."  << Color::reset() << "  Afficher Tous les Livres\n";
+    cout << Color::cyan() << "6."  << Color::reset() << "  Afficher les Livres Disponibles\n";
+    cout << Color::cyan() << "7."  << Color::reset() << "  Ajouter un Utilisateur\n";
+    cout << Color::cyan() << "8."  << Color::reset() << "  Afficher Tous les Utilisateurs\n";
+    cout << Color::cyan() << "9."  << Color::reset() << "  Emprunter un Livre\n";
+    cout << Color::cyan() << "10." << Color::reset() << " Retourner un Livre\n";
+    cout << Color::cyan() << "11." << Color::reset() << " Statistiques de la Bibliothèque\n";
+    cout << Color::cyan() << "12." << Color::reset() << " Sauvegarder les Données\n";
+    cout << Color::cyan() << "13." << Color::reset() << " Créer une Sauvegarde\n";
+    cout << Color::cyan() << "0."  << Color::reset() << "  Quitter\n";
+    cout << Color::bold_cyan() << "=======================================================" << Color::reset() << "\n";
+    cout << Color::bold() << "Entrez votre choix : " << Color::reset();
 }
 
 string getInput(const string& prompt) {
@@ -84,7 +85,7 @@ int main(int argc, char* argv[]) {
     FileManager fileManager(booksFile, usersFile);
     
     // Load existing data
-    cout << "Chargement des données de la bibliothèque...\n";
+    cout << Color::cyan() << "Chargement des données de la bibliothèque..." << Color::reset() << "\n";
     fileManager.loadLibraryData(library);
     
     int choice;
@@ -94,7 +95,7 @@ int main(int argc, char* argv[]) {
         displayMenu();
         
         if (!(cin >> choice)) {
-            cout << "Saisie invalide. Veuillez entrer un nombre.\n";
+            cout << Color::bold_red() << "Saisie invalide. Veuillez entrer un nombre." << Color::reset() << "\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             pauseForInput();
@@ -109,11 +110,11 @@ int main(int argc, char* argv[]) {
                 string isbn = getInput("Entrez l'ISBN du livre : ");
                 
                 if (library.findBookByISBN(isbn)) {
-                    cout << "Erreur : Un livre avec l'ISBN " << isbn << " existe déjà.\n";
+                    cout << Color::bold_red() << "Erreur : Un livre avec l'ISBN " << isbn << " existe déjà." << Color::reset() << "\n";
                 } else {
                     Book newBook(title, author, isbn);
                     library.addBook(newBook);
-                    cout << "Livre ajouté avec succès !\n";
+                    cout << Color::green() << "Livre ajouté avec succès !" << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
@@ -123,9 +124,9 @@ int main(int argc, char* argv[]) {
                 string isbn = getInput("Entrez l'ISBN du livre à supprimer : ");
                 
                 if (library.removeBook(isbn)) {
-                    cout << "Livre supprimé avec succès !\n";
+                    cout << Color::green() << "Livre supprimé avec succès !" << Color::reset() << "\n";
                 } else {
-                    cout << "Livre non trouvé.\n";
+                    cout << Color::bold_red() << "Livre non trouvé." << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
@@ -136,13 +137,13 @@ int main(int argc, char* argv[]) {
                 auto results = library.searchBooksByTitle(title);
                 
                 if (results.empty()) {
-                    cout << "Aucun livre trouvé avec ce titre.\n";
+                    cout << Color::yellow() << "Aucun livre trouvé avec ce titre." << Color::reset() << "\n";
                 } else {
-                    cout << "\n=== RÉSULTATS DE RECHERCHE ===\n";
+                    cout << "\n" << Color::bold_cyan() << "=== RÉSULTATS DE RECHERCHE ===" << Color::reset() << "\n";
                     for (size_t i = 0; i < results.size(); ++i) {
-                        cout << "\nRésultat " << (i + 1) << " :\n";
+                        cout << "\n" << Color::cyan() << "Résultat " << (i + 1) << " :" << Color::reset() << "\n";
                         cout << results[i]->toString() << "\n";
-                        cout << "-----------------------------\n";
+                        cout << Color::dim() << "-----------------------------" << Color::reset() << "\n";
                     }
                 }
                 pauseForInput();
@@ -154,13 +155,13 @@ int main(int argc, char* argv[]) {
                 auto results = library.searchBooksByAuthor(author);
                 
                 if (results.empty()) {
-                    cout << "Aucun livre trouvé de cet auteur.\n";
+                    cout << Color::yellow() << "Aucun livre trouvé de cet auteur." << Color::reset() << "\n";
                 } else {
-                    cout << "\n=== RÉSULTATS DE RECHERCHE ===\n";
+                    cout << "\n" << Color::bold_cyan() << "=== RÉSULTATS DE RECHERCHE ===" << Color::reset() << "\n";
                     for (size_t i = 0; i < results.size(); ++i) {
-                        cout << "\nRésultat " << (i + 1) << " :\n";
+                        cout << "\n" << Color::cyan() << "Résultat " << (i + 1) << " :" << Color::reset() << "\n";
                         cout << results[i]->toString() << "\n";
-                        cout << "-----------------------------\n";
+                        cout << Color::dim() << "-----------------------------" << Color::reset() << "\n";
                     }
                 }
                 pauseForInput();
@@ -182,11 +183,11 @@ int main(int argc, char* argv[]) {
                 string userId = getInput("Entrez l'ID de l'utilisateur : ");
                 
                 if (library.findUserById(userId)) {
-                    cout << "Erreur : Un utilisateur avec l'ID " << userId << " existe déjà.\n";
+                    cout << Color::bold_red() << "Erreur : Un utilisateur avec l'ID " << userId << " existe déjà." << Color::reset() << "\n";
                 } else {
                     User newUser(name, userId);
                     library.addUser(newUser);
-                    cout << "Utilisateur ajouté avec succès !\n";
+                    cout << Color::green() << "Utilisateur ajouté avec succès !" << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
@@ -202,9 +203,9 @@ int main(int argc, char* argv[]) {
                 string userId = getInput("Entrez l'ID de l'utilisateur : ");
                 
                 if (library.checkOutBook(isbn, userId)) {
-                    cout << "Livre emprunté avec succès !\n";
+                    cout << Color::green() << "Livre emprunté avec succès !" << Color::reset() << "\n";
                 } else {
-                    cout << "Erreur : Impossible d'emprunter le livre. Vérifiez l'ISBN, l'ID utilisateur et la disponibilité du livre.\n";
+                    cout << Color::bold_red() << "Erreur : Impossible d'emprunter le livre. Vérifiez l'ISBN, l'ID utilisateur et la disponibilité du livre." << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
@@ -214,29 +215,29 @@ int main(int argc, char* argv[]) {
                 string isbn = getInput("Entrez l'ISBN du livre à retourner : ");
                 
                 if (library.returnBook(isbn)) {
-                    cout << "Livre retourné avec succès !\n";
+                    cout << Color::green() << "Livre retourné avec succès !" << Color::reset() << "\n";
                 } else {
-                    cout << "Erreur : Impossible de retourner le livre. Vérifiez l'ISBN et que le livre est bien emprunté.\n";
+                    cout << Color::bold_red() << "Erreur : Impossible de retourner le livre. Vérifiez l'ISBN et que le livre est bien emprunté." << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
             }
             
             case 11: { // Library Statistics
-                cout << "\n=== STATISTIQUES DE LA BIBLIOTHÈQUE ===\n";
-                cout << "Total des Livres : " << library.getTotalBooks() << "\n";
-                cout << "Livres Disponibles : " << library.getAvailableBookCount() << "\n";
-                cout << "Livres Empruntés : " << library.getCheckedOutBookCount() << "\n";
-                cout << "Total des Utilisateurs : " << library.getAllUsers().size() << "\n";
+                cout << "\n" << Color::bold_cyan() << "=== STATISTIQUES DE LA BIBLIOTHÈQUE ===" << Color::reset() << "\n";
+                cout << "Total des Livres : " << Color::bold() << library.getTotalBooks() << Color::reset() << "\n";
+                cout << "Livres Disponibles : " << Color::green() << library.getAvailableBookCount() << Color::reset() << "\n";
+                cout << "Livres Empruntés : " << Color::yellow() << library.getCheckedOutBookCount() << Color::reset() << "\n";
+                cout << "Total des Utilisateurs : " << Color::bold() << library.getAllUsers().size() << Color::reset() << "\n";
                 pauseForInput();
                 break;
             }
             
             case 12: { // Save Data
                 if (fileManager.saveLibraryData(library)) {
-                    cout << "Données de la bibliothèque sauvegardées avec succès !\n";
+                    cout << Color::green() << "Données de la bibliothèque sauvegardées avec succès !" << Color::reset() << "\n";
                 } else {
-                    cout << "Erreur lors de la sauvegarde des données de la bibliothèque.\n";
+                    cout << Color::bold_red() << "Erreur lors de la sauvegarde des données de la bibliothèque." << Color::reset() << "\n";
                 }
                 pauseForInput();
                 break;
@@ -249,14 +250,14 @@ int main(int argc, char* argv[]) {
             }
             
             case 0: // Exit
-                cout << "Sauvegarde des données avant la fermeture...\n";
+                cout << Color::cyan() << "Sauvegarde des données avant la fermeture..." << Color::reset() << "\n";
                 fileManager.saveLibraryData(library);
-                cout << "Merci d'avoir utilisé le Système de Gestion de Bibliothèque Personnelle !\n";
+                cout << Color::bold_cyan() << "Merci d'avoir utilisé le Système de Gestion de Bibliothèque Personnelle !" << Color::reset() << "\n";
                 running = false;
                 break;
             
             default:
-                cout << "Choix invalide. Veuillez réessayer.\n";
+                cout << Color::bold_red() << "Choix invalide. Veuillez réessayer." << Color::reset() << "\n";
                 pauseForInput();
                 break;
         }
