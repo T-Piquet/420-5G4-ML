@@ -26,3 +26,14 @@ class UserRow:
     name: str
     borrowed_count: int = 0
     borrowed_titles: str = ""
+
+
+@dataclass(frozen=True)
+class StatisticsData:
+    """Compteurs de la section Statistiques, calculés par le cœur C++."""
+
+    total: int
+    available: int
+    borrowed: int
+    users: int
+    availability_rate: int

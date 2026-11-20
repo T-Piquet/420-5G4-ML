@@ -7,7 +7,7 @@ from app.models.library import Library, LibraryError
 from app.models.user import User
 from app.repositories.library_repository import LibraryRepository
 from app.views.main_window import MainWindow
-from app.views.view_models import BookRow, UserRow
+from app.views.view_models import BookRow, StatisticsData, UserRow
 
 
 def plural(count: int, singular: str, plural_form: str) -> str:
@@ -78,9 +78,11 @@ class MainController:
         self.view.set_status("")
 
     def on_navigate(self, section: str) -> None:
-        """Réapplique les informations de la section Livres."""
+        """Actualise la section affichée avec les données courantes."""
         if section == "Livres":
             self._update_selection()
+        elif section == "Statistiques":
+            self._refresh_statistics()
 
     def on_add_requested(self) -> None:
         self.view.open_add_dialog(self._submit_add)
@@ -210,6 +212,7 @@ class MainController:
         )
         self._update_selection()
         self._refresh_users()
+        self._refresh_statistics()
 
     def _refresh_users(self) -> None:
         """Reconstruit la liste des utilisateurs et son sous-titre."""
@@ -223,6 +226,27 @@ class MainController:
         )
         self.view.set_users_subtitle(subtitle)
         self.view.set_users_footer_info(subtitle)
+
+    def _refresh_statistics(self) -> None:
+        """Pousse les compteurs du cœur C++ vers le tableau de bord."""
+        stats = self.model.statistics()
+        rate = (
+            round(stats.available / stats.total * 100) if stats.total else 0
+        )
+        self.view.set_statistics(
+            StatisticsData(
+                total=stats.total,
+                available=stats.available,
+                borrowed=stats.borrowed,
+                users=stats.users,
+                availability_rate=rate,
+            )
+        )
+        self.view.set_statistics_subtitle(
+            f"{plural(stats.total, 'livre', 'livres')} · "
+            f"{plural(stats.available, 'disponible', 'disponibles')} · "
+            f"{plural(stats.users, 'utilisateur', 'utilisateurs')}"
+        )
 
     def _update_selection(self) -> None:
         book = self._selected_book()

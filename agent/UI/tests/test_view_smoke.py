@@ -8,7 +8,7 @@ import os
 
 import pytest
 
-from app.views.view_models import BookRow, UserRow
+from app.views.view_models import BookRow, StatisticsData, UserRow
 
 
 def _display_available() -> bool:
@@ -77,6 +77,30 @@ def test_main_window_smoke() -> None:
         assert window.section_subtitle.cget("text") == (
             "1 utilisateur · 1 livre emprunté"
         )
+
+        window.set_statistics(
+            StatisticsData(
+                total=41,
+                available=27,
+                borrowed=14,
+                users=26,
+                availability_rate=66,
+            )
+        )
+        window.set_statistics_subtitle(
+            "41 livres · 27 disponibles · 26 utilisateurs"
+        )
+        window.set_section("Statistiques")
+        assert window.section_title.cget("text") == "Statistiques"
+        assert window.section_subtitle.cget("text") == (
+            "41 livres · 27 disponibles · 26 utilisateurs"
+        )
+        assert window.statistics_panel.cards["total"].value == 41
+        assert window.statistics_panel.cards["available"].value == 27
+        assert window.statistics_panel.cards["borrowed"].value == 14
+        assert window.statistics_panel.cards["users"].value == 26
+        assert window.statistics_panel.rate_value.cget("text") == "66 %"
+        assert window.statistics_panel.progress.get() == 0.66
 
         window.set_section("Livres")
         assert window.section_title.cget("text") == "Livres"

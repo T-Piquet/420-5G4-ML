@@ -165,6 +165,26 @@ def test_statistics() -> None:
     )
 
 
+def test_statistics_follow_library_changes() -> None:
+    library = make_library()
+
+    library.borrow("9782070612758", "USR002")
+    assert library.statistics() == LibraryStats(
+        total=3, available=1, borrowed=2, users=2
+    )
+
+    library.return_book("9782253096337")
+    assert library.statistics() == LibraryStats(
+        total=3, available=2, borrowed=1, users=2
+    )
+
+    library.add_user("Sophie Lemaire", "USR003")
+    library.remove_book("9782070612758")
+    assert library.statistics() == LibraryStats(
+        total=2, available=2, borrowed=0, users=3
+    )
+
+
 def test_add_user_strips_fields() -> None:
     library = make_library()
 

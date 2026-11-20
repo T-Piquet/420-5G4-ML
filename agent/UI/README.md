@@ -97,8 +97,12 @@ git checkout -- agent/data
   nombre d'emprunts et titres empruntés), recherche accent-insensible par nom
   ou identifiant, et ajout d'un utilisateur via une fenêtre modale (unicité de
   l'identifiant).
-- **Navigation** : Livres et Utilisateurs sont fonctionnels ; Emprunts et
-  Statistiques affichent une section « à venir ».
+- **Section Statistiques** : tableau de bord avec le total des livres, les
+  livres disponibles, les livres empruntés, le nombre d'utilisateurs et le
+  taux de disponibilité. Les compteurs proviennent du cœur C++
+  (`getTotalBooks`, `getAvailableBookCount`, `getCheckedOutBookCount`).
+- **Navigation** : Livres, Utilisateurs et Statistiques sont fonctionnels ;
+  Emprunts affiche une section « à venir ».
 
 ## Tests
 

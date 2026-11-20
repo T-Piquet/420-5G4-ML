@@ -10,6 +10,7 @@ from app.controllers.main_controller import MainController
 from app.models.book import Book
 from app.models.library import Library
 from app.models.user import User
+from app.views.view_models import StatisticsData
 
 
 class FakeView:
@@ -26,6 +27,8 @@ class FakeView:
         self.users_subtitle = None
         self.users_footer_info = None
         self.users_status = None
+        self.statistics = None
+        self.statistics_subtitle = None
         self.search_cleared = False
         self.user_search_cleared = False
 
@@ -107,6 +110,12 @@ class FakeView:
 
     def set_users_footer_info(self, text: str) -> None:
         self.users_footer_info = text
+
+    def set_statistics(self, data) -> None:
+        self.statistics = data
+
+    def set_statistics_subtitle(self, text: str) -> None:
+        self.statistics_subtitle = text
 
     def clear_search(self) -> None:
         self.search_cleared = True
@@ -457,3 +466,66 @@ def test_borrowing_with_availability_filter_clears_selection() -> None:
 
     assert view.selected is None
     assert [row.isbn for row in view.books] == ["9782070360024"]
+
+
+def test_initial_statistics_come_from_cpp() -> None:
+    _, view, _, _ = build()
+
+    assert view.statistics == StatisticsData(
+        total=3,
+        available=2,
+        borrowed=1,
+        users=2,
+        availability_rate=67,
+    )
+    assert view.statistics_subtitle == "3 livres · 2 disponibles · 2 utilisateurs"
+
+
+def test_statistics_follow_borrow_and_user_addition() -> None:
+    _, view, _, _ = build()
+    view.select_callback("9782070612758")
+
+    view.borrow_callback()
+    _, _, submit = view.borrow_dialog
+    assert submit("USR002") is None
+
+    assert view.statistics == StatisticsData(
+        total=3,
+        available=1,
+        borrowed=2,
+        users=2,
+        availability_rate=33,
+    )
+
+    view.add_user_callback()
+    assert view.add_user_dialog("Sophie Lemaire", "USR003") is None
+
+    assert view.statistics.users == 3
+    assert view.statistics.borrowed == 2
+
+
+def test_navigation_to_statistics_refreshes_dashboard() -> None:
+    _, view, _, _ = build()
+    view.statistics = None
+
+    view.navigation_callback("Statistiques")
+
+    assert view.statistics == StatisticsData(
+        total=3,
+        available=2,
+        borrowed=1,
+        users=2,
+        availability_rate=67,
+    )
+
+
+def test_empty_library_has_zero_availability_rate() -> None:
+    _, view, _, _ = build(model=Library())
+
+    assert view.statistics == StatisticsData(
+        total=0,
+        available=0,
+        borrowed=0,
+        users=0,
+        availability_rate=0,
+    )

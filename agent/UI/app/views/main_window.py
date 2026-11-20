@@ -14,8 +14,9 @@ import customtkinter as ctk
 from app import config
 from app.views.book_table import BookTable
 from app.views.dialogs import AddBookDialog, AddUserDialog, BorrowDialog
+from app.views.statistics_panel import StatisticsPanel
 from app.views.user_table import UserTable
-from app.views.view_models import BookRow, UserRow
+from app.views.view_models import BookRow, StatisticsData, UserRow
 
 
 class MainWindow(ctk.CTk):
@@ -36,6 +37,7 @@ class MainWindow(ctk.CTk):
 
         self._books_subtitle = ""
         self._users_subtitle = ""
+        self._statistics_subtitle = ""
         self._active_section = "Livres"
 
         self.title(config.APP_TITLE)
@@ -359,6 +361,15 @@ class MainWindow(ctk.CTk):
 
         self.users_body.grid_remove()
 
+        self.statistics_body = ctk.CTkFrame(self.main, fg_color="transparent")
+        self.statistics_body.grid(row=1, column=0, sticky="nsew")
+        self.statistics_body.grid_columnconfigure(0, weight=1)
+        self.statistics_body.grid_rowconfigure(0, weight=1)
+
+        self.statistics_panel = StatisticsPanel(self.statistics_body)
+        self.statistics_panel.grid(row=0, column=0, sticky="nsew")
+        self.statistics_body.grid_remove()
+
         self.placeholder_body = ctk.CTkFrame(
             self.main,
             fg_color=config.COLOR_SURFACE,
@@ -421,6 +432,9 @@ class MainWindow(ctk.CTk):
     def set_users(self, rows: list[UserRow]) -> None:
         self.user_table.set_rows(rows)
 
+    def set_statistics(self, data: StatisticsData) -> None:
+        self.statistics_panel.set_data(data)
+
     def set_selected(self, isbn: str | None) -> None:
         self.book_table.set_selected(isbn)
 
@@ -473,6 +487,11 @@ class MainWindow(ctk.CTk):
         if self._active_section == "Utilisateurs":
             self.section_subtitle.configure(text=text)
 
+    def set_statistics_subtitle(self, text: str) -> None:
+        self._statistics_subtitle = text
+        if self._active_section == "Statistiques":
+            self.section_subtitle.configure(text=text)
+
     def set_users_footer_info(self, text: str) -> None:
         self.users_info_label.configure(text=text)
 
@@ -495,12 +514,20 @@ class MainWindow(ctk.CTk):
             self.section_subtitle.configure(text=self._books_subtitle)
             self.placeholder_body.grid_remove()
             self.users_body.grid_remove()
+            self.statistics_body.grid_remove()
             self.books_body.grid()
         elif section == "Utilisateurs":
             self.section_subtitle.configure(text=self._users_subtitle)
             self.placeholder_body.grid_remove()
             self.books_body.grid_remove()
+            self.statistics_body.grid_remove()
             self.users_body.grid()
+        elif section == "Statistiques":
+            self.section_subtitle.configure(text=self._statistics_subtitle)
+            self.placeholder_body.grid_remove()
+            self.books_body.grid_remove()
+            self.users_body.grid_remove()
+            self.statistics_body.grid()
         else:
             self.section_subtitle.configure(text="Section à venir")
             self.placeholder_label.configure(
@@ -508,6 +535,7 @@ class MainWindow(ctk.CTk):
             )
             self.books_body.grid_remove()
             self.users_body.grid_remove()
+            self.statistics_body.grid_remove()
             self.placeholder_body.grid()
 
     def clear_search(self) -> None:
