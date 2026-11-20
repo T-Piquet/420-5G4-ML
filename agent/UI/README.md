@@ -107,8 +107,7 @@ git checkout -- agent/data
 - **Créer une sauvegarde** : copie les fichiers actuels en `books.txt.backup`
   et `users.txt.backup` via `FileManager::createBackup`. Un clic suivant
   remplace la sauvegarde précédente ; le statut s'affiche sous les boutons.
-- **Navigation** : Livres, Utilisateurs et Statistiques sont fonctionnels ;
-  Emprunts affiche une section « à venir ».
+- **Navigation** : Livres, Utilisateurs et Statistiques sont fonctionnels.
 
 ## Tests
 

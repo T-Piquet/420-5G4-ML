@@ -16,7 +16,7 @@ SIDEBAR_WIDTH = 220
 CONTENT_PADDING = 28
 ROW_HEIGHT = 44
 
-NAVIGATION_SECTIONS = ("Livres", "Utilisateurs", "Emprunts", "Statistiques")
+NAVIGATION_SECTIONS = ("Livres", "Utilisateurs", "Statistiques")
 SEARCH_PLACEHOLDER = "Rechercher par titre, auteur ou ISBN…"
 USER_SEARCH_PLACEHOLDER = "Rechercher par nom ou identifiant…"
 AVAILABILITY_FILTER_LABEL = "Disponibles uniquement"

@@ -56,8 +56,7 @@ def test_main_window_smoke() -> None:
             can_delete=True, can_borrow=True, borrow_label="Emprunter"
         )
         window.set_status("Prêt.", "success")
-        window.set_section("Emprunts")
-        assert window.section_title.cget("text") == "Emprunts"
+        assert "Emprunts" not in window._nav_buttons
 
         window.set_users(
             [
