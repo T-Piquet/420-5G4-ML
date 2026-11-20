@@ -15,8 +15,11 @@ RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
 
 # [Optional] Uncomment this section to install additional packages.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends python3-pybind11 pybind11-dev python3-tk python3-venv \
+    && apt-get -y install --no-install-recommends python3-pybind11 pybind11-dev python3-tk python3-venv python3-pip \
     zstd \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
+
+# customtkinter n'est pas packagé par Debian : installation via pip
+RUN python3 -m pip install --no-cache-dir --break-system-packages customtkinter==6.0.0
 
 # ajouter installation ollama et opencode

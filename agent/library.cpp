@@ -1,9 +1,21 @@
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 
 #include "library.h"
 
 using namespace std;
+
+namespace {
+
+string toLowerAscii(const string& value) {
+    string result = value;
+    transform(result.begin(), result.end(), result.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return result;
+}
+
+} // namespace
 
 // Constructor
 Library::Library() {}
@@ -22,6 +34,9 @@ bool Library::removeBook(const string& isbn) {
     
     if (it != books.end()) {
         books.erase(it);
+        for (auto& user : users) {
+            user->returnBook(isbn);
+        }
         return true;
     }
     return false;
@@ -40,12 +55,10 @@ Book* Library::findBookByISBN(const string& isbn) {
 // Search books by title (case-insensitive partial match)
 vector<Book*> Library::searchBooksByTitle(const string& title) {
     vector<Book*> results;
-    string lowerTitle = title;
-    transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+    string lowerTitle = toLowerAscii(title);
     
     for (auto& book : books) {
-        string bookTitle = book->getTitle();
-        transform(bookTitle.begin(), bookTitle.end(), bookTitle.begin(), ::tolower);
+        string bookTitle = toLowerAscii(book->getTitle());
         
         if (bookTitle.find(lowerTitle) != string::npos) {
             results.push_back(book.get());
@@ -57,12 +70,10 @@ vector<Book*> Library::searchBooksByTitle(const string& title) {
 // Search books by author (case-insensitive partial match)
 vector<Book*> Library::searchBooksByAuthor(const string& author) {
     vector<Book*> results;
-    string lowerAuthor = author;
-    transform(lowerAuthor.begin(), lowerAuthor.end(), lowerAuthor.begin(), ::tolower);
+    string lowerAuthor = toLowerAscii(author);
     
     for (auto& book : books) {
-        string bookAuthor = book->getAuthor();
-        transform(bookAuthor.begin(), bookAuthor.end(), bookAuthor.begin(), ::tolower);
+        string bookAuthor = toLowerAscii(book->getAuthor());
         
         if (bookAuthor.find(lowerAuthor) != string::npos) {
             results.push_back(book.get());
@@ -94,6 +105,21 @@ vector<Book*> Library::getAllBooks() {
 // Add user to library
 void Library::addUser(const User& user) {
     users.push_back(make_unique<User>(user));
+}
+
+// Remove user from library
+bool Library::removeUser(const string& userId) {
+    auto it = find_if(users.begin(), users.end(),
+        [&userId](const unique_ptr<User>& user) {
+            return user->getUserId() == userId;
+        });
+
+    if (it == users.end() || (*it)->getNumberOfBorrowedBooks() > 0) {
+        return false;
+    }
+
+    users.erase(it);
+    return true;
 }
 
 // Find user by ID

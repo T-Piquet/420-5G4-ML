@@ -1,0 +1,14 @@
+{
+    "cmake.sourceDirectory": "/workspaces/420-5G4-ML/agent",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/agent",
+        "${workspaceFolder}/agent/stubs",
+        "${workspaceFolder}/agent/build/python"
+    ],
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/agent",
+        "${workspaceFolder}/agent/stubs",
+        "${workspaceFolder}/agent/build/python"
+    ]
+}

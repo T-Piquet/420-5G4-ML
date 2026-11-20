@@ -25,7 +25,7 @@ Atala|Chateaubriand|9782070360062|0|USR009
 René|Chateaubriand|9782070360079|1|
 Corinne|Madame de Staël|9782070360086|1|
 Indiana|George Sand|9782070360093|0|USR010
-La Mare au diable|George Sand|9782253005087|1|
+La Mare au diable|George Sand|9782253005087|0|USR022
 François le Champi|George Sand|9782253005094|1|
 La Petite Fadette|George Sand|9782253005101|0|USR011
 Consuelo|George Sand|9782253005118|1|
