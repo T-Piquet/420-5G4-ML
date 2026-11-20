@@ -9,6 +9,9 @@ class VueUtilisateurs(ctk.CTkFrame):
         self.controleur = controleur
         self.sur_statut = sur_statut
 
+        self._version_affichee = -1
+        self._lignes: list[dict] = []
+
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
 
@@ -50,6 +53,15 @@ class VueUtilisateurs(ctk.CTkFrame):
         self.liste_utilisateurs.grid(row=2, column=0, padx=16, pady=(6, 12), sticky="nsew")
         self.liste_utilisateurs.grid_columnconfigure(0, weight=1)
 
+        self._label_vide = ctk.CTkLabel(
+            self.liste_utilisateurs,
+            text="Aucun utilisateur enregistré.",
+            text_color="gray",
+        )
+        self._font_nom = ctk.CTkFont(size=14, weight="bold")
+        self._font_detail = ctk.CTkFont(size=12)
+        self._font_badge = ctk.CTkFont(size=12, weight="bold")
+
     def _ajouter_utilisateur(self):
         ok, message = self.controleur.ajouter_utilisateur(
             self.entree_nom.get(),
@@ -61,34 +73,56 @@ class VueUtilisateurs(ctk.CTkFrame):
             self.entree_id.delete(0, "end")
             self.rafraichir()
 
+    def _creer_ligne(self, index: int) -> dict:
+        cadre = ctk.CTkFrame(self.liste_utilisateurs, corner_radius=8)
+        cadre.grid_columnconfigure(0, weight=1)
+
+        label_nom = ctk.CTkLabel(cadre, text="", font=self._font_nom, anchor="w")
+        label_nom.grid(row=0, column=0, padx=(12, 8), pady=(8, 0), sticky="w")
+
+        label_emprunts = ctk.CTkLabel(
+            cadre,
+            text="",
+            font=self._font_detail,
+            text_color="gray",
+            anchor="w",
+        )
+        label_emprunts.grid(row=1, column=0, padx=(12, 8), pady=(0, 8), sticky="w")
+
+        label_nb = ctk.CTkLabel(cadre, text="", font=self._font_badge)
+        label_nb.grid(row=0, column=1, rowspan=2, padx=14, pady=8)
+
+        cadre.grid(row=index, column=0, padx=6, pady=4, sticky="ew")
+        return {
+            "cadre": cadre,
+            "nom": label_nom,
+            "emprunts": label_emprunts,
+            "nb": label_nb,
+        }
+
     def rafraichir(self):
-        for widget in self.liste_utilisateurs.winfo_children():
-            widget.destroy()
+        if self._version_affichee == self.controleur.version_donnees:
+            return
+        self._version_affichee = self.controleur.version_donnees
 
         utilisateurs = self.controleur.obtenir_tous_les_utilisateurs()
         self.label_compteur.configure(text=f"{len(utilisateurs)} utilisateur(s)")
 
         if not utilisateurs:
-            ctk.CTkLabel(
-                self.liste_utilisateurs,
-                text="Aucun utilisateur enregistré.",
-                text_color="gray",
-            ).grid(row=0, column=0, pady=24)
+            for ligne in self._lignes:
+                ligne["cadre"].grid_remove()
+            self._label_vide.grid(row=0, column=0, pady=24)
             return
 
+        self._label_vide.grid_remove()
+
         for index, utilisateur in enumerate(utilisateurs):
-            ligne = ctk.CTkFrame(self.liste_utilisateurs, corner_radius=8)
-            ligne.grid(row=index, column=0, padx=6, pady=4, sticky="ew")
-            ligne.grid_columnconfigure(0, weight=1)
-
-            info = ctk.CTkFrame(ligne, fg_color="transparent")
-            info.grid(row=0, column=0, padx=12, pady=8, sticky="w")
-
-            ctk.CTkLabel(
-                info,
-                text=f"{utilisateur.get_name()}  ({utilisateur.get_user_id()})",
-                font=ctk.CTkFont(size=14, weight="bold"),
-            ).pack(anchor="w")
+            if index >= len(self._lignes):
+                self._lignes.append(self._creer_ligne(index))
+            else:
+                self._lignes[index]["cadre"].grid(
+                    row=index, column=0, padx=6, pady=4, sticky="ew"
+                )
 
             emprunts = utilisateur.get_borrowed_books()
             if emprunts:
@@ -100,17 +134,16 @@ class VueUtilisateurs(ctk.CTkFrame):
             else:
                 texte_emprunts = "Aucun livre emprunté"
 
-            ctk.CTkLabel(
-                info,
-                text=texte_emprunts,
-                font=ctk.CTkFont(size=12),
-                text_color="gray",
-            ).pack(anchor="w")
-
             nb = utilisateur.get_number_of_borrowed_books()
-            ctk.CTkLabel(
-                ligne,
+            ligne = self._lignes[index]
+            ligne["nom"].configure(
+                text=f"{utilisateur.get_name()}  ({utilisateur.get_user_id()})"
+            )
+            ligne["emprunts"].configure(text=texte_emprunts)
+            ligne["nb"].configure(
                 text=f"{nb} emprunt(s)",
-                font=ctk.CTkFont(size=12, weight="bold"),
                 text_color=("#e65100", "#ffa726") if nb > 0 else "gray",
-            ).grid(row=0, column=1, padx=14, pady=8)
+            )
+
+        for index in range(len(utilisateurs), len(self._lignes)):
+            self._lignes[index]["cadre"].grid_remove()

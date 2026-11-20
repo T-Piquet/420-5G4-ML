@@ -9,6 +9,8 @@ class VueEmprunts(ctk.CTkFrame):
         self.controleur = controleur
         self.sur_statut = sur_statut
 
+        self._version_affichee = -1
+        self._lignes: list[dict] = []
         self.map_livres_dispo: dict[str, str] = {}
         self.map_utilisateurs: dict[str, str] = {}
 
@@ -66,6 +68,14 @@ class VueEmprunts(ctk.CTkFrame):
         self.liste_emprunts.grid(row=3, column=0, padx=16, pady=(4, 12), sticky="nsew")
         self.liste_emprunts.grid_columnconfigure(0, weight=1)
 
+        self._label_vide = ctk.CTkLabel(
+            self.liste_emprunts,
+            text="Aucun livre n'est actuellement emprunté.",
+            text_color="gray",
+        )
+        self._font_titre = ctk.CTkFont(size=14, weight="bold")
+        self._font_detail = ctk.CTkFont(size=12)
+
     def _emprunter(self):
         isbn = self.map_livres_dispo.get(self.menu_livre.get(), "")
         id_utilisateur = self.map_utilisateurs.get(self.menu_utilisateur.get(), "")
@@ -80,7 +90,38 @@ class VueEmprunts(ctk.CTkFrame):
         if ok:
             self.rafraichir()
 
+    def _creer_ligne(self, index: int) -> dict:
+        cadre = ctk.CTkFrame(self.liste_emprunts, corner_radius=8)
+        cadre.grid_columnconfigure(0, weight=1)
+
+        label_titre = ctk.CTkLabel(cadre, text="", font=self._font_titre, anchor="w")
+        label_titre.grid(row=0, column=0, padx=(12, 8), pady=(8, 0), sticky="w")
+
+        label_detail = ctk.CTkLabel(
+            cadre,
+            text="",
+            font=self._font_detail,
+            text_color="gray",
+            anchor="w",
+        )
+        label_detail.grid(row=1, column=0, padx=(12, 8), pady=(0, 8), sticky="w")
+
+        bouton = ctk.CTkButton(cadre, text="Retourner", width=100, height=30)
+        bouton.grid(row=0, column=1, rowspan=2, padx=12, pady=8)
+
+        cadre.grid(row=index, column=0, padx=6, pady=4, sticky="ew")
+        return {
+            "cadre": cadre,
+            "titre": label_titre,
+            "detail": label_detail,
+            "bouton": bouton,
+        }
+
     def rafraichir(self):
+        if self._version_affichee == self.controleur.version_donnees:
+            return
+        self._version_affichee = self.controleur.version_donnees
+
         livres_dispo = self.controleur.obtenir_livres_disponibles()
         utilisateurs = self.controleur.obtenir_tous_les_utilisateurs()
 
@@ -95,16 +136,22 @@ class VueEmprunts(ctk.CTkFrame):
 
         if self.map_livres_dispo:
             options_livres = list(self.map_livres_dispo.keys())
+            selection_courante = self.menu_livre.get()
             self.menu_livre.configure(values=options_livres, state="normal")
-            self.menu_livre.set(options_livres[0])
+            self.menu_livre.set(
+                selection_courante if selection_courante in self.map_livres_dispo else options_livres[0]
+            )
         else:
             self.menu_livre.configure(values=["Aucun livre disponible"], state="disabled")
             self.menu_livre.set("Aucun livre disponible")
 
         if self.map_utilisateurs:
             options_utilisateurs = list(self.map_utilisateurs.keys())
+            selection_user = self.menu_utilisateur.get()
             self.menu_utilisateur.configure(values=options_utilisateurs, state="normal")
-            self.menu_utilisateur.set(options_utilisateurs[0])
+            self.menu_utilisateur.set(
+                selection_user if selection_user in self.map_utilisateurs else options_utilisateurs[0]
+            )
         else:
             self.menu_utilisateur.configure(values=["Aucun utilisateur"], state="disabled")
             self.menu_utilisateur.set("Aucun utilisateur")
@@ -112,24 +159,24 @@ class VueEmprunts(ctk.CTkFrame):
         peut_emprunter = bool(self.map_livres_dispo and self.map_utilisateurs)
         self.bouton_emprunter.configure(state="normal" if peut_emprunter else "disabled")
 
-        for widget in self.liste_emprunts.winfo_children():
-            widget.destroy()
-
         empruntes = self.controleur.obtenir_livres_empruntes()
         self.label_nb_emprunts.configure(text=f"{len(empruntes)} livre(s) emprunté(s)")
 
         if not empruntes:
-            ctk.CTkLabel(
-                self.liste_emprunts,
-                text="Aucun livre n'est actuellement emprunté.",
-                text_color="gray",
-            ).grid(row=0, column=0, pady=24)
+            for ligne in self._lignes:
+                ligne["cadre"].grid_remove()
+            self._label_vide.grid(row=0, column=0, pady=24)
             return
 
+        self._label_vide.grid_remove()
+
         for index, livre in enumerate(empruntes):
-            ligne = ctk.CTkFrame(self.liste_emprunts, corner_radius=8)
-            ligne.grid(row=index, column=0, padx=6, pady=4, sticky="ew")
-            ligne.grid_columnconfigure(0, weight=1)
+            if index >= len(self._lignes):
+                self._lignes.append(self._creer_ligne(index))
+            else:
+                self._lignes[index]["cadre"].grid(
+                    row=index, column=0, padx=6, pady=4, sticky="ew"
+                )
 
             id_emprunteur = livre.get_borrower_id()
             emprunteur = self.controleur.bibliotheque.find_user_by_id(id_emprunteur)
@@ -138,27 +185,16 @@ class VueEmprunts(ctk.CTkFrame):
                 if emprunteur
                 else id_emprunteur
             )
+            isbn = livre.get_isbn()
 
-            info = ctk.CTkFrame(ligne, fg_color="transparent")
-            info.grid(row=0, column=0, padx=12, pady=8, sticky="w")
+            ligne = self._lignes[index]
+            ligne["titre"].configure(text=livre.get_title())
+            ligne["detail"].configure(
+                text=f"{livre.get_author()}  •  ISBN : {isbn}  •  Emprunté par : {nom_emprunteur}"
+            )
+            ligne["bouton"].configure(
+                command=lambda code=isbn: self._retourner(code)
+            )
 
-            ctk.CTkLabel(
-                info,
-                text=livre.get_title(),
-                font=ctk.CTkFont(size=14, weight="bold"),
-            ).pack(anchor="w")
-
-            ctk.CTkLabel(
-                info,
-                text=f"{livre.get_author()}  •  ISBN : {livre.get_isbn()}  •  Emprunté par : {nom_emprunteur}",
-                font=ctk.CTkFont(size=12),
-                text_color="gray",
-            ).pack(anchor="w")
-
-            ctk.CTkButton(
-                ligne,
-                text="Retourner",
-                width=100,
-                height=30,
-                command=lambda isbn=livre.get_isbn(): self._retourner(isbn),
-            ).grid(row=0, column=1, padx=12, pady=8)
+        for index in range(len(empruntes), len(self._lignes)):
+            self._lignes[index]["cadre"].grid_remove()

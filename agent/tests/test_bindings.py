@@ -1,20 +1,29 @@
 import gc
-import shutil
-from pathlib import Path
 
 import pytest
 
 import bibliotheque_py as bp
 
-DOSSIER_DONNEES = Path(__file__).resolve().parent.parent / "data"
+LIVRES_EXEMPLE = "\n".join([
+    "Le Petit Prince|Antoine de Saint-Exupéry|9782070612758|1|",
+    "Les Misérables|Victor Hugo|9782253096337|0|USR001",
+    "Notre-Dame de Paris|Victor Hugo|9782253002864|1|",
+    "L'Étranger|Albert Camus|9782070360024|1|",
+]) + "\n"
+
+UTILISATEURS_EXEMPLE = "\n".join([
+    "Marie Dubois|USR001|9782253096337",
+    "Jean Martin|USR002|",
+    "Alexandra Dumont|USR015|",
+]) + "\n"
 
 
 @pytest.fixture
 def contexte_bibliotheque(tmp_path):
     fichier_livres = tmp_path / "books.txt"
     fichier_utilisateurs = tmp_path / "users.txt"
-    shutil.copy2(DOSSIER_DONNEES / "books.txt", fichier_livres)
-    shutil.copy2(DOSSIER_DONNEES / "users.txt", fichier_utilisateurs)
+    fichier_livres.write_text(LIVRES_EXEMPLE, encoding="utf-8")
+    fichier_utilisateurs.write_text(UTILISATEURS_EXEMPLE, encoding="utf-8")
 
     bibliotheque = bp.Library()
     gestionnaire = bp.FileManager(str(fichier_livres), str(fichier_utilisateurs))
@@ -30,13 +39,13 @@ def test_chargement_fixtures(contexte_bibliotheque):
     empruntes = bibliotheque.get_checked_out_book_count()
     utilisateurs = bibliotheque.get_all_users()
 
-    assert total == 41
-    assert disponibles == 27
-    assert empruntes == 14
+    assert total == 4
+    assert disponibles == 3
+    assert empruntes == 1
     assert disponibles + empruntes == total
     assert len(bibliotheque.get_all_books()) == total
     assert len(bibliotheque.get_available_books()) == disponibles
-    assert len(utilisateurs) == 25
+    assert len(utilisateurs) == 3
 
 
 def test_gestion_livres(contexte_bibliotheque):
@@ -52,7 +61,7 @@ def test_gestion_livres(contexte_bibliotheque):
     assert "Fondation" in nouveau.to_string()
 
     bibliotheque.add_book(nouveau)
-    assert bibliotheque.get_total_books() == 42
+    assert bibliotheque.get_total_books() == 5
 
     trouve = bibliotheque.find_book_by_isbn("9782070360536")
     assert trouve is not None
@@ -65,12 +74,12 @@ def test_gestion_livres(contexte_bibliotheque):
     assert par_titre[0].get_isbn() == "9782070360536"
 
     par_auteur = bibliotheque.search_books_by_author("victor hugo")
-    assert len(par_auteur) >= 2
+    assert len(par_auteur) == 2
     assert all("Hugo" in livre.get_author() for livre in par_auteur)
 
     assert bibliotheque.remove_book("9782070360536") is True
     assert bibliotheque.remove_book("9782070360536") is False
-    assert bibliotheque.get_total_books() == 41
+    assert bibliotheque.get_total_books() == 4
 
 
 def test_gestion_utilisateurs(contexte_bibliotheque):
@@ -84,7 +93,7 @@ def test_gestion_utilisateurs(contexte_bibliotheque):
     assert "Amine Benali" in repr(utilisateur)
 
     bibliotheque.add_user(utilisateur)
-    assert len(bibliotheque.get_all_users()) == 26
+    assert len(bibliotheque.get_all_users()) == 4
 
     trouve = bibliotheque.find_user_by_id("USR999")
     assert trouve is not None
@@ -111,7 +120,7 @@ def test_emprunts_et_retours(contexte_bibliotheque):
     assert livre.get_borrower_id() == id_utilisateur
     assert utilisateur.has_borrowed_book(isbn_dispo) is True
 
-    assert bibliotheque.check_out_book(isbn_dispo, "USR016") is False
+    assert bibliotheque.check_out_book(isbn_dispo, "USR002") is False
     assert bibliotheque.check_out_book("ISBN-INCONNU", id_utilisateur) is False
     assert bibliotheque.check_out_book(isbn_dispo, "USR-INCONNU") is False
 
@@ -134,8 +143,8 @@ def test_persistance_et_sauvegarde(contexte_bibliotheque):
 
     nouvelle_biblio = bp.Library()
     assert gestionnaire.load_library_data(nouvelle_biblio) is True
-    assert nouvelle_biblio.get_total_books() == 42
-    assert len(nouvelle_biblio.get_all_users()) == 26
+    assert nouvelle_biblio.get_total_books() == 5
+    assert len(nouvelle_biblio.get_all_users()) == 4
 
     dune = nouvelle_biblio.find_book_by_isbn("9782266320542")
     claire = nouvelle_biblio.find_user_by_id("USR100")
@@ -160,13 +169,13 @@ def test_stabilite_memoire_references(contexte_bibliotheque):
         livre = bibliotheque.find_book_by_isbn("9782070612758")
         utilisateur = bibliotheque.find_user_by_id("USR001")
 
-        assert len(livres) == 41
-        assert len(utilisateurs) == 25
+        assert len(livres) == 4
+        assert len(utilisateurs) == 3
         assert livre is not None and livre.get_title() == "Le Petit Prince"
         assert utilisateur is not None and utilisateur.get_name() == "Marie Dubois"
 
         del livres, utilisateurs, livre, utilisateur
         gc.collect()
 
-    assert bibliotheque.get_total_books() == 41
+    assert bibliotheque.get_total_books() == 4
     assert bibliotheque.find_book_by_isbn("9782070612758").get_title() == "Le Petit Prince"

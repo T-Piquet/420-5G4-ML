@@ -18,6 +18,10 @@ class ControleurBibliotheque:
             str(self.fichier_utilisateurs),
         )
         self.gestionnaire.load_library_data(self.bibliotheque)
+        self.version_donnees = 0
+
+    def _marquer_modifie(self):
+        self.version_donnees += 1
 
     @staticmethod
     def _contient_separateur(valeurs: list[str]) -> bool:
@@ -59,6 +63,7 @@ class ControleurBibliotheque:
             return False, f"Un livre avec l'ISBN {isbn} existe déjà."
 
         self.bibliotheque.add_book(bp.Book(titre, auteur, isbn))
+        self._marquer_modifie()
         return True, f"Livre « {titre} » ajouté avec succès."
 
     def supprimer_livre(self, isbn: str) -> tuple[bool, str]:
@@ -74,6 +79,7 @@ class ControleurBibliotheque:
 
         titre = livre.get_title()
         if self.bibliotheque.remove_book(isbn):
+            self._marquer_modifie()
             return True, f"Livre « {titre} » supprimé avec succès."
         return False, "Erreur lors de la suppression du livre."
 
@@ -92,6 +98,7 @@ class ControleurBibliotheque:
             return False, f"Un utilisateur avec l'ID {id_utilisateur} existe déjà."
 
         self.bibliotheque.add_user(bp.User(nom, id_utilisateur))
+        self._marquer_modifie()
         return True, f"Utilisateur « {nom} » ajouté avec succès."
 
     def emprunter_livre(self, isbn: str, id_utilisateur: str) -> tuple[bool, str]:
@@ -106,6 +113,7 @@ class ControleurBibliotheque:
             return False, f"Utilisateur introuvable (ID : {id_utilisateur})."
 
         if self.bibliotheque.check_out_book(isbn, id_utilisateur):
+            self._marquer_modifie()
             return True, f"Livre {isbn} emprunté par {id_utilisateur}."
         return False, "Ce livre n'est pas disponible pour l'emprunt."
 
@@ -117,6 +125,7 @@ class ControleurBibliotheque:
             return False, f"Livre introuvable (ISBN : {isbn})."
 
         if self.bibliotheque.return_book(isbn):
+            self._marquer_modifie()
             return True, f"Livre {isbn} retourné avec succès."
         return False, "Ce livre n'est pas actuellement emprunté."
 

@@ -108,19 +108,20 @@ class ApplicationBibliotheque(ctk.CTk):
         self.vues["emprunts"] = VueEmprunts(
             self.zone_contenu, self.controleur, self.afficher_statut
         )
+        for vue in self.vues.values():
+            vue.grid(row=0, column=0, sticky="nsew")
 
     def afficher_section(self, cle: str):
         if cle not in self.vues:
             return
-
-        if self.section_active and self.section_active in self.vues:
-            self.vues[self.section_active].grid_forget()
+        if cle == self.section_active:
+            return
 
         self.section_active = cle
         vue = self.vues[cle]
-        vue.grid(row=0, column=0, sticky="nsew")
         if hasattr(vue, "rafraichir"):
             vue.rafraichir()
+        vue.tkraise()
 
         for k, bouton in self.boutons_nav.items():
             bouton.configure(

@@ -9,6 +9,7 @@ class VueTableauBord(ctk.CTkFrame):
         self.controleur = controleur
         self.sur_statut = sur_statut
         self.labels_valeurs: dict[str, ctk.CTkLabel] = {}
+        self._version_affichee = -1
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -86,6 +87,9 @@ class VueTableauBord(ctk.CTkFrame):
         ).pack(side="left")
 
     def rafraichir(self):
+        if self._version_affichee == self.controleur.version_donnees:
+            return
+        self._version_affichee = self.controleur.version_donnees
         stats = self.controleur.obtenir_statistiques()
         for cle, label in self.labels_valeurs.items():
             label.configure(text=str(stats.get(cle, 0)))
