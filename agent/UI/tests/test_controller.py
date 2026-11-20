@@ -37,6 +37,7 @@ class FakeView:
 
         self.search_callback = None
         self.user_search_callback = None
+        self.availability_filter_callback = None
         self.select_callback = None
         self.navigation_callback = None
         self.add_callback = None
@@ -49,6 +50,9 @@ class FakeView:
 
     def set_user_search_callback(self, callback) -> None:
         self.user_search_callback = callback
+
+    def set_availability_filter_callback(self, callback) -> None:
+        self.availability_filter_callback = callback
 
     def set_select_callback(self, callback) -> None:
         self.select_callback = callback
@@ -407,3 +411,49 @@ def test_user_rows_follow_borrow_and_return() -> None:
     row = next(row for row in view.users if row.user_id == "USR002")
     assert row.borrowed_count == 0
     assert row.borrowed_titles == ""
+
+
+def test_availability_filter_hides_borrowed_books() -> None:
+    _, view, _, _ = build()
+
+    view.availability_filter_callback(True)
+
+    assert [row.isbn for row in view.books] == [
+        "9782070612758",
+        "9782070360024",
+    ]
+
+
+def test_availability_filter_combines_with_search() -> None:
+    _, view, _, _ = build()
+    view.availability_filter_callback(True)
+
+    view.search_callback("etranger")
+
+    assert [row.isbn for row in view.books] == ["9782070360024"]
+
+    view.search_callback("miserables")
+
+    assert view.books == []
+
+
+def test_availability_filter_off_restores_borrowed_books() -> None:
+    _, view, _, _ = build()
+    view.availability_filter_callback(True)
+
+    view.availability_filter_callback(False)
+
+    assert len(view.books) == 3
+
+
+def test_borrowing_with_availability_filter_clears_selection() -> None:
+    _, view, _, _ = build()
+    view.availability_filter_callback(True)
+    view.select_callback("9782070612758")
+
+    view.borrow_callback()
+    _, _, submit = view.borrow_dialog
+    assert submit("USR002") is None
+
+    assert view.selected is None
+    assert [row.isbn for row in view.books] == ["9782070360024"]

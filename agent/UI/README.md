@@ -84,6 +84,8 @@ git checkout -- agent/data
 
 - **Recherche** en direct par titre, auteur ou ISBN, insensible aux accents et
   à la casse.
+- **Filtre « Disponibles uniquement »** pour n'afficher que les livres
+  disponibles à prêter ; il se combine avec la recherche.
 - **Tableau** des livres avec statut Disponible / Emprunté, sélection au clic
   et mise en évidence de la ligne.
 - **Ajouter** un livre via une fenêtre modale (validation des champs et

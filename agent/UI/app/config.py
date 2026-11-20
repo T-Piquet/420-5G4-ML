@@ -19,6 +19,7 @@ ROW_HEIGHT = 44
 NAVIGATION_SECTIONS = ("Livres", "Utilisateurs", "Emprunts", "Statistiques")
 SEARCH_PLACEHOLDER = "Rechercher par titre, auteur ou ISBN…"
 USER_SEARCH_PLACEHOLDER = "Rechercher par nom ou identifiant…"
+AVAILABILITY_FILTER_LABEL = "Disponibles uniquement"
 
 # Palette commune aux vues.
 COLOR_BACKGROUND = "#F4F6FA"

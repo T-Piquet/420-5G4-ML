@@ -34,6 +34,9 @@ def test_main_window_smoke() -> None:
         assert window.search_entry.cget("placeholder_text") == (
             "Rechercher par titre, auteur ou ISBN…"
         )
+        assert window.availability_checkbox.cget("text") == (
+            "Disponibles uniquement"
+        )
 
         window.set_books(
             [

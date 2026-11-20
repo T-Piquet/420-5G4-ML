@@ -30,10 +30,12 @@ class MainController:
 
         self._query = ""
         self._user_query = ""
+        self._available_only = False
         self._selected_isbn: str | None = None
 
         self.view.set_search_callback(self.on_search)
         self.view.set_user_search_callback(self.on_user_search)
+        self.view.set_availability_filter_callback(self.on_availability_filter)
         self.view.set_select_callback(self.on_select)
         self.view.set_navigation_callback(self.on_navigate)
         self.view.set_add_callback(self.on_add_requested)
@@ -58,6 +60,13 @@ class MainController:
             return
         self._user_query = query
         self._refresh_users()
+
+    def on_availability_filter(self, active: bool) -> None:
+        """N'affiche que les livres disponibles à prêter."""
+        if active == self._available_only:
+            return
+        self._available_only = active
+        self.refresh()
 
     def on_select(self, isbn: str) -> None:
         """Mémorise le livre sélectionné et adapte les actions."""
@@ -181,7 +190,9 @@ class MainController:
         ) is None:
             self._selected_isbn = None
 
-        books = self.model.filtered_books(self._query)
+        books = self.model.filtered_books(
+            self._query, available_only=self._available_only
+        )
         visible_isbns = {book.isbn for book in books}
         if (
             self._selected_isbn is not None

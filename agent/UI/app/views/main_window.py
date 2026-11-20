@@ -26,6 +26,7 @@ class MainWindow(ctk.CTk):
 
         self._search_callback: Callable[[str], None] | None = None
         self._user_search_callback: Callable[[str], None] | None = None
+        self._availability_filter_callback: Callable[[bool], None] | None = None
         self._select_callback: Callable[[str], None] | None = None
         self._navigation_callback: Callable[[str], None] | None = None
         self._add_callback: Callable[[], None] | None = None
@@ -201,8 +202,27 @@ class MainWindow(ctk.CTk):
             text_color=config.COLOR_TEXT,
             font=ctk.CTkFont(size=13),
         )
-        self.search_entry.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        self.search_entry.grid(
+            row=0, column=0, sticky="ew", padx=(0, 16), pady=(0, 14)
+        )
         self.search_entry.bind("<KeyRelease>", self._on_search_key)
+
+        self.availability_checkbox = ctk.CTkCheckBox(
+            self.books_body,
+            text=config.AVAILABILITY_FILTER_LABEL,
+            command=self._on_availability_filter_change,
+            font=ctk.CTkFont(size=13),
+            text_color=config.COLOR_TEXT_MUTED,
+            fg_color=config.COLOR_ACCENT,
+            hover_color=config.COLOR_ACCENT_HOVER,
+            border_color=config.COLOR_BORDER,
+            checkmark_color=config.COLOR_SURFACE,
+            checkbox_width=20,
+            checkbox_height=20,
+        )
+        self.availability_checkbox.grid(
+            row=0, column=1, sticky="e", pady=(0, 14)
+        )
 
         self.book_table = BookTable(
             self.books_body,
@@ -368,6 +388,11 @@ class MainWindow(ctk.CTk):
     ) -> None:
         self._user_search_callback = callback
 
+    def set_availability_filter_callback(
+        self, callback: Callable[[bool], None]
+    ) -> None:
+        self._availability_filter_callback = callback
+
     def set_select_callback(self, callback: Callable[[str], None]) -> None:
         self._select_callback = callback
 
@@ -532,6 +557,12 @@ class MainWindow(ctk.CTk):
     def _on_user_search_key(self, _event) -> None:
         if self._user_search_callback is not None:
             self._user_search_callback(self.user_search_entry.get())
+
+    def _on_availability_filter_change(self) -> None:
+        if self._availability_filter_callback is not None:
+            self._availability_filter_callback(
+                bool(self.availability_checkbox.get())
+            )
 
     def _on_row_selected(self, isbn: str) -> None:
         self.book_table.set_selected(isbn)

@@ -101,16 +101,21 @@ class Library:
         user = self.find_user(book.borrower_id)
         return user.name if user else None
 
-    def filtered_books(self, query: str = "") -> list[Book]:
-        """Filtre les livres par titre, auteur ou ISBN, sans tenir compte des accents."""
+    def filtered_books(
+        self, query: str = "", available_only: bool = False
+    ) -> list[Book]:
+        """Filtre les livres par recherche et, si demandé, par disponibilité."""
         query = query.strip()
+        books = self.books
+        if available_only:
+            books = [book for book in books if book.available]
         if not query:
-            return self.books
+            return books
 
         needle = normalize(query)
         return [
             book
-            for book in self.books
+            for book in books
             if needle in normalize(book.title)
             or needle in normalize(book.author)
             or needle in normalize(book.isbn)

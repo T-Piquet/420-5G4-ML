@@ -51,6 +51,24 @@ def test_search_matches_isbn() -> None:
     ]
 
 
+def test_available_only_hides_borrowed_books() -> None:
+    library = make_library()
+
+    assert [
+        book.isbn for book in library.filtered_books(available_only=True)
+    ] == ["9782070612758", "9782070360024"]
+
+
+def test_available_only_combines_with_search() -> None:
+    library = make_library()
+
+    assert library.filtered_books("miserables", available_only=True) == []
+    assert [
+        book.isbn
+        for book in library.filtered_books("etranger", available_only=True)
+    ] == ["9782070360024"]
+
+
 def test_add_book_strips_fields() -> None:
     library = make_library()
 
