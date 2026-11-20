@@ -154,3 +154,39 @@ L'interfaçage Python ↔ C++ est validé. On passe à l'**étape 4** (couche co
 
 ajoute la convo dans @[conversation.md]
 
+---
+
+## Assistant (2026-11-20T00:20:10Z)
+
+[conversation.md](file:///home/youssef/420-5G4-ML/agent/conversation.md) a été mis à jour avec l'ensemble de la conversation (17 messages).
+
+---
+
+## Utilisateur (2026-11-20T00:21:53Z)
+
+Fais l'étape 4
+
+---
+
+## Assistant (2026-11-20T00:22:42Z)
+
+L'**étape 4** est terminée :
+
+- [gui/__init__.py](file:///home/youssef/420-5G4-ML/agent/gui/__init__.py) : initialisation du package `gui`.
+- [gui/controleur.py](file:///home/youssef/420-5G4-ML/agent/gui/controleur.py) : `ControleurBibliotheque` encapsulant `Library` et `FileManager` avec validations (champs vides, refus du caractère `|`, unicité ISBN/ID, protection contre la suppression d'un livre emprunté) et retours `(bool, str)` en français.
+- [gui/application.py](file:///home/youssef/420-5G4-ML/agent/gui/application.py) : squelette `ApplicationBibliotheque(ctk.CTk)` avec barre latérale de navigation (Tableau de bord, Livres, Utilisateurs, Emprunts), sélecteur d'apparence (Système / Clair / Sombre), zone de contenu dynamique, barre d'état et sauvegarde automatique à la fermeture.
+- [app.py](file:///home/youssef/420-5G4-ML/agent/app.py) : point d'entrée CLI (`-d` / `--data-dir`, résolution automatique du module dans `build/`).
+- [tests/test_controleur.py](file:///home/youssef/420-5G4-ML/agent/tests/test_controleur.py) : tests unitaires du contrôleur.
+
+**Vérification** :
+- `PYTHONPATH=build:. .venv/bin/pytest -v` : **11/11 tests réussis** (6 bindings + 5 contrôleur).
+- `.venv/bin/python app.py --help` : imports et CLI validés.
+
+Tu peux déjà tester l'ouverture du squelette avec `.venv/bin/python app.py -d data`, ou on passe directement à l'**étape 5** (implémentation des 4 vues CustomTkinter : Tableau de bord, Livres, Utilisateurs, Emprunts) ?
+
+---
+
+## Utilisateur (2026-11-20T00:24:46Z)
+
+ajoute la convo dans @conversation.md
+
