@@ -11,6 +11,7 @@ from gui.application import ApplicationBibliotheque
 from gui.controleur import ControleurBibliotheque
 
 
+
 def analyser_arguments(argv=None):
     analyseur = argparse.ArgumentParser(
         description="Interface graphique de gestion de bibliothèque personnelle"
