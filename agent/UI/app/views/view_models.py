@@ -20,7 +20,9 @@ class BookRow:
 
 @dataclass(frozen=True)
 class UserRow:
-    """Utilisateur proposé dans la fenêtre d'emprunt."""
+    """Utilisateur affiché dans la liste ou la fenêtre d'emprunt."""
 
     user_id: str
     name: str
+    borrowed_count: int = 0
+    borrowed_titles: str = ""

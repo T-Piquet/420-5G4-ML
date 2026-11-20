@@ -13,7 +13,8 @@ import customtkinter as ctk
 
 from app import config
 from app.views.book_table import BookTable
-from app.views.dialogs import AddBookDialog, BorrowDialog
+from app.views.dialogs import AddBookDialog, AddUserDialog, BorrowDialog
+from app.views.user_table import UserTable
 from app.views.view_models import BookRow, UserRow
 
 
@@ -24,13 +25,16 @@ class MainWindow(ctk.CTk):
         super().__init__()
 
         self._search_callback: Callable[[str], None] | None = None
+        self._user_search_callback: Callable[[str], None] | None = None
         self._select_callback: Callable[[str], None] | None = None
         self._navigation_callback: Callable[[str], None] | None = None
         self._add_callback: Callable[[], None] | None = None
+        self._add_user_callback: Callable[[], None] | None = None
         self._borrow_callback: Callable[[], None] | None = None
         self._delete_callback: Callable[[], None] | None = None
 
         self._books_subtitle = ""
+        self._users_subtitle = ""
         self._active_section = "Livres"
 
         self.title(config.APP_TITLE)
@@ -277,6 +281,64 @@ class MainWindow(ctk.CTk):
         )
         self.add_button.grid(row=0, column=2)
 
+        self.users_body = ctk.CTkFrame(self.main, fg_color="transparent")
+        self.users_body.grid(row=1, column=0, sticky="nsew")
+        self.users_body.grid_columnconfigure(0, weight=1)
+        self.users_body.grid_rowconfigure(1, weight=1)
+
+        self.user_search_entry = ctk.CTkEntry(
+            self.users_body,
+            placeholder_text=config.USER_SEARCH_PLACEHOLDER,
+            height=42,
+            corner_radius=10,
+            border_width=1,
+            border_color=config.COLOR_BORDER,
+            fg_color=config.COLOR_SURFACE,
+            text_color=config.COLOR_TEXT,
+            font=ctk.CTkFont(size=13),
+        )
+        self.user_search_entry.grid(row=0, column=0, sticky="ew", pady=(0, 14))
+        self.user_search_entry.bind("<KeyRelease>", self._on_user_search_key)
+
+        self.user_table = UserTable(self.users_body)
+        self.user_table.grid(row=1, column=0, sticky="nsew")
+
+        users_footer = ctk.CTkFrame(self.users_body, fg_color="transparent")
+        users_footer.grid(row=2, column=0, sticky="ew", pady=(16, 0))
+        users_footer.grid_columnconfigure(0, weight=1)
+
+        self.users_info_label = ctk.CTkLabel(
+            users_footer,
+            text="",
+            anchor="w",
+            font=ctk.CTkFont(size=12),
+            text_color=config.COLOR_TEXT_MUTED,
+        )
+        self.users_info_label.grid(row=0, column=0, sticky="w")
+
+        self.users_status_label = ctk.CTkLabel(
+            users_footer,
+            text="",
+            anchor="w",
+            font=ctk.CTkFont(size=12),
+            text_color=config.COLOR_TEXT_MUTED,
+        )
+        self.users_status_label.grid(row=1, column=0, sticky="w", pady=(2, 0))
+
+        self.add_user_button = ctk.CTkButton(
+            users_footer,
+            text="Ajouter",
+            width=120,
+            height=38,
+            fg_color=config.COLOR_ACCENT,
+            hover_color=config.COLOR_ACCENT_HOVER,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            command=self._on_add_user_click,
+        )
+        self.add_user_button.grid(row=0, column=1, rowspan=2, sticky="e")
+
+        self.users_body.grid_remove()
+
         self.placeholder_body = ctk.CTkFrame(
             self.main,
             fg_color=config.COLOR_SURFACE,
@@ -301,6 +363,11 @@ class MainWindow(ctk.CTk):
     def set_search_callback(self, callback: Callable[[str], None]) -> None:
         self._search_callback = callback
 
+    def set_user_search_callback(
+        self, callback: Callable[[str], None]
+    ) -> None:
+        self._user_search_callback = callback
+
     def set_select_callback(self, callback: Callable[[str], None]) -> None:
         self._select_callback = callback
 
@@ -312,6 +379,9 @@ class MainWindow(ctk.CTk):
     def set_add_callback(self, callback: Callable[[], None]) -> None:
         self._add_callback = callback
 
+    def set_add_user_callback(self, callback: Callable[[], None]) -> None:
+        self._add_user_callback = callback
+
     def set_borrow_callback(self, callback: Callable[[], None]) -> None:
         self._borrow_callback = callback
 
@@ -322,6 +392,9 @@ class MainWindow(ctk.CTk):
 
     def set_books(self, rows: list[BookRow]) -> None:
         self.book_table.set_rows(rows)
+
+    def set_users(self, rows: list[UserRow]) -> None:
+        self.user_table.set_rows(rows)
 
     def set_selected(self, isbn: str | None) -> None:
         self.book_table.set_selected(isbn)
@@ -345,20 +418,38 @@ class MainWindow(ctk.CTk):
         self.info_label.configure(text=text)
 
     def set_status(self, message: str, level: str = "info") -> None:
+        self.status_label.configure(
+            text=message,
+            text_color=self._status_color(level),
+        )
+
+    def set_users_status(self, message: str, level: str = "info") -> None:
+        self.users_status_label.configure(
+            text=message,
+            text_color=self._status_color(level),
+        )
+
+    @staticmethod
+    def _status_color(level: str) -> str:
         colors = {
             "success": config.COLOR_SUCCESS,
             "error": config.COLOR_DANGER,
             "info": config.COLOR_TEXT_MUTED,
         }
-        self.status_label.configure(
-            text=message,
-            text_color=colors.get(level, config.COLOR_TEXT_MUTED),
-        )
+        return colors.get(level, config.COLOR_TEXT_MUTED)
 
     def set_section_subtitle(self, text: str) -> None:
         self._books_subtitle = text
         if self._active_section == "Livres":
             self.section_subtitle.configure(text=text)
+
+    def set_users_subtitle(self, text: str) -> None:
+        self._users_subtitle = text
+        if self._active_section == "Utilisateurs":
+            self.section_subtitle.configure(text=text)
+
+    def set_users_footer_info(self, text: str) -> None:
+        self.users_info_label.configure(text=text)
 
     def set_section(self, section: str) -> None:
         self._active_section = section
@@ -378,13 +469,20 @@ class MainWindow(ctk.CTk):
         if section == "Livres":
             self.section_subtitle.configure(text=self._books_subtitle)
             self.placeholder_body.grid_remove()
+            self.users_body.grid_remove()
             self.books_body.grid()
+        elif section == "Utilisateurs":
+            self.section_subtitle.configure(text=self._users_subtitle)
+            self.placeholder_body.grid_remove()
+            self.books_body.grid_remove()
+            self.users_body.grid()
         else:
             self.section_subtitle.configure(text="Section à venir")
             self.placeholder_label.configure(
                 text=f"La section « {section} » sera disponible prochainement."
             )
             self.books_body.grid_remove()
+            self.users_body.grid_remove()
             self.placeholder_body.grid()
 
     def clear_search(self) -> None:
@@ -392,12 +490,23 @@ class MainWindow(ctk.CTk):
         # CTk 5.2 ne réaffiche pas le placeholder tout seul hors focus.
         self.search_entry.configure(placeholder_text=config.SEARCH_PLACEHOLDER)
 
+    def clear_user_search(self) -> None:
+        self.user_search_entry.delete(0, "end")
+        self.user_search_entry.configure(
+            placeholder_text=config.USER_SEARCH_PLACEHOLDER
+        )
+
     # Dialogues
 
     def open_add_dialog(
         self, on_submit: Callable[[str, str, str], str | None]
     ) -> None:
         AddBookDialog(self, on_submit)
+
+    def open_add_user_dialog(
+        self, on_submit: Callable[[str, str], str | None]
+    ) -> None:
+        AddUserDialog(self, on_submit)
 
     def open_borrow_dialog(
         self,
@@ -420,6 +529,10 @@ class MainWindow(ctk.CTk):
         if self._search_callback is not None:
             self._search_callback(self.search_entry.get())
 
+    def _on_user_search_key(self, _event) -> None:
+        if self._user_search_callback is not None:
+            self._user_search_callback(self.user_search_entry.get())
+
     def _on_row_selected(self, isbn: str) -> None:
         self.book_table.set_selected(isbn)
         if self._select_callback is not None:
@@ -433,6 +546,10 @@ class MainWindow(ctk.CTk):
     def _on_add_click(self) -> None:
         if self._add_callback is not None:
             self._add_callback()
+
+    def _on_add_user_click(self) -> None:
+        if self._add_user_callback is not None:
+            self._add_user_callback()
 
     def _on_borrow_click(self) -> None:
         if self._borrow_callback is not None:

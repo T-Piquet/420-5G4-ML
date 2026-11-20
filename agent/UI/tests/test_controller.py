@@ -17,27 +17,38 @@ class FakeView:
 
     def __init__(self) -> None:
         self.books = []
+        self.users = []
         self.selected = None
         self.actions = None
         self.footer_info = None
         self.status = None
         self.subtitle = None
+        self.users_subtitle = None
+        self.users_footer_info = None
+        self.users_status = None
         self.search_cleared = False
+        self.user_search_cleared = False
 
         self.add_dialog = None
+        self.add_user_dialog = None
         self.borrow_dialog = None
         self.delete_requested = None
         self.delete_answer = True
 
         self.search_callback = None
+        self.user_search_callback = None
         self.select_callback = None
         self.navigation_callback = None
         self.add_callback = None
+        self.add_user_callback = None
         self.borrow_callback = None
         self.delete_callback = None
 
     def set_search_callback(self, callback) -> None:
         self.search_callback = callback
+
+    def set_user_search_callback(self, callback) -> None:
+        self.user_search_callback = callback
 
     def set_select_callback(self, callback) -> None:
         self.select_callback = callback
@@ -48,6 +59,9 @@ class FakeView:
     def set_add_callback(self, callback) -> None:
         self.add_callback = callback
 
+    def set_add_user_callback(self, callback) -> None:
+        self.add_user_callback = callback
+
     def set_borrow_callback(self, callback) -> None:
         self.borrow_callback = callback
 
@@ -56,6 +70,9 @@ class FakeView:
 
     def set_books(self, rows) -> None:
         self.books = rows
+
+    def set_users(self, rows) -> None:
+        self.users = rows
 
     def set_selected(self, isbn) -> None:
         self.selected = isbn
@@ -75,14 +92,29 @@ class FakeView:
     def set_status(self, message: str, level: str = "info") -> None:
         self.status = (message, level)
 
+    def set_users_status(self, message: str, level: str = "info") -> None:
+        self.users_status = (message, level)
+
     def set_section_subtitle(self, text: str) -> None:
         self.subtitle = text
+
+    def set_users_subtitle(self, text: str) -> None:
+        self.users_subtitle = text
+
+    def set_users_footer_info(self, text: str) -> None:
+        self.users_footer_info = text
 
     def clear_search(self) -> None:
         self.search_cleared = True
 
+    def clear_user_search(self) -> None:
+        self.user_search_cleared = True
+
     def open_add_dialog(self, on_submit) -> None:
         self.add_dialog = on_submit
+
+    def open_add_user_dialog(self, on_submit) -> None:
+        self.add_user_dialog = on_submit
 
     def open_borrow_dialog(self, book_title, users, on_submit) -> None:
         self.borrow_dialog = (book_title, users, on_submit)
@@ -287,3 +319,91 @@ def test_borrow_without_users_shows_error() -> None:
 
     assert view.borrow_dialog is None
     assert view.status[1] == "error"
+
+
+def test_initial_users_list() -> None:
+    _, view, _, _ = build()
+
+    assert [row.user_id for row in view.users] == ["USR001", "USR002"]
+    assert view.users[0].borrowed_count == 1
+    assert view.users[0].borrowed_titles == "Les Misérables"
+    assert view.users[1].borrowed_count == 0
+    assert view.users_subtitle == "2 utilisateurs · 1 livre emprunté"
+    assert view.users_footer_info == view.users_subtitle
+
+
+def test_user_search_filters_rows() -> None:
+    _, view, _, _ = build()
+
+    view.user_search_callback("jean")
+
+    assert [row.user_id for row in view.users] == ["USR002"]
+
+    view.user_search_callback("USR001")
+
+    assert [row.user_id for row in view.users] == ["USR001"]
+
+
+def test_add_user_submits_and_saves() -> None:
+    model, view, repository, _ = build()
+
+    view.add_user_callback()
+    assert view.add_user_dialog is not None
+    assert view.add_user_dialog("Sophie Lemaire", "USR003") is None
+
+    assert model.find_user("USR003").name == "Sophie Lemaire"
+    assert repository.saved == 1
+    assert view.users_status == ("Utilisateur ajouté.", "success")
+    assert view.user_search_cleared is True
+    assert [row.user_id for row in view.users] == [
+        "USR001",
+        "USR002",
+        "USR003",
+    ]
+
+
+def test_add_duplicate_user_returns_error() -> None:
+    model, view, repository, _ = build()
+
+    view.add_user_callback()
+    error = view.add_user_dialog("Autre", "USR001")
+
+    assert error is not None
+    assert "existe déjà" in error
+    assert model.find_user("USR001").name == "Marie Dubois"
+    assert repository.saved == 0
+
+
+def test_add_user_with_save_failure_shows_users_error() -> None:
+    _, view, _, _ = build(FakeRepository(fail=True))
+
+    view.add_user_callback()
+    submit = view.add_user_dialog
+    assert submit is not None
+
+    assert submit("Sophie Lemaire", "USR003") is None
+
+    assert view.users_status == (
+        "Impossible d'enregistrer les données de la bibliothèque.",
+        "error",
+    )
+
+
+def test_user_rows_follow_borrow_and_return() -> None:
+    _, view, _, _ = build()
+    view.select_callback("9782070612758")
+
+    view.borrow_callback()
+    _, _, submit = view.borrow_dialog
+    assert submit("USR002") is None
+
+    row = next(row for row in view.users if row.user_id == "USR002")
+    assert row.borrowed_count == 1
+    assert row.borrowed_titles == "Le Petit Prince"
+
+    view.select_callback("9782070612758")
+    view.borrow_callback()
+
+    row = next(row for row in view.users if row.user_id == "USR002")
+    assert row.borrowed_count == 0
+    assert row.borrowed_titles == ""

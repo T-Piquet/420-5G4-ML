@@ -38,8 +38,8 @@
 - Tests: `cd agent/UI && .venv/bin/python -m pytest -q`. Tests that exercise the native model (library, repository, controller) require the module and skip with an explicit message if it is missing; build it first. GUI smoke tests need a display; use `xvfb-run -a` when `DISPLAY` is unset.
 - MVC layout: `app/models/book.py` and `user.py` are dataclasses; `app/models/library.py` is a thin facade over the pybind11 module, which owns the C++ `Book`/`User`/`Library` state. `app/repositories` uses the C++ `FileManager`; `app/views` contains only CTk widgets and receives `BookRow`/`UserRow`; `app/controllers` wires everything; `main.py` is the composition root.
 - Bindings source: `agent/bindings/library_bindings.cpp`; CMake target `bibliotheque_core`. Getters return copies to avoid dangling C++ pointers.
-- Data: `agent/data/books.txt` (`titre|auteur|isbn|1|` or `0|USRxxx`) and `users.txt` (`nom|id|isbn1,isbn2`). The UI reads at launch and rewrites both files atomically after add/borrow/return/delete; restore with `git checkout -- agent/data`.
-- Screen: sidebar Livres/Utilisateurs/Emprunts/Statistiques (only Livres is active), accent-insensitive search by title/author/ISBN (implemented in Python on the C++ data), book table, and Ajouter / Emprunter↔Retourner / Supprimer.
+- Data: `agent/data/books.txt` (`titre|auteur|isbn|1|` or `0|USRxxx`) and `users.txt` (`nom|id|isbn1,isbn2`). The UI reads at launch and rewrites both files atomically after book add/delete/borrow/return and user add; restore with `git checkout -- agent/data`.
+- Screen: sidebar Livres/Utilisateurs/Emprunts/Statistiques (Livres and Utilisateurs are active). Livres has accent-insensitive search by title/author/ISBN, a book table, and Ajouter / Emprunter↔Retourner / Supprimer. Utilisateurs has accent-insensitive search by name/id, a user table (name, id, borrow count, borrowed titles), and Ajouter.
 - UI text and comments are French; identifiers are English.
 
 ## Verification

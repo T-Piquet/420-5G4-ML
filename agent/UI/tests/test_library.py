@@ -145,3 +145,53 @@ def test_statistics() -> None:
         borrowed=1,
         users=2,
     )
+
+
+def test_add_user_strips_fields() -> None:
+    library = make_library()
+
+    user = library.add_user("  Sophie Lemaire  ", " USR003 ")
+
+    assert user.name == "Sophie Lemaire"
+    assert user.user_id == "USR003"
+    assert user.borrowed_isbns == []
+    assert library.find_user("USR003") == user
+
+
+def test_add_user_rejects_duplicate_id() -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError, match="existe déjà"):
+        library.add_user("Autre", "USR001")
+
+
+@pytest.mark.parametrize(
+    ("name", "user_id"),
+    [
+        ("", "USR003"),
+        ("Sophie Lemaire", ""),
+        ("Nom|interdit", "USR003"),
+        ("Sophie Lemaire", "USR|003"),
+    ],
+)
+def test_add_user_rejects_invalid_values(name: str, user_id: str) -> None:
+    library = make_library()
+
+    with pytest.raises(LibraryError):
+        library.add_user(name, user_id)
+
+
+def test_user_search_ignores_case_and_accents() -> None:
+    library = make_library()
+    library.add_user("Élodie Müller", "USR003")
+
+    assert [user.user_id for user in library.filtered_users("elodie")] == [
+        "USR003"
+    ]
+    assert [user.user_id for user in library.filtered_users("MULLER")] == [
+        "USR003"
+    ]
+    assert [user.user_id for user in library.filtered_users("usr001")] == [
+        "USR001"
+    ]
+    assert len(library.filtered_users("")) == 3

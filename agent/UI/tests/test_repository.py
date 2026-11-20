@@ -112,3 +112,18 @@ def test_save_creates_missing_directory(tmp_path: Path) -> None:
 
     assert (tmp_path / "donnees" / "books.txt").exists()
     assert (tmp_path / "donnees" / "users.txt").exists()
+
+
+def test_save_includes_added_user(tmp_path: Path) -> None:
+    library = Library()
+    library.add_user("Sophie Lemaire", "USR003")
+    repository = LibraryRepository(tmp_path)
+
+    repository.save(library)
+
+    assert (tmp_path / "users.txt").read_text(encoding="utf-8") == (
+        "Sophie Lemaire|USR003|\n"
+    )
+
+    reloaded = repository.load()
+    assert reloaded.find_user("USR003").name == "Sophie Lemaire"

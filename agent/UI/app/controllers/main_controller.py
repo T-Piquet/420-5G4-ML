@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from app.models.book import Book
 from app.models.library import Library, LibraryError
+from app.models.user import User
 from app.repositories.library_repository import LibraryRepository
 from app.views.main_window import MainWindow
 from app.views.view_models import BookRow, UserRow
@@ -28,12 +29,15 @@ class MainController:
         self.repository = repository
 
         self._query = ""
+        self._user_query = ""
         self._selected_isbn: str | None = None
 
         self.view.set_search_callback(self.on_search)
+        self.view.set_user_search_callback(self.on_user_search)
         self.view.set_select_callback(self.on_select)
         self.view.set_navigation_callback(self.on_navigate)
         self.view.set_add_callback(self.on_add_requested)
+        self.view.set_add_user_callback(self.on_add_user_requested)
         self.view.set_borrow_callback(self.on_borrow_requested)
         self.view.set_delete_callback(self.on_delete_requested)
 
@@ -47,6 +51,13 @@ class MainController:
             return
         self._query = query
         self.refresh()
+
+    def on_user_search(self, query: str) -> None:
+        """Filtre la liste des utilisateurs depuis leur champ de recherche."""
+        if query == self._user_query:
+            return
+        self._user_query = query
+        self._refresh_users()
 
     def on_select(self, isbn: str) -> None:
         """Mémorise le livre sélectionné et adapte les actions."""
@@ -64,6 +75,9 @@ class MainController:
 
     def on_add_requested(self) -> None:
         self.view.open_add_dialog(self._submit_add)
+
+    def on_add_user_requested(self) -> None:
+        self.view.open_add_user_dialog(self._submit_add_user)
 
     def on_borrow_requested(self) -> None:
         book = self._selected_book()
@@ -119,6 +133,19 @@ class MainController:
             self.view.set_status("Livre ajouté.", "success")
         return None
 
+    def _submit_add_user(self, name: str, user_id: str) -> str | None:
+        try:
+            self.model.add_user(name, user_id)
+        except LibraryError as error:
+            return str(error)
+
+        self._user_query = ""
+        self.view.clear_user_search()
+        self.refresh()
+        if self._save(users=True):
+            self.view.set_users_status("Utilisateur ajouté.", "success")
+        return None
+
     def _submit_borrow(self, user_id: str) -> str | None:
         book = self._selected_book()
         if book is None:
@@ -171,6 +198,20 @@ class MainController:
             f"{plural(stats.borrowed, 'emprunté', 'empruntés')}"
         )
         self._update_selection()
+        self._refresh_users()
+
+    def _refresh_users(self) -> None:
+        """Reconstruit la liste des utilisateurs et son sous-titre."""
+        users = self.model.filtered_users(self._user_query)
+        self.view.set_users([self._to_user_row(user) for user in users])
+
+        stats = self.model.statistics()
+        subtitle = (
+            f"{plural(stats.users, 'utilisateur', 'utilisateurs')} · "
+            f"{plural(stats.borrowed, 'livre emprunté', 'livres empruntés')}"
+        )
+        self.view.set_users_subtitle(subtitle)
+        self.view.set_users_footer_info(subtitle)
 
     def _update_selection(self) -> None:
         book = self._selected_book()
@@ -214,16 +255,31 @@ class MainController:
             available=book.available,
         )
 
+    def _to_user_row(self, user: User) -> UserRow:
+        titles = []
+        for isbn in user.borrowed_isbns:
+            book = self.model.find_book(isbn)
+            titles.append(book.title if book is not None else isbn)
+        return UserRow(
+            user_id=user.user_id,
+            name=user.name,
+            borrowed_count=len(user.borrowed_isbns),
+            borrowed_titles=", ".join(titles),
+        )
+
     def _selected_book(self) -> Book | None:
         if self._selected_isbn is None:
             return None
         return self.model.find_book(self._selected_isbn)
 
-    def _save(self) -> bool:
+    def _save(self, users: bool = False) -> bool:
         try:
             self.repository.save(self.model)
         except OSError:
-            self.view.set_status(
+            setter = (
+                self.view.set_users_status if users else self.view.set_status
+            )
+            setter(
                 "Impossible d'enregistrer les données de la bibliothèque.",
                 "error",
             )

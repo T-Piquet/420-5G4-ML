@@ -116,6 +116,20 @@ class Library:
             or needle in normalize(book.isbn)
         ]
 
+    def filtered_users(self, query: str = "") -> list[User]:
+        """Filtre les utilisateurs par nom ou identifiant, sans tenir compte des accents."""
+        query = query.strip()
+        if not query:
+            return self.users
+
+        needle = normalize(query)
+        return [
+            user
+            for user in self.users
+            if needle in normalize(user.name)
+            or needle in normalize(user.user_id)
+        ]
+
     def statistics(self) -> LibraryStats:
         return LibraryStats(
             total=self._core.total_books(),
@@ -136,6 +150,20 @@ class Library:
         book = self._native.Book(title, author, isbn)
         self._core.add_book(book)
         return self._to_book(book)
+
+    def add_user(self, name: str, user_id: str) -> User:
+        """Ajoute un utilisateur après validation des champs."""
+        name = self._clean_field(name, "Le nom")
+        user_id = self._clean_field(user_id, "L'identifiant")
+
+        if self._core.find_user(user_id) is not None:
+            raise LibraryError(
+                f"Un utilisateur avec l'identifiant {user_id} existe déjà."
+            )
+
+        user = self._native.User(name, user_id)
+        self._core.add_user(user)
+        return self._to_user(user)
 
     def remove_book(self, isbn: str) -> Book:
         """Supprime un livre et le retire des emprunts des utilisateurs."""

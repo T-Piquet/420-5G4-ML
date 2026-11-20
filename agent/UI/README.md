@@ -70,10 +70,11 @@ L'application lit au démarrage les fichiers du dossier `agent/data/` avec le
 - `books.txt` : `titre|auteur|isbn|disponible|idEmprunteur` ;
 - `users.txt` : `nom|identifiant|isbn1,isbn2`.
 
-Les actions **Ajouter**, **Emprunter**, **Retourner** et **Supprimer**
-réécrivent ces deux fichiers au même format que le programme C++. L'écriture
-se fait dans un fichier temporaire renommé ensuite, afin de ne pas laisser un
-fichier tronqué en cas d'erreur. Pour revenir aux données d'origine :
+Les actions **Ajouter** un livre, **Emprunter**, **Retourner**, **Supprimer** et
+**Ajouter un utilisateur** réécrivent les fichiers concernés au même format que
+le programme C++. L'écriture se fait dans un fichier temporaire renommé ensuite,
+afin de ne pas laisser un fichier tronqué en cas d'erreur. Pour revenir aux
+données d'origine :
 
 ```bash
 git checkout -- agent/data
@@ -90,7 +91,11 @@ git checkout -- agent/data
 - **Emprunter** un livre disponible en choisissant l'utilisateur dans une
   liste ; le même bouton devient **Retourner** pour un livre emprunté.
 - **Supprimer** le livre sélectionné après confirmation.
-- **Navigation** : Livres est fonctionnel ; Utilisateurs, Emprunts et
+- **Section Utilisateurs** : liste alimentée par `users.txt` (nom, identifiant,
+  nombre d'emprunts et titres empruntés), recherche accent-insensible par nom
+  ou identifiant, et ajout d'un utilisateur via une fenêtre modale (unicité de
+  l'identifiant).
+- **Navigation** : Livres et Utilisateurs sont fonctionnels ; Emprunts et
   Statistiques affichent une section « à venir ».
 
 ## Tests
@@ -130,8 +135,9 @@ agent/
     │   │   └── library_repository.py    # FileManager C++
     │   ├── views/
     │   │   ├── main_window.py           # fenêtre, sidebar, en-tête, pied
-    │   │   ├── book_table.py            # tableau scrollable
-    │   │   ├── dialogs.py               # ajout et choix d'utilisateur
+    │   │   ├── book_table.py            # tableau scrollable des livres
+    │   │   ├── user_table.py            # tableau scrollable des utilisateurs
+    │   │   ├── dialogs.py               # ajout livre/utilisateur, emprunt
     │   │   └── view_models.py           # BookRow / UserRow
     │   └── controllers/
     │       └── main_controller.py       # câblage vue ↔ modèle ↔ dépôt

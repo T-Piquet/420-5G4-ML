@@ -8,7 +8,7 @@ import os
 
 import pytest
 
-from app.views.view_models import BookRow
+from app.views.view_models import BookRow, UserRow
 
 
 def _display_available() -> bool:
@@ -53,6 +53,27 @@ def test_main_window_smoke() -> None:
         window.set_status("Prêt.", "success")
         window.set_section("Emprunts")
         assert window.section_title.cget("text") == "Emprunts"
+
+        window.set_users(
+            [
+                UserRow(
+                    user_id="USR001",
+                    name="Marie Dubois",
+                    borrowed_count=1,
+                    borrowed_titles="Les Misérables",
+                )
+            ]
+        )
+        window.set_users_subtitle("1 utilisateur · 1 livre emprunté")
+        window.set_section("Utilisateurs")
+        assert window.section_title.cget("text") == "Utilisateurs"
+        assert window.add_user_button.cget("text") == "Ajouter"
+        assert window.user_search_entry.cget("placeholder_text") == (
+            "Rechercher par nom ou identifiant…"
+        )
+        assert window.section_subtitle.cget("text") == (
+            "1 utilisateur · 1 livre emprunté"
+        )
 
         window.set_section("Livres")
         assert window.section_title.cget("text") == "Livres"
