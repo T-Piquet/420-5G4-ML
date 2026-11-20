@@ -1,24 +1,10 @@
 import customtkinter as ctk
 
 from gui.controleur import ControleurBibliotheque
-
-
-class VuePlaceholder(ctk.CTkFrame):
-    def __init__(self, parent, titre: str):
-        super().__init__(parent, fg_color="transparent")
-        ctk.CTkLabel(
-            self,
-            text=titre,
-            font=ctk.CTkFont(size=22, weight="bold"),
-        ).pack(anchor="w", padx=20, pady=(20, 8))
-        ctk.CTkLabel(
-            self,
-            text="Composant en attente d'implémentation (étape 5).",
-            text_color="gray",
-        ).pack(anchor="w", padx=20)
-
-    def rafraichir(self):
-        pass
+from gui.vue_emprunts import VueEmprunts
+from gui.vue_livres import VueLivres
+from gui.vue_tableau_bord import VueTableauBord
+from gui.vue_utilisateurs import VueUtilisateurs
 
 
 class ApplicationBibliotheque(ctk.CTk):
@@ -110,8 +96,18 @@ class ApplicationBibliotheque(ctk.CTk):
         self.label_statut.pack(fill="x", padx=14, pady=4)
 
     def _construire_vues(self):
-        for cle, libelle in self.SECTIONS:
-            self.vues[cle] = VuePlaceholder(self.zone_contenu, libelle)
+        self.vues["tableau_bord"] = VueTableauBord(
+            self.zone_contenu, self.controleur, self.afficher_statut
+        )
+        self.vues["livres"] = VueLivres(
+            self.zone_contenu, self.controleur, self.afficher_statut
+        )
+        self.vues["utilisateurs"] = VueUtilisateurs(
+            self.zone_contenu, self.controleur, self.afficher_statut
+        )
+        self.vues["emprunts"] = VueEmprunts(
+            self.zone_contenu, self.controleur, self.afficher_statut
+        )
 
     def afficher_section(self, cle: str):
         if cle not in self.vues:
