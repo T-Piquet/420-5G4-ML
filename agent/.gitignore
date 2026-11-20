@@ -1,1 +1,4 @@
 build/*
+build-*/
+UI/app/*.so
+data/*.backup

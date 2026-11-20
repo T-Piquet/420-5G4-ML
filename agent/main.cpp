@@ -243,7 +243,9 @@ int main(int argc, char* argv[]) {
             }
             
             case 13: { // Create Backup
-                fileManager.createBackup();
+                if (!fileManager.createBackup()) {
+                    cout << "Erreur lors de la création de la sauvegarde.\n";
+                }
                 pauseForInput();
                 break;
             }
