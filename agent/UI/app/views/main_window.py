@@ -34,6 +34,7 @@ class MainWindow(ctk.CTk):
         self._add_user_callback: Callable[[], None] | None = None
         self._borrow_callback: Callable[[], None] | None = None
         self._delete_callback: Callable[[], None] | None = None
+        self._save_callback: Callable[[], None] | None = None
 
         self._books_subtitle = ""
         self._users_subtitle = ""
@@ -65,7 +66,7 @@ class MainWindow(ctk.CTk):
         self.sidebar.grid(row=0, column=0, sticky="nsw")
         self.sidebar.grid_propagate(False)
         self.sidebar.grid_columnconfigure(0, weight=1)
-        self.sidebar.grid_rowconfigure(2, weight=1)
+        self.sidebar.grid_rowconfigure(3, weight=1)
 
         brand = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         brand.grid(row=0, column=0, sticky="ew", padx=20, pady=(24, 26))
@@ -119,12 +120,39 @@ class MainWindow(ctk.CTk):
             button.grid(row=row, column=0, sticky="ew", pady=2)
             self._nav_buttons[section] = button
 
+        save_block = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        save_block.grid(row=2, column=0, sticky="ew", padx=12, pady=(18, 0))
+        save_block.grid_columnconfigure(0, weight=1)
+
+        self.save_button = ctk.CTkButton(
+            save_block,
+            text="Sauvegarder",
+            height=40,
+            corner_radius=8,
+            fg_color=config.COLOR_ACCENT,
+            hover_color=config.COLOR_ACCENT_HOVER,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            command=self._on_save_click,
+        )
+        self.save_button.grid(row=0, column=0, sticky="ew")
+
+        self.save_status_label = ctk.CTkLabel(
+            save_block,
+            text="",
+            anchor="w",
+            justify="left",
+            wraplength=config.SIDEBAR_WIDTH - 32,
+            font=ctk.CTkFont(size=11),
+            text_color=config.COLOR_TEXT_MUTED,
+        )
+        self.save_status_label.grid(row=1, column=0, sticky="ew", pady=(6, 0))
+
         profile = ctk.CTkFrame(
             self.sidebar,
             fg_color=config.COLOR_BACKGROUND,
             corner_radius=10,
         )
-        profile.grid(row=3, column=0, sticky="ew", padx=12, pady=16)
+        profile.grid(row=4, column=0, sticky="ew", padx=12, pady=16)
         profile.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
@@ -424,6 +452,9 @@ class MainWindow(ctk.CTk):
     def set_delete_callback(self, callback: Callable[[], None]) -> None:
         self._delete_callback = callback
 
+    def set_save_callback(self, callback: Callable[[], None]) -> None:
+        self._save_callback = callback
+
     # Mise à jour de l'affichage
 
     def set_books(self, rows: list[BookRow]) -> None:
@@ -464,6 +495,12 @@ class MainWindow(ctk.CTk):
 
     def set_users_status(self, message: str, level: str = "info") -> None:
         self.users_status_label.configure(
+            text=message,
+            text_color=self._status_color(level),
+        )
+
+    def set_save_status(self, message: str, level: str = "info") -> None:
+        self.save_status_label.configure(
             text=message,
             text_color=self._status_color(level),
         )
@@ -617,3 +654,7 @@ class MainWindow(ctk.CTk):
     def _on_delete_click(self) -> None:
         if self._delete_callback is not None:
             self._delete_callback()
+
+    def _on_save_click(self) -> None:
+        if self._save_callback is not None:
+            self._save_callback()

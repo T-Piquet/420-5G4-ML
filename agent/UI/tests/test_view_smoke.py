@@ -28,6 +28,7 @@ def test_main_window_smoke() -> None:
         window.update()
 
         assert window.section_title.cget("text") == "Livres"
+        assert window.save_button.cget("text") == "Sauvegarder"
         assert window.add_button.cget("text") == "Ajouter"
         assert window.borrow_button.cget("text") == "Emprunter"
         assert window.delete_button.cget("text") == "Supprimer"
@@ -104,5 +105,13 @@ def test_main_window_smoke() -> None:
 
         window.set_section("Livres")
         assert window.section_title.cget("text") == "Livres"
+
+        save_calls: list[bool] = []
+        window.set_save_callback(lambda: save_calls.append(True))
+        window._on_save_click()
+        assert save_calls == [True]
+
+        window.set_save_status("Données enregistrées.", "success")
+        assert window.save_status_label.cget("text") == "Données enregistrées."
     finally:
         window.destroy()

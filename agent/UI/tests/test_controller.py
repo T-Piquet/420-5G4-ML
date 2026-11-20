@@ -29,6 +29,7 @@ class FakeView:
         self.users_status = None
         self.statistics = None
         self.statistics_subtitle = None
+        self.save_status = None
         self.search_cleared = False
         self.user_search_cleared = False
 
@@ -47,6 +48,7 @@ class FakeView:
         self.add_user_callback = None
         self.borrow_callback = None
         self.delete_callback = None
+        self.save_callback = None
 
     def set_search_callback(self, callback) -> None:
         self.search_callback = callback
@@ -75,6 +77,9 @@ class FakeView:
     def set_delete_callback(self, callback) -> None:
         self.delete_callback = callback
 
+    def set_save_callback(self, callback) -> None:
+        self.save_callback = callback
+
     def set_books(self, rows) -> None:
         self.books = rows
 
@@ -101,6 +106,9 @@ class FakeView:
 
     def set_users_status(self, message: str, level: str = "info") -> None:
         self.users_status = (message, level)
+
+    def set_save_status(self, message: str, level: str = "info") -> None:
+        self.save_status = (message, level)
 
     def set_section_subtitle(self, text: str) -> None:
         self.subtitle = text
@@ -529,3 +537,35 @@ def test_empty_library_has_zero_availability_rate() -> None:
         users=0,
         availability_rate=0,
     )
+
+
+def test_save_callback_persists_current_state() -> None:
+    _, view, repository, _ = build()
+
+    assert view.save_callback is not None
+    assert repository.saved == 0
+
+    view.save_callback()
+
+    assert repository.saved == 1
+    assert view.save_status == ("Données enregistrées.", "success")
+
+
+def test_save_callback_reports_failure() -> None:
+    _, view, _, _ = build(FakeRepository(fail=True))
+
+    view.save_callback()
+
+    assert view.save_status == (
+        "Impossible d'enregistrer les données de la bibliothèque.",
+        "error",
+    )
+
+
+def test_auto_save_updates_sidebar_status() -> None:
+    _, view, _, _ = build()
+
+    view.add_user_callback()
+    assert view.add_user_dialog("Sophie Lemaire", "USR003") is None
+
+    assert view.save_status == ("Données enregistrées.", "success")

@@ -101,6 +101,9 @@ git checkout -- agent/data
   livres disponibles, les livres empruntés, le nombre d'utilisateurs et le
   taux de disponibilité. Les compteurs proviennent du cœur C++
   (`getTotalBooks`, `getAvailableBookCount`, `getCheckedOutBookCount`).
+- **Sauvegarde** : les actions enregistrent déjà automatiquement les fichiers ;
+  le bouton « Sauvegarder » de la sidebar force une écriture explicite via
+  `FileManager::saveLibraryData` et affiche un retour visuel.
 - **Navigation** : Livres, Utilisateurs et Statistiques sont fonctionnels ;
   Emprunts affiche une section « à venir ».
 

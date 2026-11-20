@@ -42,6 +42,7 @@ class MainController:
         self.view.set_add_user_callback(self.on_add_user_requested)
         self.view.set_borrow_callback(self.on_borrow_requested)
         self.view.set_delete_callback(self.on_delete_requested)
+        self.view.set_save_callback(self.on_save_requested)
 
         self.refresh()
 
@@ -127,6 +128,16 @@ class MainController:
         self.refresh()
         if self._save():
             self.view.set_status("Livre supprimé.", "success")
+
+    def on_save_requested(self) -> None:
+        """Enregistre explicitement les données via le FileManager C++."""
+        if self._write():
+            self.view.set_save_status("Données enregistrées.", "success")
+            return
+        self.view.set_save_status(
+            "Impossible d'enregistrer les données de la bibliothèque.",
+            "error",
+        )
 
     # Soumissions des dialogues
 
@@ -308,15 +319,26 @@ class MainController:
         return self.model.find_book(self._selected_isbn)
 
     def _save(self, users: bool = False) -> bool:
+        if self._write():
+            self.view.set_save_status("Données enregistrées.", "success")
+            return True
+
+        setter = (
+            self.view.set_users_status if users else self.view.set_status
+        )
+        setter(
+            "Impossible d'enregistrer les données de la bibliothèque.",
+            "error",
+        )
+        self.view.set_save_status(
+            "Impossible d'enregistrer les données de la bibliothèque.",
+            "error",
+        )
+        return False
+
+    def _write(self) -> bool:
         try:
             self.repository.save(self.model)
         except OSError:
-            setter = (
-                self.view.set_users_status if users else self.view.set_status
-            )
-            setter(
-                "Impossible d'enregistrer les données de la bibliothèque.",
-                "error",
-            )
             return False
         return True
