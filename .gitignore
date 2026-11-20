@@ -1,0 +1,6 @@
+.vscode/
+.venv/
+.aider*
+
+fashion-mnist_test.csv
+fashion-mnist_train.csv
