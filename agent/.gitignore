@@ -1,1 +1,5 @@
 build/*
+python/*.pyd
+python/*.so
+python/*.dylib
+python/__pycache__/
