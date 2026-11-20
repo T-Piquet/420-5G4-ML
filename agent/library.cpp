@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "library.h"
+#include "console_color.h"
 
 using namespace std;
 
@@ -149,15 +150,15 @@ bool Library::returnBook(const string& isbn) {
 // Display all books
 void Library::displayAllBooks() {
     if (books.empty()) {
-        cout << "Aucun livre dans la bibliothèque.\n";
+        cout << Color::yellow() << "Aucun livre dans la bibliothèque." << Color::reset() << "\n";
         return;
     }
     
-    cout << "\n=== TOUS LES LIVRES ===\n";
+    cout << "\n" << Color::bold_cyan() << "=== TOUS LES LIVRES ===" << Color::reset() << "\n";
     for (size_t i = 0; i < books.size(); ++i) {
-        cout << "\nLivre " << (i + 1) << " :\n";
+        cout << "\n" << Color::cyan() << "Livre " << (i + 1) << " :" << Color::reset() << "\n";
         cout << books[i]->toString() << "\n";
-        cout << "-------------------------\n";
+        cout << Color::dim() << "-------------------------" << Color::reset() << "\n";
     }
 }
 
@@ -166,30 +167,30 @@ void Library::displayAvailableBooks() {
     auto available = getAvailableBooks();
     
     if (available.empty()) {
-        cout << "Aucun livre disponible pour emprunt.\n";
+        cout << Color::yellow() << "Aucun livre disponible pour emprunt." << Color::reset() << "\n";
         return;
     }
     
-    cout << "\n=== LIVRES DISPONIBLES ===\n";
+    cout << "\n" << Color::bold_green() << "=== LIVRES DISPONIBLES ===" << Color::reset() << "\n";
     for (size_t i = 0; i < available.size(); ++i) {
-        cout << "\nLivre " << (i + 1) << " :\n";
+        cout << "\n" << Color::cyan() << "Livre " << (i + 1) << " :" << Color::reset() << "\n";
         cout << available[i]->toString() << "\n";
-        cout << "---------------------------\n";
+        cout << Color::dim() << "---------------------------" << Color::reset() << "\n";
     }
 }
 
 // Display all users
 void Library::displayAllUsers() {
     if (users.empty()) {
-        cout << "Aucun utilisateur enregistré.\n";
+        cout << Color::yellow() << "Aucun utilisateur enregistré." << Color::reset() << "\n";
         return;
     }
     
-    cout << "\n=== TOUS LES UTILISATEURS ===\n";
+    cout << "\n" << Color::bold_cyan() << "=== TOUS LES UTILISATEURS ===" << Color::reset() << "\n";
     for (size_t i = 0; i < users.size(); ++i) {
-        cout << "\nUtilisateur " << (i + 1) << " :\n";
+        cout << "\n" << Color::cyan() << "Utilisateur " << (i + 1) << " :" << Color::reset() << "\n";
         cout << users[i]->toString() << "\n";
-        cout << "------------------------------\n";
+        cout << Color::dim() << "------------------------------" << Color::reset() << "\n";
     }
 }
 

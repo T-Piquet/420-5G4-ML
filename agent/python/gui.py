@@ -117,8 +117,48 @@ class BibliothequeApp(tk.Tk):
         self.controller = LibraryController(data_dir)
         self.data_var = tk.StringVar(value=str(data_dir))
         self.status_var = tk.StringVar(value="Pret.")
+        self._configure_style()
         self._build_widgets()
         self._load(quiet=True)
+
+    def _configure_style(self):
+        self.colors = {
+            "bg": "#f4f7fb",
+            "panel": "#ffffff",
+            "accent": "#2b6cb0",
+            "accent_fg": "#ffffff",
+            "text": "#1a202c",
+            "muted": "#4a5568",
+            "success": "#2f855a",
+            "error": "#c53030",
+            "warning": "#b7791f",
+            "available": "#c6f6d5",
+            "borrowed": "#fed7d7",
+            "tree_alt": "#edf2f7",
+        }
+        style = ttk.Style(self)
+        try:
+            style.theme_use("clam")
+        except tk.TclError:
+            pass
+        self.configure(bg=self.colors["bg"])
+        style.configure(".", background=self.colors["bg"], foreground=self.colors["text"], fieldbackground=self.colors["panel"])
+        style.configure("TFrame", background=self.colors["bg"])
+        style.configure("TLabel", background=self.colors["bg"], foreground=self.colors["text"])
+        style.configure("TLabelframe", background=self.colors["bg"])
+        style.configure("TLabelframe.Label", background=self.colors["bg"], foreground=self.colors["accent"], font=("TkDefaultFont", 10, "bold"))
+        style.configure("TNotebook", background=self.colors["bg"])
+        style.configure("TNotebook.Tab", padding=(12, 6))
+        style.configure("TButton", padding=6)
+        style.configure("Accent.TButton", foreground=self.colors["accent_fg"], background=self.colors["accent"])
+        style.map("Accent.TButton", background=[("active", "#245a94"), ("pressed", "#1e4e82")])
+        style.configure("Treeview", background=self.colors["panel"], fieldbackground=self.colors["panel"], foreground=self.colors["text"], rowheight=24)
+        style.configure("Treeview.Heading", font=("TkDefaultFont", 9, "bold"))
+        style.map("Treeview", background=[("selected", self.colors["accent"])], foreground=[("selected", "#ffffff")])
+        style.configure("Status.TLabel", background="#e2e8f0", foreground=self.colors["muted"], padding=(10, 4))
+        style.configure("StatusSuccess.TLabel", background="#c6f6d5", foreground=self.colors["success"], padding=(10, 4))
+        style.configure("StatusError.TLabel", background="#fed7d7", foreground=self.colors["error"], padding=(10, 4))
+        style.configure("StatusInfo.TLabel", background="#bee3f8", foreground=self.colors["accent"], padding=(10, 4))
 
     def _build_widgets(self):
         top = ttk.Frame(self, padding=10)
@@ -127,9 +167,9 @@ class BibliothequeApp(tk.Tk):
         ttk.Entry(top, textvariable=self.data_var, width=55).grid(row=0, column=1, padx=5)
         ttk.Button(top, text="Parcourir...", command=self._choose_dir).grid(row=0, column=2, padx=3)
         ttk.Button(top, text="Charger", command=self._load).grid(row=0, column=3, padx=3)
-        ttk.Button(top, text="Sauvegarder", command=self._save).grid(row=0, column=4, padx=3)
+        ttk.Button(top, text="Sauvegarder", command=self._save, style="Accent.TButton").grid(row=0, column=4, padx=3)
         ttk.Button(top, text="Creer une sauvegarde", command=self._backup).grid(row=0, column=5, padx=3)
-        ttk.Label(top, foreground="#a00",
+        ttk.Label(top, foreground=self.colors["warning"],
                   text="Attention : la sauvegarde reecrit books.txt et users.txt (fichiers suivis par git)."
                   ).grid(row=1, column=1, columnspan=5, sticky="w", pady=(4, 0))
 
@@ -138,8 +178,9 @@ class BibliothequeApp(tk.Tk):
         self._build_books_tab(notebook)
         self._build_users_tab(notebook)
 
-        ttk.Label(self, textvariable=self.status_var, anchor="w",
-                  padding=(10, 4)).pack(fill="x")
+        self.status_label = ttk.Label(self, textvariable=self.status_var, anchor="w",
+                                      style="Status.TLabel")
+        self.status_label.pack(fill="x")
 
     def _build_books_tab(self, notebook):
         tab = ttk.Frame(notebook, padding=8)
@@ -153,7 +194,7 @@ class BibliothequeApp(tk.Tk):
                                             ("ISBN", self.isbn_var))):
             ttk.Label(form, text=label).grid(row=0, column=col * 2, sticky="w")
             ttk.Entry(form, textvariable=var, width=28).grid(row=0, column=col * 2 + 1, padx=(3, 12))
-        ttk.Button(form, text="Ajouter", command=self._add_book).grid(row=1, column=0, pady=(8, 0))
+        ttk.Button(form, text="Ajouter", command=self._add_book, style="Accent.TButton").grid(row=1, column=0, pady=(8, 0))
         ttk.Button(form, text="Supprimer (ISBN)", command=self._remove_book).grid(row=1, column=2, pady=(8, 0))
 
         search = ttk.LabelFrame(tab, text="Recherche et filtres", padding=8)
@@ -163,7 +204,7 @@ class BibliothequeApp(tk.Tk):
         ttk.Entry(search, textvariable=self.search_var, width=35).grid(row=0, column=0)
         ttk.Combobox(search, textvariable=self.search_by_var, state="readonly",
                      values=("Titre", "Auteur"), width=10).grid(row=0, column=1, padx=5)
-        ttk.Button(search, text="Rechercher", command=self._search).grid(row=0, column=2)
+        ttk.Button(search, text="Rechercher", command=self._search, style="Accent.TButton").grid(row=0, column=2)
         ttk.Button(search, text="Tous les livres", command=self._refresh).grid(row=0, column=3, padx=5)
         ttk.Button(search, text="Disponibles", command=self._available).grid(row=0, column=4)
 
@@ -177,6 +218,8 @@ class BibliothequeApp(tk.Tk):
                                   ("borrower", "Emprunteur", 120)):
             self.books_tree.heading(key, text=label)
             self.books_tree.column(key, width=width)
+        self.books_tree.tag_configure("available", background=self.colors["available"])
+        self.books_tree.tag_configure("borrowed", background=self.colors["borrowed"])
         scrollbar = ttk.Scrollbar(container, orient="vertical",
                                   command=self.books_tree.yview)
         self.books_tree.configure(yscrollcommand=scrollbar.set)
@@ -194,7 +237,7 @@ class BibliothequeApp(tk.Tk):
         ttk.Entry(form, textvariable=self.name_var, width=30).grid(row=0, column=1, padx=(3, 12))
         ttk.Label(form, text="ID").grid(row=0, column=2, sticky="w")
         ttk.Entry(form, textvariable=self.user_id_var, width=20).grid(row=0, column=3, padx=3)
-        ttk.Button(form, text="Ajouter", command=self._add_user).grid(row=0, column=4, padx=12)
+        ttk.Button(form, text="Ajouter", command=self._add_user, style="Accent.TButton").grid(row=0, column=4, padx=12)
 
         loans = ttk.LabelFrame(tab, text="Emprunts", padding=8)
         loans.pack(fill="x", pady=(8, 0))
@@ -203,7 +246,7 @@ class BibliothequeApp(tk.Tk):
         ttk.Entry(loans, textvariable=self.loan_isbn_var, width=24).grid(row=0, column=1, padx=(3, 12))
         ttk.Label(loans, text="ID utilisateur").grid(row=0, column=2, sticky="w")
         ttk.Entry(loans, textvariable=self.loan_user_var, width=20).grid(row=0, column=3, padx=3)
-        ttk.Button(loans, text="Emprunter", command=self._check_out).grid(row=0, column=4, padx=(12, 3))
+        ttk.Button(loans, text="Emprunter", command=self._check_out, style="Accent.TButton").grid(row=0, column=4, padx=(12, 3))
         ttk.Button(loans, text="Retourner", command=self._return_book).grid(row=0, column=5, padx=3)
 
         container = ttk.Frame(tab)
@@ -220,24 +263,34 @@ class BibliothequeApp(tk.Tk):
         self.users_tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-    def _status(self, message):
+    def _status(self, message, kind="info"):
         self.status_var.set(message)
+        if hasattr(self, "status_label"):
+            styles = {
+                "success": "StatusSuccess.TLabel",
+                "error": "StatusError.TLabel",
+                "info": "StatusInfo.TLabel",
+                "neutral": "Status.TLabel",
+            }
+            self.status_label.configure(style=styles.get(kind, "StatusInfo.TLabel"))
 
     def _run(self, action, success):
         try:
             action()
         except (ValueError, OSError, RuntimeError) as error:
+            self._status(f"Erreur : {error}", "error")
             messagebox.showerror("Erreur", str(error), parent=self)
             return False
-        self._status(success)
+        self._status(success, "success")
         return True
 
     def _fill_books(self, books):
         self.books_tree.delete(*self.books_tree.get_children())
         for book in books:
+            tag = "available" if book["available"] else "borrowed"
             self.books_tree.insert("", "end", values=(
                 book["title"], book["author"], book["isbn"],
-                "Oui" if book["available"] else "Non", book["borrower_id"]))
+                "Oui" if book["available"] else "Non", book["borrower_id"]), tags=(tag,))
 
     def _fill_users(self, users):
         self.users_tree.delete(*self.users_tree.get_children())
@@ -250,7 +303,7 @@ class BibliothequeApp(tk.Tk):
         self._fill_users(self.controller.all_users())
         stats = self.controller.stats()
         self._status(f"Livres : {stats['total']} (disponibles : {stats['available']}, "
-                     f"empruntes : {stats['borrowed']}) - Utilisateurs : {stats['users']}")
+                     f"empruntes : {stats['borrowed']}) - Utilisateurs : {stats['users']}", "info")
 
     def _choose_dir(self):
         directory = filedialog.askdirectory(initialdir=self.data_var.get(), parent=self)
@@ -265,11 +318,12 @@ class BibliothequeApp(tk.Tk):
             self._refresh()
         except (ValueError, OSError, RuntimeError) as error:
             if quiet:
-                self._status(f"Chargement impossible : {error}")
+                self._status(f"Chargement impossible : {error}", "error")
             else:
+                self._status(f"Erreur : {error}", "error")
                 messagebox.showerror("Erreur", str(error), parent=self)
             return
-        self._status("Donnees chargees.")
+        self._status("Donnees chargees.", "success")
 
     def _save(self):
         self._run(self.controller.save, "Donnees sauvegardees.")
@@ -291,6 +345,7 @@ class BibliothequeApp(tk.Tk):
     def _remove_book(self):
         isbn = self.isbn_var.get().strip()
         if not isbn:
+            self._status("Entrez un ISBN pour supprimer un livre.", "error")
             messagebox.showwarning("Suppression", "Entrez un ISBN.", parent=self)
             return
         if not messagebox.askyesno("Suppression", f"Supprimer le livre {isbn} ?", parent=self):
@@ -301,12 +356,12 @@ class BibliothequeApp(tk.Tk):
         by = "title" if self.search_by_var.get() == "Titre" else "author"
         books = self.controller.search_books(self.search_var.get().strip(), by)
         self._fill_books(books)
-        self._status(f"{len(books)} resultat(s).")
+        self._status(f"{len(books)} resultat(s).", "info")
 
     def _available(self):
         books = self.controller.available_books()
         self._fill_books(books)
-        self._status(f"{len(books)} livre(s) disponible(s).")
+        self._status(f"{len(books)} livre(s) disponible(s).", "success" if books else "info")
 
     def _add_user(self):
         def action():

@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "book.h"
+#include "console_color.h"
 
 using namespace std; 
 
@@ -42,8 +43,12 @@ void Book::returnBook() {
 
 // Display book information
 string Book::toString() const {
+    string statusColor = isAvailable ? string(Color::green()) : string(Color::red());
     string status = isAvailable ? "Disponible" : "Emprunté par : " + borrowerId;
-    return "Titre: " + title + "\nAuteur: " + author + "\nISBN: " + isbn + "\nStatu: " + status;
+    return string(Color::bold()) + "Titre: " + Color::reset() + title +
+           "\n" + Color::bold() + "Auteur: " + Color::reset() + author +
+           "\n" + Color::bold() + "ISBN: " + Color::reset() + isbn +
+           "\n" + Color::bold() + "Statu: " + Color::reset() + statusColor + status + Color::reset();
 }
 
 // Format for file storage (pipe-separated)
