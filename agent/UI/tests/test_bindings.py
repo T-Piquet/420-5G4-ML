@@ -89,3 +89,40 @@ def test_file_manager_round_trip(tmp_path) -> None:
     assert (tmp_path / "users.txt").read_text(encoding="utf-8") == (
         "Marie Dubois|USR001|\n"
     )
+
+
+def test_file_manager_create_backup(tmp_path) -> None:
+    manager = core.FileManager(
+        str(tmp_path / "books.txt"),
+        str(tmp_path / "users.txt"),
+    )
+    (tmp_path / "books.txt").write_text("Livre|Auteur|ISBN-1|1|\n", encoding="utf-8")
+    (tmp_path / "users.txt").write_text("Marie Dubois|USR001|\n", encoding="utf-8")
+
+    assert manager.create_backup() is True
+
+    assert (tmp_path / "books.txt.backup").read_text(encoding="utf-8") == (
+        "Livre|Auteur|ISBN-1|1|\n"
+    )
+    assert (tmp_path / "users.txt.backup").read_text(encoding="utf-8") == (
+        "Marie Dubois|USR001|\n"
+    )
+
+    (tmp_path / "books.txt").write_text(
+        "Autre livre|Autre auteur|ISBN-2|0|USR001\n",
+        encoding="utf-8",
+    )
+
+    assert manager.create_backup() is True
+    assert (tmp_path / "books.txt.backup").read_text(encoding="utf-8") == (
+        "Autre livre|Autre auteur|ISBN-2|0|USR001\n"
+    )
+
+
+def test_file_manager_create_backup_without_files(tmp_path) -> None:
+    manager = core.FileManager(
+        str(tmp_path / "books.txt"),
+        str(tmp_path / "users.txt"),
+    )
+
+    assert manager.create_backup() is False

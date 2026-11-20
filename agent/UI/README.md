@@ -102,8 +102,11 @@ git checkout -- agent/data
   taux de disponibilité. Les compteurs proviennent du cœur C++
   (`getTotalBooks`, `getAvailableBookCount`, `getCheckedOutBookCount`).
 - **Sauvegarde** : les actions enregistrent déjà automatiquement les fichiers ;
-  le bouton « Sauvegarder » de la sidebar force une écriture explicite via
-  `FileManager::saveLibraryData` et affiche un retour visuel.
+  le bouton « Sauvegarder données » de la sidebar force une écriture explicite
+  via `FileManager::saveLibraryData` et affiche un retour visuel.
+- **Créer une sauvegarde** : copie les fichiers actuels en `books.txt.backup`
+  et `users.txt.backup` via `FileManager::createBackup`. Un clic suivant
+  remplace la sauvegarde précédente ; le statut s'affiche sous les boutons.
 - **Navigation** : Livres, Utilisateurs et Statistiques sont fonctionnels ;
   Emprunts affiche une section « à venir ».
 

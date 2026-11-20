@@ -41,3 +41,13 @@ class LibraryRepository:
             raise OSError(
                 "Impossible d'enregistrer les données de la bibliothèque."
             )
+
+    def create_backup(self) -> None:
+        """Copie les fichiers actuels en `.backup` via le C++."""
+        try:
+            created = self._file_manager.create_backup()
+        except Exception as error:  # pragma: no cover - dépend du système
+            raise OSError("Impossible de créer la sauvegarde.") from error
+
+        if not created:
+            raise OSError("Impossible de créer la sauvegarde.")

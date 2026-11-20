@@ -43,6 +43,7 @@ class MainController:
         self.view.set_borrow_callback(self.on_borrow_requested)
         self.view.set_delete_callback(self.on_delete_requested)
         self.view.set_save_callback(self.on_save_requested)
+        self.view.set_backup_callback(self.on_backup_requested)
 
         self.refresh()
 
@@ -138,6 +139,18 @@ class MainController:
             "Impossible d'enregistrer les données de la bibliothèque.",
             "error",
         )
+
+    def on_backup_requested(self) -> None:
+        """Crée une copie de sauvegarde via le FileManager C++."""
+        try:
+            self.repository.create_backup()
+        except OSError:
+            self.view.set_save_status(
+                "Impossible de créer la sauvegarde.",
+                "error",
+            )
+            return
+        self.view.set_save_status("Sauvegarde créée.", "success")
 
     # Soumissions des dialogues
 

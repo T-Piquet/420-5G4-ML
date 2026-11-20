@@ -166,14 +166,43 @@ bool FileManager::fileExists(const string& filename) {
 }
 
 // Create backup
-void FileManager::createBackup() {
-    if (fileExists(booksFileName)) {
-        filesystem::copy_file(booksFileName, booksFileName + ".backup");
+bool FileManager::createBackup() {
+    bool copied = false;
+    bool failed = false;
+
+    auto backupFile = [&](const string& filename) {
+        if (!fileExists(filename)) {
+            return;
+        }
+
+        error_code copyError;
+        filesystem::copy_file(
+            filename,
+            filename + ".backup",
+            filesystem::copy_options::overwrite_existing,
+            copyError);
+
+        if (copyError) {
+            failed = true;
+            cout << "Erreur : Impossible de créer " << filename << ".backup.\n";
+            return;
+        }
+
+        copied = true;
+    };
+
+    backupFile(booksFileName);
+    backupFile(usersFileName);
+
+    if (failed) {
+        return false;
     }
-    
-    if (fileExists(usersFileName)) {
-        filesystem::copy_file(usersFileName, usersFileName + ".backup");
+
+    if (!copied) {
+        cout << "Erreur : Aucun fichier à sauvegarder.\n";
+        return false;
     }
-    
+
     cout << "Fichiers de sauvegarde créés.\n";
+    return true;
 }

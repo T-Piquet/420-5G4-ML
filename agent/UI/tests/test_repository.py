@@ -127,3 +127,33 @@ def test_save_includes_added_user(tmp_path: Path) -> None:
 
     reloaded = repository.load()
     assert reloaded.find_user("USR003").name == "Sophie Lemaire"
+
+
+def test_create_backup_copies_files(tmp_path: Path) -> None:
+    write_sample(tmp_path)
+    repository = LibraryRepository(tmp_path)
+
+    repository.create_backup()
+
+    for name in ("books.txt", "users.txt"):
+        assert (tmp_path / f"{name}.backup").read_text(
+            encoding="utf-8"
+        ) == (tmp_path / name).read_text(encoding="utf-8")
+
+    (tmp_path / "books.txt").write_text(
+        "Nouveau livre|Nouvel auteur|9780000000001|1|\n",
+        encoding="utf-8",
+    )
+
+    repository.create_backup()
+
+    assert (tmp_path / "books.txt.backup").read_text(encoding="utf-8") == (
+        "Nouveau livre|Nouvel auteur|9780000000001|1|\n"
+    )
+
+
+def test_create_backup_without_files_raises(tmp_path: Path) -> None:
+    repository = LibraryRepository(tmp_path)
+
+    with pytest.raises(OSError, match="Impossible de créer la sauvegarde."):
+        repository.create_backup()

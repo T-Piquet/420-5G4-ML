@@ -49,6 +49,7 @@ class FakeView:
         self.borrow_callback = None
         self.delete_callback = None
         self.save_callback = None
+        self.backup_callback = None
 
     def set_search_callback(self, callback) -> None:
         self.search_callback = callback
@@ -79,6 +80,9 @@ class FakeView:
 
     def set_save_callback(self, callback) -> None:
         self.save_callback = callback
+
+    def set_backup_callback(self, callback) -> None:
+        self.backup_callback = callback
 
     def set_books(self, rows) -> None:
         self.books = rows
@@ -149,11 +153,17 @@ class FakeRepository:
     def __init__(self, fail: bool = False) -> None:
         self.fail = fail
         self.saved = 0
+        self.backups = 0
 
     def save(self, library: Library) -> None:
         if self.fail:
             raise OSError("disque plein")
         self.saved += 1
+
+    def create_backup(self) -> None:
+        if self.fail:
+            raise OSError("disque plein")
+        self.backups += 1
 
 
 def make_model() -> Library:
@@ -569,3 +579,23 @@ def test_auto_save_updates_sidebar_status() -> None:
     assert view.add_user_dialog("Sophie Lemaire", "USR003") is None
 
     assert view.save_status == ("Données enregistrées.", "success")
+
+
+def test_backup_callback_creates_backup() -> None:
+    _, view, repository, _ = build()
+
+    assert view.backup_callback is not None
+    assert repository.backups == 0
+
+    view.backup_callback()
+
+    assert repository.backups == 1
+    assert view.save_status == ("Sauvegarde créée.", "success")
+
+
+def test_backup_callback_reports_failure() -> None:
+    _, view, _, _ = build(FakeRepository(fail=True))
+
+    view.backup_callback()
+
+    assert view.save_status == ("Impossible de créer la sauvegarde.", "error")

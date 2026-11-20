@@ -35,6 +35,7 @@ class MainWindow(ctk.CTk):
         self._borrow_callback: Callable[[], None] | None = None
         self._delete_callback: Callable[[], None] | None = None
         self._save_callback: Callable[[], None] | None = None
+        self._backup_callback: Callable[[], None] | None = None
 
         self._books_subtitle = ""
         self._users_subtitle = ""
@@ -136,6 +137,21 @@ class MainWindow(ctk.CTk):
         )
         self.save_button.grid(row=0, column=0, sticky="ew")
 
+        self.backup_button = ctk.CTkButton(
+            save_block,
+            text="Créer une sauvegarde",
+            height=38,
+            corner_radius=8,
+            fg_color="transparent",
+            border_width=1,
+            border_color=config.COLOR_BORDER,
+            text_color=config.COLOR_TEXT,
+            hover_color=config.COLOR_ACCENT_SOFT,
+            font=ctk.CTkFont(size=13),
+            command=self._on_backup_click,
+        )
+        self.backup_button.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+
         self.save_status_label = ctk.CTkLabel(
             save_block,
             text="",
@@ -145,7 +161,7 @@ class MainWindow(ctk.CTk):
             font=ctk.CTkFont(size=11),
             text_color=config.COLOR_TEXT_MUTED,
         )
-        self.save_status_label.grid(row=1, column=0, sticky="ew", pady=(6, 0))
+        self.save_status_label.grid(row=2, column=0, sticky="ew", pady=(6, 0))
 
         profile = ctk.CTkFrame(
             self.sidebar,
@@ -455,6 +471,9 @@ class MainWindow(ctk.CTk):
     def set_save_callback(self, callback: Callable[[], None]) -> None:
         self._save_callback = callback
 
+    def set_backup_callback(self, callback: Callable[[], None]) -> None:
+        self._backup_callback = callback
+
     # Mise à jour de l'affichage
 
     def set_books(self, rows: list[BookRow]) -> None:
@@ -658,3 +677,7 @@ class MainWindow(ctk.CTk):
     def _on_save_click(self) -> None:
         if self._save_callback is not None:
             self._save_callback()
+
+    def _on_backup_click(self) -> None:
+        if self._backup_callback is not None:
+            self._backup_callback()
