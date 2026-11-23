@@ -100,7 +100,7 @@ class UsersView(ctk.CTkFrame):
         ctk.CTkLabel(
             header,
             text="Utilisateurs",
-            font=theme.font(26, "bold"),
+            font=theme.font(20, "bold"),
             text_color=theme.TEXT,
             anchor="w",
         ).grid(row=0, column=0, sticky="w")

@@ -48,11 +48,12 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `app.py` crée la fenêtre et monte la vue courante ; `views.py` contient les
   pages et `theme.py` centralise l'apparence.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
-- Version de test actuelle : l'UI affiche la page Utilisateurs en lecture seule
-  (cartes sur quatre colonnes, statistiques réelles en pied de page) ; les boutons
-  `Utilisateur +`, `Voir livres` et `Créer sauvegarde` sont présents mais inactifs.
-  La vue Livres, les ajouts, l'emprunt et le retour restent à brancher. Mettre
-  cette section à jour à chaque évolution de l'UI.
+- Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
+  la page Utilisateurs en lecture seule (cartes sur quatre colonnes, statistiques
+  réelles en pied de page) ; les boutons `Utilisateur +`, `Voir livres` et
+  `Créer sauvegarde` sont présents mais inactifs. La vue Livres, les ajouts,
+  l'emprunt et le retour restent à brancher. Mettre cette section à jour à chaque
+  évolution de l'UI.
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
@@ -69,6 +70,8 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   visible ; les zones se distinguent uniquement par leur `fg_color`.
 - Arrondis discrets : `corner_radius=6`.
 - Pas de mode sombre : le thème beige/vert est unique.
+- Chaque page est surmontée d'un bandeau pleine largeur « Gestionnaire de la
+  Bibliothèque », sur fond surface (`#EAE3D2`), texte centré en gras.
 - Icônes dessinées au Canvas (corbeille en terracotta) plutôt qu'en emojis,
   pour éviter le rendu couleur et les dépendances d'image.
 - Modales `CTkToplevel` superposées (`transient`, `grab_set`, centrées sur la

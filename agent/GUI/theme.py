@@ -24,6 +24,7 @@ TEXT_MUTED = "#6C6E62"
 CORNER_RADIUS = 6
 PAGE_PADDING = 24
 CARD_GAP = 6
+HEADER_HEIGHT = 60
 
 FONT_CANDIDATES = ("Garamond", "EB Garamond", "DejaVu Serif")
 

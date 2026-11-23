@@ -33,6 +33,7 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 
 ## Fonctionnalités
 
+- bandeau « Gestionnaire de la Bibliothèque » en haut de chaque page ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres

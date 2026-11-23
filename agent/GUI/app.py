@@ -19,12 +19,35 @@ class LibraryApp(ctk.CTk):
         super().__init__(fg_color=theme.BACKGROUND)
         theme.init(self)
         self.store = LibraryStore(data_dir).load()
-        self.title("Bibliothèque personnelle")
+        self.title("Gestionnaire de la Bibliothèque")
         self.geometry("1000x700")
         self.minsize(900, 560)
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        UsersView(self, self.store).grid(row=0, column=0, sticky="nsew")
+        self.grid_rowconfigure(1, weight=1)
+        self._build_header()
+        UsersView(self, self.store).grid(row=1, column=0, sticky="nsew")
+
+    def _build_header(self) -> None:
+        """Bandeau commun à toutes les pages."""
+        header = ctk.CTkFrame(
+            self,
+            fg_color=theme.SURFACE,
+            corner_radius=0,
+            border_width=0,
+            height=theme.HEADER_HEIGHT,
+        )
+        header.grid(row=0, column=0, sticky="ew")
+        header.grid_propagate(False)
+        header.grid_columnconfigure(0, weight=1)
+        header.grid_rowconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            header,
+            text="Gestionnaire de la Bibliothèque",
+            font=theme.font(24, "bold"),
+            text_color=theme.TEXT,
+            anchor="center",
+        ).grid(row=0, column=0, sticky="nsew")
 
 
 def main() -> None:
