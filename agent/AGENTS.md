@@ -88,6 +88,29 @@ après chaque étape, sans y consigner la conversation.
 **Dernière vérification :** module `bibliotheque_core` importé (version 0.1.0),
 CLI recompilée et statistiques 39/26/13/27 lues sur une copie des données.
 
+### Reprise
+
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 2
+(`bindings.cpp`). Ne rien recommencer de l'étape 1.
+
+- Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
+  Depuis `agent/` :
+  `cmake -S . -B build -DBUILD_PYTHON_BINDINGS=ON
+  -DPython_EXECUTABLE="$PWD/GUI/.venv/bin/python"
+  -Dpybind11_DIR=/usr/lib/cmake/pybind11` puis `cmake --build build -j`.
+- Contrôle de l'étape 1 : `cd GUI && .venv/bin/python -c
+  "import bibliotheque_core as b; print(b.__version__)"` doit afficher `0.1.0`.
+- `bindings.cpp` n'expose encore que le module et `__version__` ; aucun type du
+  moteur n'est lié.
+- Le `.so` est produit dans `GUI/` et ignoré par Git ; ne jamais le commiter.
+- Ne jamais ajouter `-isystem /usr/include` aux options de compilation : GCC
+  casse alors sa chaîne d'inclusion (`#include_next <stdlib.h>`). Les chemins
+  d'IntelliSense passent uniquement par les `c_cpp_properties.json`.
+- `data/books.txt` et `data/users.txt` sont des données réelles : aucun essai
+  destructif dessus, toujours travailler sur une copie (`/tmp/opencode/...`).
+- Aucun repli Python prévu : si `bibliotheque_core` manque, la GUI doit échouer
+  clairement plutôt que revenir à la persistance Python.
+
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
   être codée en dur dans les vues.
