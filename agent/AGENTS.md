@@ -50,6 +50,29 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   suppression ; ajout, emprunt et retour ne sont pas exposés (méthodes conservées
   dans `data_store.py`). Mettre cette section à jour à chaque évolution de l'UI.
 
+### Thème et apparence
+- Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
+  être codée en dur dans les vues.
+- Typographie : Garamond est la police voulue, mais elle n'est pas installée dans
+  le conteneur ; `theme.py` résout la première famille disponible :
+  `Garamond` → `EB Garamond` → `DejaVu Serif`. La substitution doit rester
+  transparente pour le reste du code.
+- Palette beiges et verts muets :
+  fond `#F4EFE4`, surface `#EAE3D2`, survol `#DFD6C1`, vert sauge `#6E7F5F`,
+  vert survol `#5B6A4E`, vert doux `#A9B49B`, terracotta `#A4705A`,
+  texte `#33352C`, texte secondaire `#6C6E62`.
+- Aucun contour : `border_width=0` partout, pas de séparateur ni de cadre
+  visible ; les zones se distinguent uniquement par leur `fg_color`.
+- Arrondis discrets : `corner_radius=6`.
+- Pas de mode sombre : le thème beige/vert est unique.
+- Icônes dessinées au Canvas (corbeille en terracotta) plutôt qu'en emojis,
+  pour éviter le rendu couleur et les dépendances d'image.
+- Modales `CTkToplevel` superposées (`transient`, `grab_set`, centrées sur la
+  fenêtre principale), y compris les confirmations : ne pas utiliser
+  `messagebox` natif.
+- Barres de défilement stylées avec les couleurs du thème, sinon elles
+  réintroduisent des gris et des contours.
+
 ## Conventions
 - Code, commentaires, chaînes d'interface et messages de commit en français.
 - Préfixes de commit : `[FEAT]`, `[TACHE]`, `[DOCS]`, `[REMISE]`, `[SAUVEGARDE]`.
