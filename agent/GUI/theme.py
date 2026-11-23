@@ -41,8 +41,8 @@ def init(root: ctk.CTk) -> None:
     )
 
 
-def font(size: int, weight: str = "normal") -> ctk.CTkFont:
+def font(size: int, weight: str = "normal", slant: str = "roman") -> ctk.CTkFont:
     """Retourne une police du thème, dans la famille résolue."""
     if _font_family is None:
         raise RuntimeError("theme.init() doit être appelé avant theme.font().")
-    return ctk.CTkFont(family=_font_family, size=size, weight=weight)
+    return ctk.CTkFont(family=_font_family, size=size, weight=weight, slant=slant)

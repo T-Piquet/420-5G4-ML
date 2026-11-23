@@ -38,13 +38,15 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
   empruntés et utilisateurs ;
-- boutons `Utilisateur +`, `Voir livres` et `Créer sauvegarde` présents mais
-  encore inactifs ;
+- bouton `Utilisateur +` qui ouvre un panneau latéral avec le formulaire
+  d'ajout (champ `Nom`, mention d'identifiant généré automatiquement, boutons
+  `Ajouter` encore inactif et `Annuler`) ;
+- boutons `Voir livres` et `Créer sauvegarde` présents mais encore inactifs ;
 - thème beige et vert unique, sans mode sombre.
 
-Les pages Livres, l'ajout d'utilisateur et de livre, l'emprunt, le retour et la
-sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les méthodes
-correspondantes existent déjà dans `data_store.py`.
+Les pages Livres, l'ajout effectif d'utilisateur et de livre, l'emprunt, le
+retour et la sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les
+méthodes correspondantes existent déjà dans `data_store.py`.
 
 ## Apparence
 

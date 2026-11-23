@@ -46,14 +46,17 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `data_store.py` isole la persistance (pas de pybind11 pour l'instant) ; il faut
   garder ce module compatible avec les formats de fichiers du C++.
 - `app.py` crée la fenêtre et monte la vue courante ; `views.py` contient les
-  pages et `theme.py` centralise l'apparence.
+  pages, `panels.py` les panneaux latéraux des formulaires et `theme.py` centralise
+  l'apparence.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
   la page Utilisateurs en lecture seule (cartes sur quatre colonnes, statistiques
-  réelles en pied de page) ; les boutons `Utilisateur +`, `Voir livres` et
-  `Créer sauvegarde` sont présents mais inactifs. La vue Livres, les ajouts,
-  l'emprunt et le retour restent à brancher. Mettre cette section à jour à chaque
-  évolution de l'UI.
+  réelles en pied de page). Le bouton `Utilisateur +` ouvre un panneau latéral dont
+  le formulaire est encore inactif ; `Voir livres` et `Créer sauvegarde` ne font
+  rien. La vue Livres, les ajouts, l'emprunt et le retour restent à brancher.
+  Mettre cette section à jour à chaque évolution de l'UI.
+- Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par
+  la mention « L'identifiant sera généré automatiquement. ».
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
@@ -74,11 +77,19 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   Bibliothèque », sur fond surface (`#EAE3D2`), texte centré en gras.
 - Icônes dessinées au Canvas (corbeille en terracotta) plutôt qu'en emojis,
   pour éviter le rendu couleur et les dépendances d'image.
-- Modales `CTkToplevel` superposées (`transient`, `grab_set`, centrées sur la
-  fenêtre principale), y compris les confirmations : ne pas utiliser
-  `messagebox` natif.
+- Les formulaires utilisent un panneau latéral (voir « Formulaires ») ; les
+  confirmations restent des modales centrées. Ne pas utiliser `messagebox` natif.
 - Barres de défilement stylées avec les couleurs du thème, sinon elles
   réintroduisent des gris et des contours.
+
+### Formulaires
+- Modèle unique : panneau latéral droit (`SidePanel` dans `GUI/panels.py`),
+  `CTkToplevel` sans décoration, largeur 400 px, aligné sous le bandeau et sur
+  toute la hauteur restante.
+- `transient` + `grab_set` pour bloquer la page ; fermeture par `Annuler` ou
+  `Échap`, avec libération du grab avant destruction.
+- Contenu : titre en haut, champs et aide au centre, boutons et zone de message
+  en bas. Un nouveau formulaire hérite de `SidePanel` et redéfinit `_build_form`.
 
 ## Conventions
 - Code, commentaires, chaînes d'interface et messages de commit en français.

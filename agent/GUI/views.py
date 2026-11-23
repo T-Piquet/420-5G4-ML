@@ -8,6 +8,7 @@ import customtkinter as ctk
 
 import theme
 from data_store import LibraryStore, User
+from panels import AddUserPanel
 
 COLUMNS = 4
 
@@ -78,6 +79,7 @@ class UsersView(ctk.CTkFrame):
     def __init__(self, master: ctk.CTkBaseClass, store: LibraryStore) -> None:
         super().__init__(master, fg_color=theme.BACKGROUND, corner_radius=0)
         self.store = store
+        self._add_user_panel: AddUserPanel | None = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
@@ -105,7 +107,6 @@ class UsersView(ctk.CTkFrame):
             anchor="w",
         ).grid(row=0, column=0, sticky="w")
 
-        # Encore inactif : le panneau d'ajout viendra dans une prochaine étape.
         ctk.CTkButton(
             header,
             text="Utilisateur +",
@@ -117,7 +118,17 @@ class UsersView(ctk.CTkFrame):
             fg_color=theme.SAGE,
             hover_color=theme.SAGE_HOVER,
             text_color=theme.BACKGROUND,
+            command=self._open_add_user,
         ).grid(row=0, column=1, sticky="e")
+
+    def _open_add_user(self) -> None:
+        panel = self._add_user_panel
+        if panel is not None and panel.is_open:
+            panel.lift()
+            panel.focus_force()
+            return
+        self._add_user_panel = AddUserPanel(self.winfo_toplevel())
+        self._add_user_panel.show()
 
     def _build_cards(self) -> None:
         self.cards_frame = ctk.CTkScrollableFrame(
