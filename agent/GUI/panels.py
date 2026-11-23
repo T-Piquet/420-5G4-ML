@@ -155,7 +155,7 @@ class AddUserPanel(SidePanel):
 
         self.message_label = ctk.CTkLabel(
             body,
-            text="Message de confirmation ou d'erreur",
+            text="",
             font=theme.font(12, slant="italic"),
             text_color=theme.TEXT_MUTED,
             anchor="w",
