@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 project(bibliotheque LANGUAGES CXX)
 
+# Génère compile_commands.json pour clangd et les autres outils.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)

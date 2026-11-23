@@ -34,8 +34,10 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 ## Devcontainer
 - Config dans `agent/.devcontainer` : monte le X11 de l'hôte (`DISPLAY`, `--net=host`)
   pour le futur GUI. Ouvrir `agent/` comme dossier du conteneur.
-- `.vscode/settings.json` (racine) contient un chemin absolu obsolète (`/home/cano/repos/...`) :
-  utiliser la CLI plutôt que CMake Tools.
+- `.vscode/settings.json` (racine) pointe vers `${workspaceFolder}/agent`. Les
+  fichiers `.vscode/c_cpp_properties.json` (racine et `agent/`) donnent à IntelliSense
+  les chemins `/usr/include` et `/usr/include/python3.13` ; `compile_commands.json`
+  reste généré pour les autres outils.
 
 ## GUI Python (`GUI/`)
 - Application CustomTkinter à fenêtre unique ; elle lit/écrit les mêmes
