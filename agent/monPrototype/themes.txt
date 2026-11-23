@@ -1,0 +1,2 @@
+la typographie thème sera garamond, et les couleurs thèmes seront les beiges et verts muets. 
+Rien n'a de contour, que des couleurs de fond selon les couleurs du thème.
