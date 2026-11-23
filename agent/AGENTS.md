@@ -43,8 +43,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - Venv local :
   `cd agent/GUI && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 - Lancement : `.venv/bin/python app.py` ; option `--data-dir` (défaut : `agent/data`).
-- `data_store.py` isole la persistance (pas de pybind11 pour l'instant) ; il faut
-  garder ce module compatible avec les formats de fichiers du C++.
+- `data_store.py` isole encore la persistance Python ; le moteur C++ sera branché
+  via pybind11 (voir « Liaison pybind11 avec le moteur C++ »). Il faut garder ce
+  module compatible avec les formats de fichiers du C++.
 - `app.py` crée la fenêtre et gère la navigation entre les pages ; `views.py`
   contient les pages et le pied de page commun, `panels.py` les panneaux latéraux
   des formulaires et `theme.py` centralise l'apparence.
@@ -63,6 +64,27 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
+
+### Liaison pybind11 avec le moteur C++
+
+Intégration suivie étape par étape ; mettre à jour les cases et la ligne d'état
+après chaque étape, sans y consigner la conversation.
+
+- [x] 1. Build : `bibliotheque_lib`, option `BUILD_PYTHON_BINDINGS`, module
+  `bibliotheque_core` généré dans `GUI/`, import vérifié.
+- [ ] 2. `bindings.cpp` : `Book`, `User`, `Library`, `FileManager`, copies
+  `books()` / `users()`, `remove_user`, nettoyage dans `remove_book`.
+- [ ] 3. Persistance C++ : sauvegarde atomique et backup écrasable.
+- [ ] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
+  pré-validation des lignes.
+- [ ] 5. UI : rollback de `panels.py` via `remove_user`.
+- [ ] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
+  régression CLI et tests UI.
+- [ ] 7. Documentation : commandes de build et architecture à jour.
+
+**État d'avancement :** étape 1 terminée, étape 2 à faire.
+**Dernière vérification :** module `bibliotheque_core` importé (version 0.1.0),
+CLI recompilée et statistiques 39/26/13/27 lues sur une copie des données.
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
