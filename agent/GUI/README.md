@@ -38,15 +38,19 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
   empruntés et utilisateurs ;
-- bouton `Utilisateur +` qui ouvre un panneau latéral avec le formulaire
-  d'ajout (champ `Nom`, mention d'identifiant généré automatiquement, boutons
-  `Ajouter` encore inactif et `Annuler`) ;
+- bouton `Utilisateur +` qui ouvre un panneau latéral d'ajout :
+  - nom obligatoire, sans chiffres, avec majuscule automatique en début de mot
+    et après un tiret (pas après une apostrophe) ;
+  - identifiant `USRXXX` généré automatiquement ;
+  - message d'erreur ou de confirmation dans le panneau, avec mise à jour
+    immédiate de la liste et des statistiques ;
+  - bouton `Annuler` pour fermer le panneau ;
 - boutons `Voir livres` et `Créer sauvegarde` présents mais encore inactifs ;
 - thème beige et vert unique, sans mode sombre.
 
-Les pages Livres, l'ajout effectif d'utilisateur et de livre, l'emprunt, le
-retour et la sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les
-méthodes correspondantes existent déjà dans `data_store.py`.
+La page Livres, l'ajout de livre, l'emprunt, le retour et la sauvegarde manuelle
+seront ajoutés dans les prochaines étapes. Les méthodes correspondantes existent
+déjà dans `data_store.py`.
 
 ## Apparence
 
@@ -59,8 +63,10 @@ disponible parmi `EB Garamond` et `DejaVu Serif` est utilisée automatiquement.
 - `books.txt` : `titre|auteur|isbn|1ou0|idEmprunteur`
 - `users.txt` : `nom|id|isbn1,isbn2` (`|` final conservé même sans emprunt)
 
-Le caractère `|` est refusé dans les champs saisis. Contrairement à la CLI C++,
-la suppression d'un livre retire aussi son ISBN des utilisateurs.
+Le caractère `|` est refusé dans les champs saisis. À l'ajout d'un utilisateur,
+l'identifiant `USRXXX` est généré automatiquement et le nom est mis en forme
+avant l'écriture. Contrairement à la CLI C++, la suppression d'un livre retire
+aussi son ISBN des utilisateurs.
 
 ## Limites
 

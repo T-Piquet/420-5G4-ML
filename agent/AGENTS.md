@@ -51,12 +51,14 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
   la page Utilisateurs en lecture seule (cartes sur quatre colonnes, statistiques
-  réelles en pied de page). Le bouton `Utilisateur +` ouvre un panneau latéral dont
-  le formulaire est encore inactif ; `Voir livres` et `Créer sauvegarde` ne font
-  rien. La vue Livres, les ajouts, l'emprunt et le retour restent à brancher.
+  réelles en pied de page). Le bouton `Utilisateur +` ouvre un panneau latéral
+  fonctionnel : validation et mise en forme du nom, identifiant `USRXXX` généré,
+  messages et rafraîchissement immédiat. `Voir livres` et `Créer sauvegarde` ne font
+  rien. La vue Livres, l'ajout de livre, l'emprunt et le retour restent à brancher.
   Mettre cette section à jour à chaque évolution de l'UI.
-- Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par
-  la mention « L'identifiant sera généré automatiquement. ».
+- Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
+  génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
+  en début de mot et après un tiret (pas après une apostrophe).
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
@@ -90,6 +92,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   `Échap`, avec libération du grab avant destruction.
 - Contenu : titre en haut, champs et aide au centre, boutons et zone de message
   en bas. Un nouveau formulaire hérite de `SidePanel` et redéfinit `_build_form`.
+- Soumission : validation via `LibraryStore`, sauvegarde, message dans le panneau
+  puis rafraîchissement de la vue ; en cas d'échec d'écriture, l'ajout en mémoire
+  est annulé. Après un ajout réussi, le panneau reste ouvert et le champ est vidé.
 
 ## Conventions
 - Code, commentaires, chaînes d'interface et messages de commit en français.

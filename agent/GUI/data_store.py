@@ -8,6 +8,7 @@ Formats des fichiers, identiques à `agent/filemanager.cpp` :
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -32,6 +33,9 @@ class User:
     borrowed: list[str] = field(default_factory=list)
 
 
+_USER_ID_PATTERN = re.compile(r"USR([0-9]{3})")
+
+
 def _validate(value: str, label: str) -> str:
     value = value.strip()
     if not value:
@@ -39,6 +43,22 @@ def _validate(value: str, label: str) -> str:
     if "|" in value:
         raise StoreError(f"{label} ne peut pas contenir le caractère « | ».")
     return value
+
+
+def _normalize_name(name: str) -> str:
+    """Nettoie, valide et met en forme le nom d'un utilisateur."""
+    name = " ".join(name.split())
+    if not name:
+        raise StoreError("Le nom est obligatoire.")
+    if "|" in name:
+        raise StoreError("Le nom ne peut pas contenir le caractère « | ».")
+    if any(character.isdigit() for character in name):
+        raise StoreError("Le nom ne peut pas contenir de chiffres.")
+
+    def capitalize(word: str) -> str:
+        return "-".join(part[:1].upper() + part[1:] for part in word.split("-"))
+
+    return " ".join(capitalize(word) for word in name.split(" "))
 
 
 class LibraryStore:
@@ -148,9 +168,29 @@ class LibraryStore:
             if isbn in user.borrowed:
                 user.borrowed.remove(isbn)
 
-    def add_user(self, name: str, user_id: str) -> User:
-        name = _validate(name, "Nom")
-        user_id = _validate(user_id, "Identifiant")
+    def next_user_id(self) -> str:
+        """Génère le prochain identifiant libre au format USRXXX."""
+        numbers: list[int] = []
+        for user in self.users:
+            match = _USER_ID_PATTERN.fullmatch(user.user_id)
+            if match:
+                numbers.append(int(match.group(1)))
+
+        number = max(numbers, default=0) + 1
+        while number <= 999 and self.find_user(f"USR{number:03d}") is not None:
+            number += 1
+        if number > 999:
+            raise StoreError(
+                "Impossible de générer un identifiant unique au format USRXXX."
+            )
+        return f"USR{number:03d}"
+
+    def add_user(self, name: str, user_id: str | None = None) -> User:
+        name = _normalize_name(name)
+        if user_id is None:
+            user_id = self.next_user_id()
+        else:
+            user_id = _validate(user_id, "Identifiant")
         if self.find_user(user_id):
             raise StoreError(f"Un utilisateur avec l'identifiant {user_id} existe déjà.")
         user = User(name, user_id)

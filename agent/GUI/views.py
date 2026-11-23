@@ -127,8 +127,16 @@ class UsersView(ctk.CTkFrame):
             panel.lift()
             panel.focus_force()
             return
-        self._add_user_panel = AddUserPanel(self.winfo_toplevel())
+        self._add_user_panel = AddUserPanel(
+            self.winfo_toplevel(),
+            self.store,
+            self._on_user_saved,
+        )
         self._add_user_panel.show()
+
+    def _on_user_saved(self, _user: User) -> None:
+        self._populate_cards()
+        self._update_stats()
 
     def _build_cards(self) -> None:
         self.cards_frame = ctk.CTkScrollableFrame(
@@ -148,6 +156,12 @@ class UsersView(ctk.CTkFrame):
         )
         for column in range(COLUMNS):
             self.cards_frame.grid_columnconfigure(column, weight=1, uniform="users")
+
+        self._populate_cards()
+
+    def _populate_cards(self) -> None:
+        for child in self.cards_frame.winfo_children():
+            child.destroy()
 
         if not self.store.users:
             ctk.CTkLabel(
@@ -200,6 +214,22 @@ class UsersView(ctk.CTkFrame):
             row=0, column=1, padx=6, pady=12
         )
 
+        stats_frame = ctk.CTkFrame(footer, fg_color="transparent")
+        stats_frame.grid(row=0, column=2, sticky="e", padx=(12, 18))
+        self._stat_labels: list[ctk.CTkLabel] = []
+        for column in range(4):
+            label = ctk.CTkLabel(
+                stats_frame,
+                text="",
+                font=theme.font(12),
+                text_color=theme.TEXT_MUTED,
+            )
+            label.grid(row=0, column=column, padx=5)
+            self._stat_labels.append(label)
+
+        self._update_stats()
+
+    def _update_stats(self) -> None:
         stats = self.store.stats
         labels = (
             _plural(stats["books"], "livre", "livres"),
@@ -207,12 +237,5 @@ class UsersView(ctk.CTkFrame):
             _plural(stats["borrowed"], "livre emprunté", "livres empruntés"),
             _plural(stats["users"], "utilisateur", "utilisateurs"),
         )
-        stats_frame = ctk.CTkFrame(footer, fg_color="transparent")
-        stats_frame.grid(row=0, column=2, sticky="e", padx=(12, 18))
-        for column, text in enumerate(labels):
-            ctk.CTkLabel(
-                stats_frame,
-                text=text,
-                font=theme.font(12),
-                text_color=theme.TEXT_MUTED,
-            ).grid(row=0, column=column, padx=5)
+        for label, text in zip(self._stat_labels, labels):
+            label.configure(text=text)

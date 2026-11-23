@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import tkinter as tk
+from collections.abc import Callable
 
 import customtkinter as ctk
 
 import theme
+from data_store import LibraryStore, StoreError, User
 
 
 class SidePanel(ctk.CTkToplevel):
@@ -73,9 +75,19 @@ class SidePanel(ctk.CTkToplevel):
 
 
 class AddUserPanel(SidePanel):
-    """Formulaire d'ajout d'utilisateur, encore inactif."""
+    """Formulaire d'ajout d'utilisateur."""
 
     TITLE = "Ajouter un utilisateur"
+
+    def __init__(
+        self,
+        parent: ctk.CTkBaseClass,
+        store: LibraryStore,
+        on_saved: Callable[[User], None],
+    ) -> None:
+        super().__init__(parent)
+        self.store = store
+        self.on_saved = on_saved
 
     def _build_form(self, body: ctk.CTkFrame) -> None:
         body.grid_columnconfigure(0, weight=1)
@@ -113,8 +125,6 @@ class AddUserPanel(SidePanel):
         buttons = ctk.CTkFrame(body, fg_color="transparent")
         buttons.grid(row=4, column=0, sticky="e")
 
-        # Le formulaire est encore inactif : « Annuler » ferme le panneau,
-        # « Ajouter » n'a volontairement aucune commande.
         ctk.CTkButton(
             buttons,
             text="Annuler",
@@ -140,9 +150,10 @@ class AddUserPanel(SidePanel):
             fg_color=theme.SAGE,
             hover_color=theme.SAGE_HOVER,
             text_color=theme.BACKGROUND,
+            command=self._submit,
         ).pack(side="left")
 
-        ctk.CTkLabel(
+        self.message_label = ctk.CTkLabel(
             body,
             text="Message de confirmation ou d'erreur",
             font=theme.font(12, slant="italic"),
@@ -150,6 +161,36 @@ class AddUserPanel(SidePanel):
             anchor="w",
             justify="left",
             wraplength=self.WIDTH - 48,
-        ).grid(row=5, column=0, sticky="ew", pady=(16, 0))
+        )
+        self.message_label.grid(row=5, column=0, sticky="ew", pady=(16, 0))
 
         self._initial_focus = self.name_entry
+
+    def _submit(self) -> None:
+        try:
+            user = self.store.add_user(self.name_entry.get())
+        except StoreError as exc:
+            self._show_message(str(exc), error=True)
+            self.name_entry.focus_set()
+            return
+
+        try:
+            self.store.save()
+        except OSError as exc:
+            self.store.users.remove(user)
+            self._show_message(f"Erreur de sauvegarde : {exc}", error=True)
+            self.name_entry.focus_set()
+            return
+
+        self.name_entry.delete(0, "end")
+        self._show_message(
+            f"Utilisateur ajouté : {user.name} ({user.user_id})."
+        )
+        self.on_saved(user)
+        self.name_entry.focus_set()
+
+    def _show_message(self, text: str, error: bool = False) -> None:
+        self.message_label.configure(
+            text=text,
+            text_color=theme.TERRACOTTA if error else theme.SAGE,
+        )
