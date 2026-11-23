@@ -16,7 +16,12 @@ public:
     // Constructor
     FileManager(const string& booksFile, const string& usersFile);
     
+    // État de la persistance : faux si les chemins de fichiers sont vides (mode mémoire)
+    bool hasPersistence() const;
+
     // File operations
+    // save/load retournent false en mode mémoire ; utiliser hasPersistence() pour
+    // distinguer ce cas d'un échec d'entrée/sortie réel.
     bool saveLibraryData(Library& library);
     bool loadLibraryData(Library& library);
     

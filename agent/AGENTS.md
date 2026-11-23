@@ -10,7 +10,10 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   relancer cmake, pas seulement `make`.
 - Exécution depuis `agent/build` : `./bibliotheque -d ../data/`.
   Le chemin est résolu par rapport au CWD ; depuis la racine du dépôt :
-  `agent/build/bibliotheque -d agent/data/`. Sans `-d`, rien n'est chargé ni sauvegardé.
+  `agent/build/bibliotheque -d agent/data/`.
+- Sans `-d`, mode mémoire explicite : message au démarrage, aucun chargement,
+  commandes 12 (sauvegarder) et 13 (backup) ignorées avec un message, aucune
+  sauvegarde à la sortie et aucun fichier créé.
 - `build/*` est gitignoré : ne jamais commiter les artefacts de build.
 - Aucun test, linter ni CI : la seule vérification est la compilation avec
   `-Wall -Wextra -Wpedantic` (déjà dans CMake).
@@ -18,8 +21,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 ## Architecture
 - `main.cpp` : point d'entrée et menu CLI.
 - `Library` (`library.*`) possède les `Book` et `User` via `unique_ptr`.
-- `FileManager` (`filemanager.*`) gère la persistance ; `book.*` et `user.*` portent
-  la sérialisation.
+- `FileManager` (`filemanager.*`) gère la persistance ; `hasPersistence()` distingue
+  le mode mémoire (sans `-d`) du mode fichier ; `book.*` et `user.*` portent la
+  sérialisation.
 - C++17, extensions désactivées ; `using namespace std;` est utilisé partout dans le code existant.
 
 ## Format des données (`data/`)

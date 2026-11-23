@@ -82,10 +82,16 @@ int main(int argc, char* argv[]) {
 
     Library library;
     FileManager fileManager(booksFile, usersFile);
+    const bool persistence = fileManager.hasPersistence();
     
-    // Load existing data
-    cout << "Chargement des données de la bibliothèque...\n";
-    fileManager.loadLibraryData(library);
+    // Charge les données existantes, sauf si aucun répertoire n'a été fourni.
+    if (persistence) {
+        cout << "Chargement des données de la bibliothèque...\n";
+        fileManager.loadLibraryData(library);
+    } else {
+        cout << "Mode sans persistance : aucune donnée ne sera chargée ni sauvegardée.\n";
+        cout << "Utilisez --data-dir <répertoire> (ou -d) pour activer la persistance.\n";
+    }
     
     int choice;
     bool running = true;
@@ -233,7 +239,9 @@ int main(int argc, char* argv[]) {
             }
             
             case 12: { // Save Data
-                if (fileManager.saveLibraryData(library)) {
+                if (!persistence) {
+                    cout << "Mode sans persistance : sauvegarde ignorée.\n";
+                } else if (fileManager.saveLibraryData(library)) {
                     cout << "Données de la bibliothèque sauvegardées avec succès !\n";
                 } else {
                     cout << "Erreur lors de la sauvegarde des données de la bibliothèque.\n";
@@ -243,14 +251,22 @@ int main(int argc, char* argv[]) {
             }
             
             case 13: { // Create Backup
-                fileManager.createBackup();
+                if (!persistence) {
+                    cout << "Mode sans persistance : création de sauvegarde ignorée.\n";
+                } else {
+                    fileManager.createBackup();
+                }
                 pauseForInput();
                 break;
             }
             
             case 0: // Exit
-                cout << "Sauvegarde des données avant la fermeture...\n";
-                fileManager.saveLibraryData(library);
+                if (persistence) {
+                    cout << "Sauvegarde des données avant la fermeture...\n";
+                    fileManager.saveLibraryData(library);
+                } else {
+                    cout << "Mode sans persistance : aucune donnée à sauvegarder.\n";
+                }
                 cout << "Merci d'avoir utilisé le Système de Gestion de Bibliothèque Personnelle !\n";
                 running = false;
                 break;

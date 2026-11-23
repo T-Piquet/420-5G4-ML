@@ -9,13 +9,24 @@ using namespace std;
 FileManager::FileManager(const string& booksFile, const string& usersFile)
     : booksFileName(booksFile), usersFileName(usersFile) {}
 
+// Indique si les fichiers de persistance sont configurés
+bool FileManager::hasPersistence() const {
+    return !booksFileName.empty() && !usersFileName.empty();
+}
+
 // Save all library data
 bool FileManager::saveLibraryData(Library& library) {
+    if (!hasPersistence()) {
+        return false; // Mode mémoire : rien à sauvegarder, aucun message d'erreur.
+    }
     return saveBooksToFile(library) && saveUsersToFile(library);
 }
 
 // Load all library data
 bool FileManager::loadLibraryData(Library& library) {
+    if (!hasPersistence()) {
+        return false; // Mode mémoire : rien à charger.
+    }
     bool booksLoaded = loadBooksFromFile(library);
     bool usersLoaded = loadUsersFromFile(library);
     return booksLoaded || usersLoaded; // Return true if at least one file was loaded
@@ -111,6 +122,9 @@ bool FileManager::fileExists(const string& filename) {
 
 // Create backup
 void FileManager::createBackup() {
+    if (!hasPersistence()) {
+        return; // Mode mémoire : l'appelant affiche le message adapté.
+    }
     if (fileExists(booksFileName)) {
         filesystem::copy_file(booksFileName, booksFileName + ".backup");
     }
