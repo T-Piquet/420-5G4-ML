@@ -1,9 +1,9 @@
 # GUI — application de test
 
-Interface graphique minimale (une seule fenêtre) pour la bibliothèque,
-construite avec [CustomTkinter](https://customtkinter.tomschimansky.com/).
-Elle lit et écrit les mêmes fichiers que la CLI C++ (`agent/data/books.txt`,
-`agent/data/users.txt`), donc les deux outils restent interchangeables.
+Interface graphique (une seule fenêtre) pour la bibliothèque, construite avec
+[CustomTkinter](https://customtkinter.tomschimansky.com/). Elle lit et écrit les
+mêmes fichiers que la CLI C++ (`agent/data/books.txt`, `agent/data/users.txt`),
+donc les deux outils restent interchangeables.
 
 ## Installation (venv local)
 
@@ -33,14 +33,23 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 
 ## Fonctionnalités
 
-- liste des livres avec recherche instantanée par titre ou auteur ;
-- suppression d'un livre, avec confirmation ;
-- sauvegarde automatique après suppression ;
-- bascule thème clair / sombre.
+- page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
+  identifiant et nombre de livres empruntés ;
+- statistiques réelles en pied de page : livres, livres disponibles, livres
+  empruntés et utilisateurs ;
+- boutons `Utilisateur +`, `Voir livres` et `Créer sauvegarde` présents mais
+  encore inactifs ;
+- thème beige et vert unique, sans mode sombre.
 
-Cette version est un test d'intégration de CustomTkinter : l'ajout de livres ou
-d'utilisateurs, l'emprunt et le retour ne sont pas exposés dans l'interface
-(les méthodes correspondantes restent disponibles dans `data_store.py`).
+Les pages Livres, l'ajout d'utilisateur et de livre, l'emprunt, le retour et la
+sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les méthodes
+correspondantes existent déjà dans `data_store.py`.
+
+## Apparence
+
+Le thème est centralisé dans `theme.py` (palette, polices, arrondis). Garamond
+est la police voulue ; si elle est absente du système, la première famille
+disponible parmi `EB Garamond` et `DejaVu Serif` est utilisée automatiquement.
 
 ## Formats des données
 
@@ -55,6 +64,3 @@ la suppression d'un livre retire aussi son ISBN des utilisateurs.
 - Pas de pybind11 : la persistance est réimplémentée en Python (`data_store.py`).
 - Pas de tests automatisés de l'interface ; seul le chargement/sauvegarde est
   vérifiable sans affichage.
-- Les données fournies contiennent une incohérence préexistante : *Indiana*
-  (`9782070360093`) est marqué emprunté par `USR010`, alors que `USR010` liste
-  *Corinne* (`9782070360086`). L'application ne la corrige pas automatiquement.
