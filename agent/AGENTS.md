@@ -45,17 +45,21 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - Lancement : `.venv/bin/python app.py` ; option `--data-dir` (défaut : `agent/data`).
 - `data_store.py` isole la persistance (pas de pybind11 pour l'instant) ; il faut
   garder ce module compatible avec les formats de fichiers du C++.
-- `app.py` crée la fenêtre et monte la vue courante ; `views.py` contient les
-  pages, `panels.py` les panneaux latéraux des formulaires et `theme.py` centralise
-  l'apparence.
+- `app.py` crée la fenêtre et gère la navigation entre les pages ; `views.py`
+  contient les pages et le pied de page commun, `panels.py` les panneaux latéraux
+  des formulaires et `theme.py` centralise l'apparence.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
-  la page Utilisateurs en lecture seule (cartes sur quatre colonnes, statistiques
-  réelles en pied de page). Le bouton `Utilisateur +` ouvre un panneau latéral
-  fonctionnel : validation et mise en forme du nom, identifiant `USRXXX` généré,
-  messages et rafraîchissement immédiat. `Voir livres` et `Créer sauvegarde` ne font
-  rien. La vue Livres, l'ajout de livre, l'emprunt et le retour restent à brancher.
-  Mettre cette section à jour à chaque évolution de l'UI.
+  la page Livres, écran principal, avec ses cartes sur trois colonnes (titre,
+  auteur, ISBN, actions inertes), la barre de recherche et le filtre `Tous` /
+  `Disponibles` / `Empruntés`. `Voir utilisateurs` ouvre la page Utilisateurs en
+  lecture seule (cartes sur quatre colonnes, statistiques réelles en pied de page) ;
+  son bouton `Utilisateur +` ouvre un panneau latéral fonctionnel : validation et
+  mise en forme du nom, identifiant `USRXXX` généré, messages et rafraîchissement
+  immédiat. `Voir livres` ramène à l'écran Livres. `Livre +`, la recherche, le
+  filtre, l'ajout de livre, l'emprunt, le retour, la suppression et
+  `Créer sauvegarde` restent à brancher. Mettre cette section à jour à chaque
+  évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).

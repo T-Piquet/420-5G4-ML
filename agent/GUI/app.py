@@ -9,11 +9,11 @@ import customtkinter as ctk
 
 import theme
 from data_store import LibraryStore, StoreError
-from views import UsersView
+from views import BooksView, UsersView
 
 
 class LibraryApp(ctk.CTk):
-    """Fenêtre principale ; elle affiche pour l'instant la page Utilisateurs."""
+    """Fenêtre principale et navigation entre les pages Livres et Utilisateurs."""
 
     def __init__(self, data_dir: Path) -> None:
         super().__init__(fg_color=theme.BACKGROUND)
@@ -24,8 +24,24 @@ class LibraryApp(ctk.CTk):
         self.minsize(900, 560)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
+        self._current_view: ctk.CTkFrame | None = None
         self._build_header()
-        UsersView(self, self.store).grid(row=1, column=0, sticky="nsew")
+        self.show_books()
+
+    def _swap_view(self, view: ctk.CTkFrame) -> None:
+        """Remplace la page courante par `view` dans la zone sous le bandeau."""
+        if self._current_view is not None:
+            self._current_view.destroy()
+        self._current_view = view
+        view.grid(row=1, column=0, sticky="nsew")
+
+    def show_books(self) -> None:
+        """Affiche la page Livres, écran principal."""
+        self._swap_view(BooksView(self, self.store, self.show_users))
+
+    def show_users(self) -> None:
+        """Affiche la page Utilisateurs."""
+        self._swap_view(UsersView(self, self.store, self.show_books))
 
     def _build_header(self) -> None:
         """Bandeau commun à toutes les pages."""

@@ -34,6 +34,11 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 ## Fonctionnalités
 
 - bandeau « Gestionnaire de la Bibliothèque » en haut de chaque page ;
+- page Livres, écran principal : cartes sur trois colonnes avec titre, auteur,
+  ISBN discret et boutons `Emprunter` / `Retourner` plus une corbeille, pour
+  l'instant inertes ;
+- barre `Rechercher`, filtre `Tous` / `Disponibles` / `Empruntés` et bouton
+  `Livre +` présents mais encore inactifs ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
@@ -45,12 +50,13 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   - message d'erreur ou de confirmation dans le panneau, avec mise à jour
     immédiate de la liste et des statistiques ;
   - bouton `Annuler` pour fermer le panneau ;
-- boutons `Voir livres` et `Créer sauvegarde` présents mais encore inactifs ;
+- navigation entre les pages via `Voir utilisateurs` et `Voir livres` ;
+- bouton `Créer sauvegarde` présent mais encore inactif ;
 - thème beige et vert unique, sans mode sombre.
 
-La page Livres, l'ajout de livre, l'emprunt, le retour et la sauvegarde manuelle
-seront ajoutés dans les prochaines étapes. Les méthodes correspondantes existent
-déjà dans `data_store.py`.
+L'ajout de livre, l'emprunt, le retour, la suppression, la recherche, le filtre
+et la sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les méthodes
+correspondantes existent déjà dans `data_store.py`.
 
 ## Apparence
 

@@ -24,3 +24,4 @@ Nathalie Guerin|USR023|
 Olivier Masson|USR024|
 Valérie Simon|USR025|
 John Doe|USR026|
+Jane Doe|USR027|
