@@ -33,6 +33,19 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `.vscode/settings.json` (racine) contient un chemin absolu obsolète (`/home/cano/repos/...`) :
   utiliser la CLI plutôt que CMake Tools.
 
+## GUI Python (`GUI/`)
+- Application CustomTkinter à fenêtre unique ; elle lit/écrit les mêmes
+  `data/books.txt` et `data/users.txt` que la CLI (formats ci-dessus).
+- Venv local :
+  `cd agent/GUI && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
+- Lancement : `.venv/bin/python app.py` ; option `--data-dir` (défaut : `agent/data`).
+- `data_store.py` isole la persistance (pas de pybind11 pour l'instant) ; il faut
+  garder ce module compatible avec les formats de fichiers du C++.
+- `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
+- Version de test actuelle : l'UI se limite à la consultation, la recherche et la
+  suppression ; ajout, emprunt et retour ne sont pas exposés (méthodes conservées
+  dans `data_store.py`). Mettre cette section à jour à chaque évolution de l'UI.
+
 ## Conventions
 - Code, commentaires, chaînes d'interface et messages de commit en français.
 - Préfixes de commit : `[FEAT]`, `[TACHE]`, `[DOCS]`, `[REMISE]`, `[SAUVEGARDE]`.
