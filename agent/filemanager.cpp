@@ -9,9 +9,13 @@ using namespace std;
 FileManager::FileManager(const string& booksFile, const string& usersFile)
     : booksFileName(booksFile), usersFileName(usersFile) {}
 
+bool FileManager::hasDataPaths() const {
+    return !booksFileName.empty() && !usersFileName.empty();
+}
+
 // Save all library data
 bool FileManager::saveLibraryData(Library& library) {
-    return saveBooksToFile(library) && saveUsersToFile(library);
+    return hasDataPaths() && saveBooksToFile(library) && saveUsersToFile(library);
 }
 
 // Load all library data

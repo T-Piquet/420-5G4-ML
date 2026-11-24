@@ -17,6 +17,7 @@ public:
     FileManager(const string& booksFile, const string& usersFile);
     
     // File operations
+    bool hasDataPaths() const;
     bool saveLibraryData(Library& library);
     bool loadLibraryData(Library& library);
     

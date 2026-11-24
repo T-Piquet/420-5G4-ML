@@ -42,7 +42,11 @@ void Book::returnBook() {
 
 // Display book information
 string Book::toString() const {
-    string status = isAvailable ? "Disponible" : "Emprunté par : " + borrowerId;
+    return toString(borrowerId);
+}
+
+string Book::toString(const string& borrowerName) const {
+    string status = isAvailable ? "Disponible" : "Emprunté par : " + borrowerName;
     return "Titre: " + title + "\nAuteur: " + author + "\nISBN: " + isbn + "\nStatu: " + status;
 }
 
