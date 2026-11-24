@@ -1,24 +1,54 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "C++",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	
-// Monter le socket X11 hôte dans le conteneur
-  "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
-  ],
-  
-  // Transmettre la variable d'affichage
-  "containerEnv": {
-    "DISPLAY": "${localEnv:DISPLAY}"
+  "name": "C++ AI-ML Development",
+
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "REINSTALL_CMAKE_VERSION": "3.22.2"
+    }
   },
-  
-  // Donner l'accès au serveur X11 (si nécessaire sur certains systèmes)
+
   "runArgs": [
-    "--net=host"
+    "--init",
+    "--network=host",
+    "--cap-add=SYS_PTRACE",
+    "--security-opt=seccomp=unconfined"
   ],
 
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "WAYLAND_DISPLAY": "${localEnv:WAYLAND_DISPLAY}",
+    "XDG_RUNTIME_DIR": "${localEnv:XDG_RUNTIME_DIR}",
+    "QT_X11_NO_MITSHM": "1",
+    "LIBGL_ALWAYS_INDIRECT": "0"
+  },
+
+  "remoteUser": "vscode",
+
+  "updateRemoteUserUID": true,
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "twxs.cmake"
+      ],
+
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        "cmake.configureOnOpen": true,
+        "files.eol": "\n"
+      }
+    }
+  },
+
+  "postCreateCommand": "python3 -m pip install --user numpy matplotlib opencv-python pyqt5 pandas scipy scikit-learn jupyter",
+
+  "shutdownAction": "stopContainer"
 }
