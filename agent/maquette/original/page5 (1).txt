@@ -1,3 +1,0 @@
-Quand tu clique sur livre <-- livre: retour a la page 1
-
-Quand tu clique sur ajouter un utilisateur: aller à la page 7

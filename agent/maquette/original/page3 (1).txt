@@ -1,3 +1,0 @@
-Quand tu clique sur retour: aller à la page 1
-
-Quand tu clique sur rendre le livre: le livre devient non emprunté et va à la page 4
