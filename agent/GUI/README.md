@@ -42,8 +42,12 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 - page Livres, écran principal : cartes sur trois colonnes avec titre, auteur,
   ISBN discret et boutons `Emprunter` / `Retourner` plus une corbeille, pour
   l'instant inertes ;
-- barre `Rechercher`, filtre `Tous` / `Disponibles` / `Empruntés` et bouton
-  `Livre +` présents mais encore inactifs ;
+- barre `Rechercher` : le texte n'est pris en compte qu'au clic sur la loupe ;
+  la recherche porte sur les titres et les noms d'auteurs (sous-chaîne, casse
+  ASCII ignorée) et n'affiche que les cartes correspondantes. Une requête vide
+  ramène toute la bibliothèque ; sans résultat, la grille affiche la requête ;
+- filtre `Tous` / `Disponibles` / `Empruntés` et bouton `Livre +` présents mais
+  encore inactifs ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
@@ -56,12 +60,15 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
     immédiate de la liste et des statistiques ;
   - bouton `Annuler` pour fermer le panneau ;
 - navigation entre les pages via `Voir utilisateurs` et `Voir livres` ;
-- bouton `Créer sauvegarde` présent mais encore inactif ;
+- bouton `Créer sauvegarde`, présent sur les deux pages : copie `books.txt` et
+  `users.txt` dans leurs `.backup` via le moteur C++, puis affiche dans le pied
+  de page « Sauvegarde créée. », « Aucun fichier à sauvegarder. » ou l'erreur
+  (terracotta). Un nouveau clic écrase les backups précédents ;
 - thème beige et vert unique, sans mode sombre.
 
-L'ajout de livre, l'emprunt, le retour, la suppression, la recherche, le filtre
-et la sauvegarde manuelle seront ajoutés dans les prochaines étapes. Les méthodes
-correspondantes existent déjà dans `data_store.py`.
+L'ajout de livre, l'emprunt, le retour, la suppression et le filtre seront
+ajoutés dans les prochaines étapes. Les méthodes correspondantes existent déjà
+dans `data_store.py`.
 
 ## Apparence
 

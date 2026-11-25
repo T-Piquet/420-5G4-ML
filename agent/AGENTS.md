@@ -54,15 +54,21 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
   la page Livres, écran principal, avec ses cartes sur trois colonnes (titre,
-  auteur, ISBN, actions inertes), la barre de recherche et le filtre `Tous` /
-  `Disponibles` / `Empruntés`. `Voir utilisateurs` ouvre la page Utilisateurs en
-  lecture seule (cartes sur quatre colonnes, statistiques réelles en pied de page) ;
+  auteur, ISBN, actions inertes), la recherche et le filtre `Tous` /
+  `Disponibles` / `Empruntés`. La recherche n'applique le texte qu'au clic sur la
+  loupe : elle parcourt les titres et les auteurs (sous-chaîne, casse ASCII
+  ignorée) et ne laisse que les cartes correspondantes ; une requête vide ramène
+  tout, une requête sans résultat affiche un message avec la saisie.
+  `Voir utilisateurs` ouvre la page Utilisateurs en lecture seule (cartes sur
+  quatre colonnes, statistiques réelles en pied de page) ;
   son bouton `Utilisateur +` ouvre un panneau latéral fonctionnel : validation et
   mise en forme du nom, identifiant `USRXXX` généré, messages et rafraîchissement
-  immédiat. `Voir livres` ramène à l'écran Livres. `Livre +`, la recherche, le
-  filtre, l'ajout de livre, l'emprunt, le retour, la suppression et
-  `Créer sauvegarde` restent à brancher (prochaine étape). Mettre cette section
-  à jour à chaque évolution de l'UI.
+  immédiat. `Voir livres` ramène à l'écran Livres. `Créer sauvegarde`, dans le
+  pied de page commun, copie les deux fichiers via `LibraryStore.create_backup()`
+  et affiche un message discret à côté des boutons (« Sauvegarde créée. »,
+  « Aucun fichier à sauvegarder. », échec en terracotta). `Livre +`, le filtre,
+  l'ajout de livre, l'emprunt, le retour et la suppression restent à brancher
+  (prochaine étape). Mettre cette section à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -83,25 +89,32 @@ après chaque étape, sans y consigner la conversation.
 - [x] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
   régression CLI et tests UI.
 - [x] 7. Documentation : commandes de build et architecture à jour.
+- [x] 8. Première action GUI branchée : `Créer sauvegarde` du pied de page
+  appelle `LibraryStore.create_backup()`, avec message de retour.
+- [x] 9. Recherche branchée : clic sur la loupe, texte appliqué à ce moment-là,
+  titres et auteurs via `LibraryStore.search()`, cartes filtrées et message si
+  aucun résultat.
 
-**État d'avancement :** étapes 1 à 7 terminées ; branchement des actions GUI à
-faire.
-**Dernière vérification :** étape 6 sur copies (`/tmp/opencode/etape6/`), base
-réelle 40/27/13/27 (40 livres, 27 disponibles, 13 empruntés, 27 utilisateurs).
-40 contrôles : 24 moteur (parité aller-retour octet pour octet, CRUD,
-emprunt/retour, rollback, atomicité des deux fichiers, backup via
-`LibraryStore.create_backup()` et restauration), 8 CLI (scénario complet,
-relance, mode mémoire, parité croisée) et 8 UI (cartes et pied de page, ajout
-`USR028`, refus, rollback, ouverture du panneau avec un grab étranger réel).
-Étape 7 : `agent/README.md` réécrit (deux clients, build pybind11, GUI,
-architecture et formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`,
-module `0.1.0`, CLI et `app.py --help` vérifiés.
-`data/` inchangé (sha256), aucun `.tmp` ni `.backup` résiduel.
+**État d'avancement :** étapes 1 à 9 terminées ; branchement des autres actions
+GUI à faire.
+**Dernière vérification :** étape 9 sur copies (`/tmp/opencode/etape9/`), base
+réelle 40/27/13/28 (40 livres, 27 disponibles, 13 empruntés, 28 utilisateurs ;
+`O Llama|USR028` ajouté depuis la GUI). 9 contrôles UI sur la recherche : saisie
+sans clic sans effet, clic réel sur le Canvas, 5 cartes de Victor Hugo, résultats
+conservés tant que la loupe n'est pas recliquée, casse ASCII (`MADAME BOVARY`),
+titre accentué (`Misérables`), auteur, aucun résultat avec message, requête vide
+qui ramène les 40 cartes et statistiques globales inchangées. Rappel : 24
+contrôles moteur, 8 CLI, 8 UI et 6 sur `Créer sauvegarde` (étape 8). Étape 7 :
+`agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
+formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`, module `0.1.0`,
+CLI et `app.py --help` vérifiés.
+`agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` de
+l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
 Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
-branchement des actions GUI. Ne rien recommencer des étapes 1 à 7.
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 9.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -138,8 +151,20 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 7.
 - `LibraryStore` expose `create_backup()` : délégation à
   `FileManager::createBackup()`, `False` s'il n'y a aucun fichier à sauvegarder,
   `OSError` si la copie échoue.
-- Actions GUI encore inertes (`Livre +`, recherche, filtre, emprunt, retour,
-  suppression, `Créer sauvegarde`) : prochaine étape.
+- `Créer sauvegarde` est branchée dans `PageFooter` : `invoke()` appelle
+  `LibraryStore.create_backup()`, puis affiche « Sauvegarde créée. » (sage),
+  « Aucun fichier à sauvegarder. » (discret) ou l'erreur (terracotta). Le message
+  est remis à zéro à chaque changement de page ; le bouton existe sur les deux
+  pages.
+- Recherche branchée dans `BooksView` : `search_icon.bind("<Button-1>")` appelle
+  `_apply_search()`, qui lit `search_entry.get().strip()` et passe la requête à
+  `LibraryStore.search()` (moteur C++ `searchBooks` : titre **ou** auteur,
+  sous-chaîne, casse ASCII). `_populate_cards(liste)` ne reçoit que les cartes
+  concernées ; une liste vide affiche un message reprenant la requête.
+  La saisie seule ne déclenche rien ; le pied de page reste global. Limite :
+  `toLower()` est ASCII, donc `etranger` ne trouve pas « L'Étranger ».
+- Actions GUI encore inertes (`Livre +`, filtre, emprunt, retour, suppression) :
+  prochaine étape.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
   client X qui détient réellement le grab.

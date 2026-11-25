@@ -93,13 +93,34 @@ class PageFooter(ctk.CTkFrame):
             command=primary_command,
             **options,
         ).grid(row=0, column=0, padx=(12, 6), pady=12)
-        # Bouton encore inactif : la sauvegarde manuelle viendra plus tard.
-        ctk.CTkButton(
+        self.backup_button = ctk.CTkButton(
             self,
             text="Créer sauvegarde",
             width=150,
+            command=self._create_backup,
             **options,
-        ).grid(row=0, column=1, padx=6, pady=12)
+        )
+        self.backup_button.grid(row=0, column=1, padx=6, pady=12)
+
+        self.message_label = ctk.CTkLabel(
+            self,
+            text="",
+            font=theme.font(11, slant="italic"),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=800,
+        )
+        self.message_label.grid(
+            row=1,
+            column=0,
+            columnspan=3,
+            sticky="ew",
+            padx=(12, 18),
+            pady=(0, 10),
+        )
+        # Le pied de page garde sa hauteur tant qu'aucun message n'est affiché.
+        self.message_label.grid_remove()
 
         stats_frame = ctk.CTkFrame(self, fg_color="transparent")
         stats_frame.grid(row=0, column=2, sticky="e", padx=(12, 18))
@@ -126,6 +147,29 @@ class PageFooter(ctk.CTkFrame):
         )
         for label, text in zip(self._stat_labels, labels):
             label.configure(text=text)
+
+    def _create_backup(self) -> None:
+        """Copie les fichiers de données dans leurs `.backup` via le moteur C++."""
+        try:
+            created = self.store.create_backup()
+        except OSError as exc:
+            self._show_message(str(exc), kind="error")
+            return
+
+        if not created:
+            self._show_message("Aucun fichier à sauvegarder.", kind="muted")
+            return
+
+        self._show_message("Sauvegarde créée.")
+
+    def _show_message(self, text: str, kind: str = "success") -> None:
+        colors = {
+            "success": theme.SAGE,
+            "error": theme.TERRACOTTA,
+            "muted": theme.TEXT_MUTED,
+        }
+        self.message_label.configure(text=text, text_color=colors[kind])
+        self.message_label.grid()
 
 
 class BookCard(ctk.CTkFrame):
@@ -218,6 +262,7 @@ class BooksView(ctk.CTkFrame):
         super().__init__(master, fg_color=theme.BACKGROUND, corner_radius=0)
         self.store = store
         self.on_show_users = on_show_users
+        self._active_query = ""
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
@@ -265,7 +310,7 @@ class BooksView(ctk.CTkFrame):
         frame.grid_propagate(False)
         frame.grid_columnconfigure(0, weight=1)
 
-        # Champ encore inactif : la recherche sera branchée plus tard.
+        # Le texte n'est pris en compte qu'au clic sur la loupe.
         self.search_entry = ctk.CTkEntry(
             frame,
             height=36,
@@ -279,16 +324,18 @@ class BooksView(ctk.CTkFrame):
         )
         self.search_entry.grid(row=0, column=0, sticky="ew", padx=(14, 6), pady=4)
 
-        icon = tk.Canvas(
+        self.search_icon = tk.Canvas(
             frame,
             width=32,
             height=32,
             bg=theme.SURFACE,
             highlightthickness=0,
             bd=0,
+            cursor="hand2",
         )
-        icon.grid(row=0, column=1, padx=(0, 10))
-        _draw_magnifier(icon)
+        self.search_icon.grid(row=0, column=1, padx=(0, 10))
+        _draw_magnifier(self.search_icon)
+        self.search_icon.bind("<Button-1>", self._apply_search)
 
     def _build_filter(self) -> None:
         row = ctk.CTkFrame(self, fg_color="transparent")
@@ -363,20 +410,31 @@ class BooksView(ctk.CTkFrame):
 
         self._populate_cards()
 
-    def _populate_cards(self) -> None:
+    def _apply_search(self, _event: Event | None = None) -> None:
+        """Filtre les cartes sur le texte courant (titre ou auteur)."""
+        self._active_query = self.search_entry.get().strip()
+        self._populate_cards(self.store.search(self._active_query))
+
+    def _populate_cards(self, books: list[Book] | None = None) -> None:
+        visible = self.store.books if books is None else books
         for child in self.cards_frame.winfo_children():
             child.destroy()
 
-        if not self.store.books:
+        if not visible:
+            text = (
+                f"Aucun livre ne correspond à « {self._active_query} »."
+                if self._active_query
+                else "Aucun livre."
+            )
             ctk.CTkLabel(
                 self.cards_frame,
-                text="Aucun livre.",
+                text=text,
                 font=theme.font(14),
                 text_color=theme.TEXT_MUTED,
             ).grid(row=0, column=0, columnspan=BOOK_COLUMNS, pady=32)
             return
 
-        for index, book in enumerate(self.store.books):
+        for index, book in enumerate(visible):
             BookCard(self.cards_frame, book).grid(
                 row=index // BOOK_COLUMNS,
                 column=index % BOOK_COLUMNS,
