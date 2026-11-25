@@ -47,6 +47,7 @@ class TrashIcon(tk.Canvas):
             bg=theme.SURFACE,
             highlightthickness=0,
             bd=0,
+            cursor="hand2",
         )
         color = theme.TERRACOTTA
         self.create_line(9, 10, 27, 10, fill=color, width=2, capstyle=tk.ROUND)
@@ -183,6 +184,7 @@ class BookCard(ctk.CTkFrame):
         book: Book,
         on_borrow: Callable[[Book], None],
         on_return: Callable[[Book], None],
+        on_delete: Callable[[Book], None],
     ) -> None:
         super().__init__(
             master,
@@ -247,6 +249,7 @@ class BookCard(ctk.CTkFrame):
         self.action_button.grid(row=0, column=0, sticky="w")
         self.trash_icon = TrashIcon(actions)
         self.trash_icon.grid(row=0, column=1, sticky="e", padx=(8, 0))
+        self.trash_icon.bind("<Button-1>", lambda _event: on_delete(book))
 
         self.bind("<Configure>", self._wrap_texts)
 
@@ -491,6 +494,32 @@ class BooksView(ctk.CTkFrame):
         self.footer.update_stats()
         self.footer.show_message(f"« {book.title} » retourné par {borrower_label}.")
 
+    def _delete_book(self, book: Book) -> None:
+        """Supprime le livre, emprunt compris, sans confirmation."""
+        try:
+            self.store.remove_book(book.isbn)
+        except StoreError as exc:
+            # Vue obsolète : on réaligne la grille sur le moteur.
+            self._refresh_cards()
+            self.footer.update_stats()
+            self.footer.show_message(str(exc), kind="error")
+            return
+
+        try:
+            self.store.save()
+        except OSError as exc:
+            # Le disque est intact : on y relit l'état exact (livre, emprunt
+            # et liste de l'utilisateur) plutôt que de le reconstruire.
+            self.store.load()
+            self._refresh_cards()
+            self.footer.update_stats()
+            self.footer.show_message(f"Erreur de sauvegarde : {exc}", kind="error")
+            return
+
+        self._refresh_cards()
+        self.footer.update_stats()
+        self.footer.show_message(f"« {book.title} » supprimé.")
+
     def _on_search_return(self, _event: Event | None = None) -> str | None:
         """Entrée ne réagit que sur un champ vide : réaffiche toute la bibliothèque."""
         if self.search_entry.get().strip():
@@ -532,6 +561,7 @@ class BooksView(ctk.CTkFrame):
                 book,
                 self._open_borrow,
                 self._return_book,
+                self._delete_book,
             ).grid(
                 row=index // BOOK_COLUMNS,
                 column=index % BOOK_COLUMNS,

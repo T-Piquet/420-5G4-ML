@@ -41,7 +41,7 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 - bandeau « Gestionnaire de la Bibliothèque » en haut de chaque page ;
 - page Livres, écran principal : cartes sur trois colonnes avec titre, auteur,
   ISBN discret, bouton `Emprunter` (ou `Retourner` pour un livre emprunté) et
-  corbeille ; l'emprunt et le retour sont branchés, la suppression reste inerte ;
+  corbeille ; emprunt, retour et suppression sont branchés ;
 - barre `Rechercher` : le texte n'est pris en compte qu'au clic sur la loupe ;
   la recherche porte sur les titres et les noms d'auteurs (sous-chaîne, casse
   ASCII ignorée) et n'affiche que les cartes correspondantes. Une requête vide
@@ -61,6 +61,10 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   C++, sauvegarde, puis met à jour les cartes, les statistiques et le message du
   pied de page (nom de l'emprunteur). En cas d'échec d'écriture, l'emprunt est
   remis en place ;
+- suppression par la corbeille, sans confirmation : le moteur retire le livre et
+  son ISBN des listes d'emprunt, puis les cartes, les statistiques et le message
+  du pied de page sont mis à jour. En cas d'échec d'écriture, l'état est relu
+  depuis les disques et l'erreur s'affiche ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
@@ -79,8 +83,8 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   (terracotta). Un nouveau clic écrase les backups précédents ;
 - thème beige et vert unique, sans mode sombre.
 
-L'ajout de livre et la suppression seront ajoutés dans les prochaines étapes.
-Les méthodes correspondantes existent déjà dans `data_store.py`.
+L'ajout de livre sera ajouté dans une prochaine étape. La méthode correspondante
+existe déjà dans `data_store.py`.
 
 ## Apparence
 
