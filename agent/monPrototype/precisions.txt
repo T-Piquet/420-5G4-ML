@@ -1,0 +1,1 @@
+Chaque page possède l'en-tête "Gestionnaire de la Bibliothèque" sur une ligne, d'une couleur de fond légèrement plus foncé, même typographie que celle du thème mais plus llarge et en gras.

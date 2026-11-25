@@ -1,6 +1,5 @@
-Le Petit Prince|Antoine de Saint-Exupéry|9782070612758|1|
-Les Misérables|Victor Hugo|9782253096337|0|USR001
-L'Étranger|Albert Camus|9782070360024|1|
+Les Misérables|Victor Hugo|9782253096337|1|
+L'Étranger|Albert Camus|9782070360024|0|USR001
 Madame Bovary|Gustave Flaubert|9782070413119|0|USR002
 Le Rouge et le Noir|Stendhal|9782070411326|1|
 Germinal|Émile Zola|9782253004226|0|USR003
@@ -11,7 +10,6 @@ Notre-Dame de Paris|Victor Hugo|9782253002864|1|
 L'Assommoir|Émile Zola|9782253004233|1|
 Bel-Ami|Guy de Maupassant|9782253005070|0|USR005
 Le Malade imaginaire|Molière|9782070380763|1|
-Phèdre|Jean Racine|9782070380800|1|
 Le Cid|Pierre Corneille|9782070380848|0|USR006
 Tartuffe|Molière|9782070380770|1|
 Dom Juan|Molière|9782070380787|1|
@@ -39,3 +37,5 @@ Maximes|La Rochefoucauld|9782070380987|1|
 Pensées|Blaise Pascal|9782070380994|0|USR014
 Lettres persanes|Montesquieu|9782070381001|1|
 De l'esprit des lois|Montesquieu|9782070381018|1|
+Test04|Oh Quatre|24334556|1|
+En cli pour vérifier|Cé Ellee|12975803|1|
