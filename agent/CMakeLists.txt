@@ -33,6 +33,7 @@ if(BUILD_PYTHON_BINDINGS)
 
     pybind11_add_module(bibliotheque_core MODULE bindings.cpp)
     target_link_libraries(bibliotheque_core PRIVATE bibliotheque_lib)
+    target_compile_options(bibliotheque_core PRIVATE -Wall -Wextra -Wpedantic)
     set_target_properties(bibliotheque_core PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/GUI"
     )

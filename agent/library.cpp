@@ -22,6 +22,10 @@ bool Library::removeBook(const string& isbn) {
     
     if (it != books.end()) {
         books.erase(it);
+        // Retire l'ISBN des listes d'emprunt pour éviter des références orphelines.
+        for (auto& user : users) {
+            user->returnBook(isbn);
+        }
         return true;
     }
     return false;
@@ -94,6 +98,33 @@ vector<Book*> Library::getAllBooks() {
 // Add user to library
 void Library::addUser(const User& user) {
     users.push_back(make_unique<User>(user));
+}
+
+// Supprime un utilisateur s'il n'a aucun emprunt en cours
+bool Library::removeUser(const string& userId) {
+    auto it = find_if(users.begin(), users.end(),
+        [&userId](const unique_ptr<User>& user) {
+            return user->getUserId() == userId;
+        });
+
+    if (it == users.end()) {
+        return false;
+    }
+
+    // Refus tant que l'utilisateur a des livres empruntés.
+    if (!(*it)->getBorrowedBooks().empty()) {
+        return false;
+    }
+
+    // Refus si un livre le désigne encore comme emprunteur (données incohérentes).
+    for (const auto& book : books) {
+        if (book->getBorrowerId() == userId) {
+            return false;
+        }
+    }
+
+    users.erase(it);
+    return true;
 }
 
 // Find user by ID

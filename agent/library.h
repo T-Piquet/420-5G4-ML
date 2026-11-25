@@ -30,6 +30,7 @@ public:
     
     // User management
     void addUser(const User& user);
+    bool removeUser(const string& userId);
     User* findUserById(const string& userId);
     vector<User*> getAllUsers();
     

@@ -74,7 +74,7 @@ après chaque étape, sans y consigner la conversation.
 
 - [x] 1. Build : `bibliotheque_lib`, option `BUILD_PYTHON_BINDINGS`, module
   `bibliotheque_core` généré dans `GUI/`, import vérifié.
-- [ ] 2. `bindings.cpp` : `Book`, `User`, `Library`, `FileManager`, copies
+- [x] 2. `bindings.cpp` : `Book`, `User`, `Library`, `FileManager`, copies
   `books()` / `users()`, `remove_user`, nettoyage dans `remove_book`.
 - [ ] 3. Persistance C++ : sauvegarde atomique et backup écrasable.
 - [ ] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
@@ -84,14 +84,15 @@ après chaque étape, sans y consigner la conversation.
   régression CLI et tests UI.
 - [ ] 7. Documentation : commandes de build et architecture à jour.
 
-**État d'avancement :** étape 1 terminée, étape 2 à faire.
+**État d'avancement :** étapes 1 et 2 terminées, étape 3 à faire.
 **Dernière vérification :** module `bibliotheque_core` importé (version 0.1.0),
-CLI recompilée et statistiques 39/26/13/27 lues sur une copie des données.
+types `Book`, `User`, `Library` et `FileManager` liés, CLI recompilée et
+statistiques 39/26/13/27 lues sur une copie des données.
 
 ### Reprise
 
-Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 2
-(`bindings.cpp`). Ne rien recommencer de l'étape 1.
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 3
+(persistance C++). Ne rien recommencer des étapes 1 et 2.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -100,8 +101,11 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   -Dpybind11_DIR=/usr/lib/cmake/pybind11` puis `cmake --build build -j`.
 - Contrôle de l'étape 1 : `cd GUI && .venv/bin/python -c
   "import bibliotheque_core as b; print(b.__version__)"` doit afficher `0.1.0`.
-- `bindings.cpp` n'expose encore que le module et `__version__` ; aucun type du
-  moteur n'est lié.
+- `bindings.cpp` expose `Book`, `User`, `Library` et `FileManager` ; `books()` et
+  `users()` renvoient des copies, `find_book` / `find_user` renvoient `None` si
+  l'élément est absent. Les propriétés de `Book` et `User` sont en lecture seule.
+- `remove_user` refuse la suppression d'un utilisateur qui a encore des
+  emprunts en cours.
 - Le `.so` est produit dans `GUI/` et ignoré par Git ; ne jamais le commiter.
 - Ne jamais ajouter `-isystem /usr/include` aux options de compilation : GCC
   casse alors sa chaîne d'inclusion (`#include_next <stdlib.h>`). Les chemins
