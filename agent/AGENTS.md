@@ -75,9 +75,12 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   (menu `Nom (USRXXX)`, 28 utilisateurs) : la validation appelle
   `LibraryStore.checkout()` puis sauvegarde, ferme le panneau et met à jour les
   cartes, les statistiques et le message du pied de page ; en cas d'échec
-  d'écriture, l'emprunt est annulé en mémoire. `Retourner` (livre emprunté),
-  `Livre +`, l'ajout de livre et la suppression restent à brancher (prochaine
-  étape). Mettre cette section à jour à chaque évolution de l'UI.
+  d'écriture, l'emprunt est annulé en mémoire. Sur une carte empruntée,
+  `Retourner` rend le livre disponible, sauvegarde, met à jour cartes,
+  statistiques et message du pied de page ; en cas d'échec d'écriture, l'emprunt
+  est remis en place. `Livre +`, l'ajout de livre et la suppression restent à
+  brancher (prochaine étape). Mettre cette section à jour à chaque évolution de
+  l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -109,32 +112,34 @@ après chaque étape, sans y consigner la conversation.
 - [x] 11. Emprunt branché : `BorrowPanel` (choix de l'emprunteur), appel à
   `LibraryStore.checkout()` puis `save()`, rollback en cas d'échec d'écriture,
   rafraîchissement des cartes, des statistiques et message du pied de page.
+- [x] 12. Retour branché : `Retourner` appelle `LibraryStore.return_book()` puis
+  `save()`, rollback par `checkout()` en cas d'échec d'écriture, message du pied
+  de page avec l'emprunteur.
 
-**État d'avancement :** étapes 1 à 11 terminées ; retour, suppression et ajout
-de livre à brancher.
-**Dernière vérification :** étape 11 sur copies (`/tmp/opencode/etape11/`), base
-réelle 40/27/13/28 (40 livres, 27 disponibles, 13 empruntés, 28 utilisateurs ;
-`O Llama|USR028` ajouté depuis la GUI). 11 contrôles emprunt : checkout moteur
-(livre indisponible, bon emprunteur), rechargement depuis les fichiers,
-statistiques 39/26/14/28, second emprunt refusé (« déjà emprunté »), utilisateur
-et ISBN inconnus refusés, panneau ouvert par le clic sur `Emprunter` avec le bon
-livre et 28 utilisateurs, choix dans le menu, échec de `save` avec rollback en
-mémoire et fichiers intacts, emprunt réussi (panneau fermé, carte `Retourner`,
-statistiques et message du pied de page à jour), écriture de l'emprunteur et de
-l'ISBN sur disque, disparition sous `Disponibles`, base sans utilisateur (menu et
-bouton désactivés, message explicite). Rappels : 24 moteur, 8 CLI, 8 UI,
-6 sauvegarde, 13 recherche, 13 filtre, soit 83 contrôles. Étape 7 :
-`agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
-formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`. Rebuild étape
-10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`. L'étape 11 ne
-touche pas au C++ : pas de rebuild.
-`agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` de
-l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
+**État d'avancement :** étapes 1 à 12 terminées ; ajout de livre et suppression
+à brancher.
+**Dernière vérification :** étape 12 sur copies (`/tmp/opencode/etape12/`), base
+réelle 40/25/15/28 (40 livres, 25 disponibles, 15 empruntés, 28 utilisateurs ;
+`O Llama|USR028` ajouté et deux emprunts de `USR013` depuis la GUI). 10 contrôles
+retour : retour moteur (livre disponible, emprunteur vidé, ISBN retiré de
+l'utilisateur), rechargement depuis les fichiers (26/14), second retour refusé
+(« n'est pas emprunté »), ISBN inconnu refusé, carte empruntée avec bouton actif,
+échec de `save` avec emprunt remis en place et fichiers intacts, retour réussi
+(carte `Emprunter`, statistiques et message du pied de page avec l'emprunteur),
+écriture sur disque, apparition sous `Disponibles`, retour d'un livre déjà
+disponible (message d'erreur, grille réalignée). Rappels : 24 moteur, 8 CLI,
+8 UI, 6 sauvegarde, 13 recherche, 13 filtre, 11 emprunt, soit 93 contrôles.
+Étape 7 : `agent/README.md` réécrit (deux clients, build pybind11, GUI,
+architecture et formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`.
+Rebuild étape 10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`. Les
+étapes 11 et 12 ne touchent pas au C++ : pas de rebuild.
+`agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` et les deux
+emprunts de l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
 Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
-branchement des actions GUI. Ne rien recommencer des étapes 1 à 11.
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 12.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -195,10 +200,9 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 11.
   champ vide le conserve. Messages : requête sans résultat, puis
   « Aucun livre dans ce filtre. » si le filtre seul est vide. Le pied de page
   reste global ; revenir sur la page réinitialise le menu à `Tous`.
-- Emprunt branché : `BookCard` reçoit `on_borrow` et ne lie une commande que si
-  le livre est disponible (`Retourner` reste inerte). Le clic ouvre
-  `BorrowPanel` (`panels.py`), qui reçoit le magasin et le livre avant
-  `SidePanel.__init__` car `_build_form` a besoin des utilisateurs ; le menu
+- Emprunt branché : `BookCard` reçoit `on_borrow` pour les livres disponibles.
+  Le clic ouvre `BorrowPanel` (`panels.py`), qui reçoit le magasin et le livre
+  avant `SidePanel.__init__` car `_build_form` a besoin des utilisateurs ; le menu
   liste `Nom (USRXXX)` dans l'ordre du moteur. `_submit()` appelle
   `LibraryStore.checkout(isbn, user_id)`, puis `save()` ; si `save()` échoue,
   `return_book(isbn)` annule l'emprunt en mémoire, les fichiers restent intacts
@@ -208,7 +212,17 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 11.
   public (renommé depuis `_show_message`). Sans utilisateur : menu et bouton
   `Emprunter` désactivés, message « Aucun utilisateur enregistré. ». Aucun
   changement C++ à l'étape 11.
-- Actions GUI encore inertes (`Livre +`, retour, suppression) : prochaine étape.
+- Retour branché : `BookCard` reçoit aussi `on_return` et l'utilise quand le livre
+  est emprunté. `BooksView._return_book()` mémorise `book.borrower_id` et le nom
+  de l'emprunteur, appelle `LibraryStore.return_book(isbn)` puis `save()` ; si
+  `save()` échoue, `checkout(isbn, borrower_id)` remet l'emprunt en place et les
+  fichiers restent intacts. Un `StoreError` (livre déjà disponible, ISBN
+  inconnu) rafraîchit la grille et affiche l'erreur. Succès : cartes et
+  statistiques rafraîchies, message
+  (`« titre » retourné par Nom (USRXXX).`). Aucun panneau : le retour ne demande
+  aucun choix, et aucune confirmation n'est demandée (action réversible). Aucun
+  changement C++ à l'étape 12.
+- Actions GUI encore inertes (`Livre +`, suppression) : prochaine étape.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
   client X qui détient réellement le grab.

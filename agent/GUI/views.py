@@ -9,7 +9,7 @@ from tkinter import Event
 import customtkinter as ctk
 
 import theme
-from data_store import Book, LibraryStore, User
+from data_store import Book, LibraryStore, StoreError, User
 from panels import AddUserPanel, BorrowPanel
 
 BOOK_COLUMNS = 3
@@ -182,6 +182,7 @@ class BookCard(ctk.CTkFrame):
         master: ctk.CTkBaseClass,
         book: Book,
         on_borrow: Callable[[Book], None],
+        on_return: Callable[[Book], None],
     ) -> None:
         super().__init__(
             master,
@@ -227,11 +228,13 @@ class BookCard(ctk.CTkFrame):
         actions.grid(row=4, column=0, sticky="ew", padx=14, pady=(6, 12))
         actions.grid_columnconfigure(0, weight=1)
 
-        # L'emprunt est branché ; le retour et la suppression viendront ensuite.
+        # Emprunt et retour sont branchés ; la suppression viendra ensuite.
         self.action_button = ctk.CTkButton(
             actions,
             text="Emprunter" if book.available else "Retourner",
-            command=(lambda: on_borrow(book)) if book.available else None,
+            command=(lambda: on_borrow(book))
+            if book.available
+            else (lambda: on_return(book)),
             width=118,
             height=32,
             corner_radius=theme.CORNER_RADIUS,
@@ -452,6 +455,42 @@ class BooksView(ctk.CTkFrame):
         self.footer.update_stats()
         self.footer.show_message(f"« {book.title} » emprunté par {borrower}.")
 
+    def _return_book(self, book: Book) -> None:
+        """Rend le livre disponible, sans changer l'emprunteur en cas d'échec."""
+        borrower_id = book.borrower_id
+        borrower = self.store.find_user(borrower_id)
+        borrower_label = (
+            f"{borrower.name} ({borrower.user_id})" if borrower else borrower_id
+        )
+
+        try:
+            self.store.return_book(book.isbn)
+        except StoreError as exc:
+            # Vue obsolète : on réaligne la grille sur le moteur.
+            self._refresh_cards()
+            self.footer.update_stats()
+            self.footer.show_message(str(exc), kind="error")
+            return
+
+        try:
+            self.store.save()
+        except OSError as exc:
+            # Le moteur a déjà modifié la mémoire : on remet l'emprunt en place
+            # pour rester cohérent avec les fichiers, inchangés.
+            try:
+                self.store.checkout(book.isbn, borrower_id)
+            except StoreError:
+                pass
+            # Réaligne la grille sur l'état réel après la tentative d'annulation.
+            self._refresh_cards()
+            self.footer.update_stats()
+            self.footer.show_message(f"Erreur de sauvegarde : {exc}", kind="error")
+            return
+
+        self._refresh_cards()
+        self.footer.update_stats()
+        self.footer.show_message(f"« {book.title} » retourné par {borrower_label}.")
+
     def _on_search_return(self, _event: Event | None = None) -> str | None:
         """Entrée ne réagit que sur un champ vide : réaffiche toute la bibliothèque."""
         if self.search_entry.get().strip():
@@ -488,7 +527,12 @@ class BooksView(ctk.CTkFrame):
             return
 
         for index, book in enumerate(visible):
-            BookCard(self.cards_frame, book, self._open_borrow).grid(
+            BookCard(
+                self.cards_frame,
+                book,
+                self._open_borrow,
+                self._return_book,
+            ).grid(
                 row=index // BOOK_COLUMNS,
                 column=index % BOOK_COLUMNS,
                 sticky="nsew",
