@@ -40,8 +40,8 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 
 - bandeau « Gestionnaire de la Bibliothèque » en haut de chaque page ;
 - page Livres, écran principal : cartes sur trois colonnes avec titre, auteur,
-  ISBN discret et boutons `Emprunter` / `Retourner` plus une corbeille, pour
-  l'instant inertes ;
+  ISBN discret, bouton `Emprunter` (ou `Retourner` pour un livre emprunté) et
+  corbeille ; l'emprunt est branché, le retour et la suppression restent inertes ;
 - barre `Rechercher` : le texte n'est pris en compte qu'au clic sur la loupe ;
   la recherche porte sur les titres et les noms d'auteurs (sous-chaîne, casse
   ASCII ignorée) et n'affiche que les cartes correspondantes. Une requête vide
@@ -52,6 +52,11 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   recherche ; la liste des disponibles vient du moteur C++ (`getAvailableBooks`)
   et `Entrée` sur un champ vide conserve le filtre ; bouton `Livre +` encore
   inactif ;
+- emprunt depuis une carte disponible : un panneau latéral propose l'emprunteur
+  (menu `Nom (USRXXX)`), l'emprunt est enregistré par le moteur C++ puis
+  sauvegardé. Les cartes, les statistiques et le message du pied de page sont
+  mis à jour ; en cas d'échec d'écriture, l'emprunt est annulé et l'erreur
+  s'affiche dans le panneau. Sans utilisateur, le formulaire est désactivé ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
@@ -70,9 +75,8 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   (terracotta). Un nouveau clic écrase les backups précédents ;
 - thème beige et vert unique, sans mode sombre.
 
-L'ajout de livre, l'emprunt, le retour et la suppression seront ajoutés dans les
-prochaines étapes. Les méthodes correspondantes existent déjà dans
-`data_store.py`.
+L'ajout de livre, le retour et la suppression seront ajoutés dans les prochaines
+étapes. Les méthodes correspondantes existent déjà dans `data_store.py`.
 
 ## Apparence
 

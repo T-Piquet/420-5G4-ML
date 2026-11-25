@@ -10,7 +10,7 @@ import customtkinter as ctk
 
 import theme
 from data_store import Book, LibraryStore, User
-from panels import AddUserPanel
+from panels import AddUserPanel, BorrowPanel
 
 BOOK_COLUMNS = 3
 USER_COLUMNS = 4
@@ -153,16 +153,16 @@ class PageFooter(ctk.CTkFrame):
         try:
             created = self.store.create_backup()
         except OSError as exc:
-            self._show_message(str(exc), kind="error")
+            self.show_message(str(exc), kind="error")
             return
 
         if not created:
-            self._show_message("Aucun fichier à sauvegarder.", kind="muted")
+            self.show_message("Aucun fichier à sauvegarder.", kind="muted")
             return
 
-        self._show_message("Sauvegarde créée.")
+        self.show_message("Sauvegarde créée.")
 
-    def _show_message(self, text: str, kind: str = "success") -> None:
+    def show_message(self, text: str, kind: str = "success") -> None:
         colors = {
             "success": theme.SAGE,
             "error": theme.TERRACOTTA,
@@ -173,11 +173,16 @@ class PageFooter(ctk.CTkFrame):
 
 
 class BookCard(ctk.CTkFrame):
-    """Carte d'un livre : titre, auteur, ISBN et actions encore inertes."""
+    """Carte d'un livre : titre, auteur, ISBN et actions."""
 
     HEIGHT = 158
 
-    def __init__(self, master: ctk.CTkBaseClass, book: Book) -> None:
+    def __init__(
+        self,
+        master: ctk.CTkBaseClass,
+        book: Book,
+        on_borrow: Callable[[Book], None],
+    ) -> None:
         super().__init__(
             master,
             fg_color=theme.SURFACE,
@@ -185,6 +190,7 @@ class BookCard(ctk.CTkFrame):
             border_width=0,
             height=self.HEIGHT,
         )
+        self.book = book
         self.grid_propagate(False)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
@@ -221,11 +227,11 @@ class BookCard(ctk.CTkFrame):
         actions.grid(row=4, column=0, sticky="ew", padx=14, pady=(6, 12))
         actions.grid_columnconfigure(0, weight=1)
 
-        # Actions encore inertes : emprunt, retour et suppression viendront
-        # dans les prochaines étapes.
+        # L'emprunt est branché ; le retour et la suppression viendront ensuite.
         self.action_button = ctk.CTkButton(
             actions,
             text="Emprunter" if book.available else "Retourner",
+            command=(lambda: on_borrow(book)) if book.available else None,
             width=118,
             height=32,
             corner_radius=theme.CORNER_RADIUS,
@@ -264,6 +270,7 @@ class BooksView(ctk.CTkFrame):
         self.on_show_users = on_show_users
         self._active_query = ""
         self._active_filter = "all"
+        self._borrow_panel: BorrowPanel | None = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
@@ -424,6 +431,27 @@ class BooksView(ctk.CTkFrame):
             self.store.filter_books(self._active_query, self._active_filter)
         )
 
+    def _open_borrow(self, book: Book) -> None:
+        """Ouvre le panneau de choix de l'emprunteur pour ce livre."""
+        panel = self._borrow_panel
+        if panel is not None and panel.is_open:
+            panel.lift()
+            panel.focus_force()
+            return
+        self._borrow_panel = BorrowPanel(
+            self.winfo_toplevel(),
+            self.store,
+            book,
+            self._on_book_borrowed,
+        )
+        self._borrow_panel.show()
+
+    def _on_book_borrowed(self, book: Book, borrower: str) -> None:
+        """Rafraîchit la grille et le pied de page après un emprunt réussi."""
+        self._refresh_cards()
+        self.footer.update_stats()
+        self.footer.show_message(f"« {book.title} » emprunté par {borrower}.")
+
     def _on_search_return(self, _event: Event | None = None) -> str | None:
         """Entrée ne réagit que sur un champ vide : réaffiche toute la bibliothèque."""
         if self.search_entry.get().strip():
@@ -460,7 +488,7 @@ class BooksView(ctk.CTkFrame):
             return
 
         for index, book in enumerate(visible):
-            BookCard(self.cards_frame, book).grid(
+            BookCard(self.cards_frame, book, self._open_borrow).grid(
                 row=index // BOOK_COLUMNS,
                 column=index % BOOK_COLUMNS,
                 sticky="nsew",

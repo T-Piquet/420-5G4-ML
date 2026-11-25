@@ -54,7 +54,7 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - `GUI/.venv/` et `__pycache__/` sont ignorés par `GUI/.gitignore`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
   la page Livres, écran principal, avec ses cartes sur trois colonnes (titre,
-  auteur, ISBN, actions inertes), la recherche et le filtre `Tous` /
+  auteur, ISBN, action et corbeille), la recherche et le filtre `Tous` /
   `Disponibles`. La recherche n'applique le texte qu'au clic sur la
   loupe : elle parcourt les titres et les auteurs (sous-chaîne, casse ASCII
   ignorée) et ne laisse que les cartes correspondantes ; une requête vide ramène
@@ -70,8 +70,13 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   immédiat. `Voir livres` ramène à l'écran Livres. `Créer sauvegarde`, dans le
   pied de page commun, copie les deux fichiers via `LibraryStore.create_backup()`
   et affiche un message discret à côté des boutons (« Sauvegarde créée. »,
-  « Aucun fichier à sauvegarder. », échec en terracotta). `Livre +`, l'ajout de
-  livre, l'emprunt, le retour et la suppression restent à brancher (prochaine
+  « Aucun fichier à sauvegarder. », échec en terracotta). Sur une carte
+  disponible, `Emprunter` ouvre un panneau latéral de choix de l'emprunteur
+  (menu `Nom (USRXXX)`, 28 utilisateurs) : la validation appelle
+  `LibraryStore.checkout()` puis sauvegarde, ferme le panneau et met à jour les
+  cartes, les statistiques et le message du pied de page ; en cas d'échec
+  d'écriture, l'emprunt est annulé en mémoire. `Retourner` (livre emprunté),
+  `Livre +`, l'ajout de livre et la suppression restent à brancher (prochaine
   étape). Mettre cette section à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
@@ -101,30 +106,35 @@ après chaque étape, sans y consigner la conversation.
 - [x] 10. Filtre branché : menu `Tous` / `Disponibles`, `available_books` exposé
   dans `bindings.cpp`, combinaison avec la recherche via
   `LibraryStore.filter_books()`.
+- [x] 11. Emprunt branché : `BorrowPanel` (choix de l'emprunteur), appel à
+  `LibraryStore.checkout()` puis `save()`, rollback en cas d'échec d'écriture,
+  rafraîchissement des cartes, des statistiques et message du pied de page.
 
-**État d'avancement :** étapes 1 à 10 terminées ; branchement des autres actions
-GUI à faire.
-**Dernière vérification :** étape 10 sur copies (`/tmp/opencode/etape10/`), base
+**État d'avancement :** étapes 1 à 11 terminées ; retour, suppression et ajout
+de livre à brancher.
+**Dernière vérification :** étape 11 sur copies (`/tmp/opencode/etape11/`), base
 réelle 40/27/13/28 (40 livres, 27 disponibles, 13 empruntés, 28 utilisateurs ;
-`O Llama|USR028` ajouté depuis la GUI). 13 contrôles filtre : `available_books`
-égal à 27 ISBN cohérents avec les statistiques, délégation à
-`getAvailableBooks`, 5 livres de Hugo dont 4 disponibles, clés inconnues en
-`ValueError`, menu limité à `Tous` / `Disponibles`, 27 cartes disponibles avec
-bouton `Emprunter`, retour à 40, combinaison `hugo` + `Disponibles` (4 cartes,
-« Les Contemplations » exclu), recherche conservée en revenant à `Tous`, `Entrée`
-sur champ vide qui garde le filtre (27), message de recherche sans résultat,
-message « Aucun livre dans ce filtre. » sur une base entièrement empruntée.
-Rappels : 24 moteur, 8 CLI, 8 UI, 6 sauvegarde, 13 recherche. Étape 7 :
+`O Llama|USR028` ajouté depuis la GUI). 11 contrôles emprunt : checkout moteur
+(livre indisponible, bon emprunteur), rechargement depuis les fichiers,
+statistiques 39/26/14/28, second emprunt refusé (« déjà emprunté »), utilisateur
+et ISBN inconnus refusés, panneau ouvert par le clic sur `Emprunter` avec le bon
+livre et 28 utilisateurs, choix dans le menu, échec de `save` avec rollback en
+mémoire et fichiers intacts, emprunt réussi (panneau fermé, carte `Retourner`,
+statistiques et message du pied de page à jour), écriture de l'emprunteur et de
+l'ISBN sur disque, disparition sous `Disponibles`, base sans utilisateur (menu et
+bouton désactivés, message explicite). Rappels : 24 moteur, 8 CLI, 8 UI,
+6 sauvegarde, 13 recherche, 13 filtre, soit 83 contrôles. Étape 7 :
 `agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
 formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`. Rebuild étape
-10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`.
+10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`. L'étape 11 ne
+touche pas au C++ : pas de rebuild.
 `agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` de
 l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
 Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
-branchement des actions GUI. Ne rien recommencer des étapes 1 à 10.
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 11.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -185,8 +195,20 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 10.
   champ vide le conserve. Messages : requête sans résultat, puis
   « Aucun livre dans ce filtre. » si le filtre seul est vide. Le pied de page
   reste global ; revenir sur la page réinitialise le menu à `Tous`.
-- Actions GUI encore inertes (`Livre +`, emprunt, retour, suppression) :
-  prochaine étape.
+- Emprunt branché : `BookCard` reçoit `on_borrow` et ne lie une commande que si
+  le livre est disponible (`Retourner` reste inerte). Le clic ouvre
+  `BorrowPanel` (`panels.py`), qui reçoit le magasin et le livre avant
+  `SidePanel.__init__` car `_build_form` a besoin des utilisateurs ; le menu
+  liste `Nom (USRXXX)` dans l'ordre du moteur. `_submit()` appelle
+  `LibraryStore.checkout(isbn, user_id)`, puis `save()` ; si `save()` échoue,
+  `return_book(isbn)` annule l'emprunt en mémoire, les fichiers restent intacts
+  et le panneau affiche l'erreur. Succès : panneau fermé, `_refresh_cards()`,
+  `footer.update_stats()` et message du pied de page
+  (`« titre » emprunté par Nom (USRXXX).`). `PageFooter.show_message()` est
+  public (renommé depuis `_show_message`). Sans utilisateur : menu et bouton
+  `Emprunter` désactivés, message « Aucun utilisateur enregistré. ». Aucun
+  changement C++ à l'étape 11.
+- Actions GUI encore inertes (`Livre +`, retour, suppression) : prochaine étape.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
   client X qui détient réellement le grab.
@@ -225,7 +247,9 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 10.
   en bas. Un nouveau formulaire hérite de `SidePanel` et redéfinit `_build_form`.
 - Soumission : validation via `LibraryStore`, sauvegarde, message dans le panneau
   puis rafraîchissement de la vue ; en cas d'échec d'écriture, l'ajout en mémoire
-  est annulé. Après un ajout réussi, le panneau reste ouvert et le champ est vidé.
+  est annulé. Après un ajout d'utilisateur réussi, le panneau reste ouvert et le
+  champ est vidé ; après un emprunt réussi (`BorrowPanel`), il se ferme et le
+  message passe dans le pied de page.
 
 ## Conventions
 - Code, commentaires, chaînes d'interface et messages de commit en français.

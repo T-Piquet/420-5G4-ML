@@ -8,7 +8,7 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 import theme
-from data_store import LibraryStore, StoreError, User
+from data_store import Book, LibraryStore, StoreError, User
 
 
 class SidePanel(ctk.CTkToplevel):
@@ -194,6 +194,179 @@ class AddUserPanel(SidePanel):
         )
         self.on_saved(user)
         self.name_entry.focus_set()
+
+    def _show_message(self, text: str, error: bool = False) -> None:
+        self.message_label.configure(
+            text=text,
+            text_color=theme.TERRACOTTA if error else theme.SAGE,
+        )
+
+
+class BorrowPanel(SidePanel):
+    """Formulaire d'emprunt : choix de l'emprunteur pour un livre donné."""
+
+    TITLE = "Emprunter un livre"
+
+    def __init__(
+        self,
+        parent: ctk.CTkBaseClass,
+        store: LibraryStore,
+        book: Book,
+        on_borrowed: Callable[[Book, str], None],
+    ) -> None:
+        # `SidePanel.__init__` appelle `_build_form`, qui a besoin du magasin et
+        # des utilisateurs : les attributs sont posés avant la fenêtre.
+        self.store = store
+        self.book = book
+        self.on_borrowed = on_borrowed
+        super().__init__(parent)
+
+    def _build_form(self, body: ctk.CTkFrame) -> None:
+        body.grid_columnconfigure(0, weight=1)
+        body.grid_rowconfigure(5, weight=1)
+
+        ctk.CTkLabel(
+            body,
+            text=self.book.title,
+            font=theme.font(17, "bold"),
+            text_color=theme.TEXT,
+            anchor="w",
+            justify="left",
+            wraplength=self.WIDTH - 48,
+        ).grid(row=0, column=0, sticky="ew")
+        ctk.CTkLabel(
+            body,
+            text=self.book.author,
+            font=theme.font(13),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+        ).grid(row=1, column=0, sticky="ew", pady=(2, 0))
+        ctk.CTkLabel(
+            body,
+            text=f"ISBN {self.book.isbn}",
+            font=theme.font(11),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+        ).grid(row=2, column=0, sticky="ew", pady=(2, 16))
+
+        ctk.CTkLabel(
+            body,
+            text="Emprunteur",
+            font=theme.font(15, "bold"),
+            text_color=theme.TEXT,
+            anchor="w",
+        ).grid(row=3, column=0, sticky="ew", pady=(0, 6))
+
+        # Le libellé inclut l'identifiant pour rester unique.
+        self._user_ids = {
+            f"{user.name} ({user.user_id})": user.user_id
+            for user in self.store.users
+        }
+        labels = list(self._user_ids)
+        self.user_menu = ctk.CTkOptionMenu(
+            body,
+            values=labels or ["Aucun utilisateur"],
+            width=self.WIDTH - 60,
+            height=38,
+            corner_radius=theme.CORNER_RADIUS,
+            fg_color=theme.SURFACE,
+            button_color=theme.HOVER,
+            button_hover_color=theme.SAGE_SOFT,
+            text_color=theme.TEXT,
+            dropdown_fg_color=theme.SURFACE,
+            dropdown_hover_color=theme.HOVER,
+            dropdown_text_color=theme.TEXT,
+            font=theme.font(14),
+            dropdown_font=theme.font(14),
+            state="normal" if labels else "disabled",
+        )
+        if labels:
+            self.user_menu.set(labels[0])
+        self.user_menu.grid(row=4, column=0, sticky="ew")
+
+        ctk.CTkLabel(
+            body,
+            text="L'emprunteur doit déjà exister ; créez-le depuis la page Utilisateurs.",
+            font=theme.font(11),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=self.WIDTH - 48,
+        ).grid(row=5, column=0, sticky="new", pady=(6, 0))
+
+        buttons = ctk.CTkFrame(body, fg_color="transparent")
+        buttons.grid(row=6, column=0, sticky="e")
+
+        ctk.CTkButton(
+            buttons,
+            text="Annuler",
+            font=theme.font(14),
+            width=100,
+            height=36,
+            corner_radius=theme.CORNER_RADIUS,
+            border_width=0,
+            fg_color=theme.SURFACE,
+            hover_color=theme.HOVER,
+            text_color=theme.TEXT,
+            command=self.close,
+        ).pack(side="left", padx=(0, 8))
+
+        self.borrow_button = ctk.CTkButton(
+            buttons,
+            text="Emprunter",
+            font=theme.font(14),
+            width=110,
+            height=36,
+            corner_radius=theme.CORNER_RADIUS,
+            border_width=0,
+            fg_color=theme.SAGE,
+            hover_color=theme.SAGE_HOVER,
+            text_color=theme.BACKGROUND,
+            state="normal" if labels else "disabled",
+            command=self._submit,
+        )
+        self.borrow_button.pack(side="left")
+
+        self.message_label = ctk.CTkLabel(
+            body,
+            text="",
+            font=theme.font(12, slant="italic"),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=self.WIDTH - 48,
+        )
+        self.message_label.grid(row=7, column=0, sticky="ew", pady=(16, 0))
+
+        self._initial_focus = self.user_menu
+
+    def _submit(self) -> None:
+        label = self.user_menu.get()
+        user_id = self._user_ids.get(label)
+        if user_id is None:
+            self._show_message("Aucun utilisateur enregistré.", error=True)
+            return
+
+        try:
+            book = self.store.checkout(self.book.isbn, user_id)
+        except StoreError as exc:
+            self._show_message(str(exc), error=True)
+            return
+
+        try:
+            self.store.save()
+        except OSError as exc:
+            # Le moteur a déjà modifié la mémoire : on annule l'emprunt pour
+            # rester cohérent avec les fichiers, inchangés.
+            try:
+                self.store.return_book(self.book.isbn)
+            except StoreError:
+                pass
+            self._show_message(f"Erreur de sauvegarde : {exc}", error=True)
+            return
+
+        self.close()
+        self.on_borrowed(book, label)
 
     def _show_message(self, text: str, error: bool = False) -> None:
         self.message_label.configure(
