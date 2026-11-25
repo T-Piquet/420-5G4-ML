@@ -43,6 +43,8 @@ PYBIND11_MODULE(bibliotheque_core, m) {
     m.doc() = "Liaison pybind11 du moteur C++ de la bibliothèque";
     m.attr("__version__") = "0.1.0";
 
+    py::register_exception<LibraryError>(m, "LibraryError");
+
     py::class_<Book>(m, "Book")
         .def(py::init<>())
         .def(py::init<const string&, const string&, const string&>(),
@@ -89,13 +91,22 @@ PYBIND11_MODULE(bibliotheque_core, m) {
         .def("search_books_by_author", [](Library& library, const string& author) {
             return copyBooks(library.searchBooksByAuthor(author));
         }, py::arg("author"))
+        .def("search_books", [](Library& library, const string& query) {
+            return copyBooks(library.searchBooks(query));
+        }, py::arg("query"))
         .def("add_book", &Library::addBook, py::arg("book"))
+        .def("create_book", &Library::createBook,
+             py::arg("title"), py::arg("author"), py::arg("isbn"))
         .def("remove_book", &Library::removeBook, py::arg("isbn"))
         .def("add_user", &Library::addUser, py::arg("user"))
+        .def("create_user", &Library::createUser, py::arg("name"))
         .def("remove_user", &Library::removeUser, py::arg("user_id"))
         .def("check_out_book", &Library::checkOutBook,
              py::arg("isbn"), py::arg("user_id"))
+        .def("check_out_book_checked", &Library::checkOutBookChecked,
+             py::arg("isbn"), py::arg("user_id"))
         .def("return_book", &Library::returnBook, py::arg("isbn"))
+        .def("return_book_checked", &Library::returnBookChecked, py::arg("isbn"))
         .def_property_readonly("total_books", &Library::getTotalBooks)
         .def_property_readonly("available_book_count", &Library::getAvailableBookCount)
         .def_property_readonly("checked_out_book_count", &Library::getCheckedOutBookCount);

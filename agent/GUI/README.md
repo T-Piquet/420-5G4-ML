@@ -2,8 +2,9 @@
 
 Interface graphique (une seule fenêtre) pour la bibliothèque, construite avec
 [CustomTkinter](https://customtkinter.tomschimansky.com/). Elle lit et écrit les
-mêmes fichiers que la CLI C++ (`agent/data/books.txt`, `agent/data/users.txt`),
-donc les deux outils restent interchangeables.
+mêmes fichiers que la CLI C++ (`agent/data/books.txt`, `agent/data/users.txt`)
+via le moteur partagé `bibliotheque_core`, donc les deux outils restent
+interchangeables.
 
 ## Installation (venv local)
 
@@ -13,6 +14,9 @@ python3 -m venv .venv
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements.txt
 ```
+
+Le module C++ `bibliotheque_core` doit être construit au préalable ; la commande
+complète est décrite dans `agent/AGENTS.md` (section « Liaison pybind11 »).
 
 ## Lancement
 
@@ -71,11 +75,12 @@ disponible parmi `EB Garamond` et `DejaVu Serif` est utilisée automatiquement.
 
 Le caractère `|` est refusé dans les champs saisis. À l'ajout d'un utilisateur,
 l'identifiant `USRXXX` est généré automatiquement et le nom est mis en forme
-avant l'écriture. Contrairement à la CLI C++, la suppression d'un livre retire
-aussi son ISBN des utilisateurs.
+avant l'écriture. La suppression d'un livre retire aussi son ISBN des
+utilisateurs.
 
 ## Limites
 
-- Pas de pybind11 : la persistance est réimplémentée en Python (`data_store.py`).
+- Le module `bibliotheque_core` (pybind11) est obligatoire : sans lui,
+  l'application échoue à l'import, sans repli vers Python.
 - Pas de tests automatisés de l'interface ; seul le chargement/sauvegarde est
   vérifiable sans affichage.

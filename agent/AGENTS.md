@@ -45,9 +45,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - Venv local :
   `cd agent/GUI && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`.
 - Lancement : `.venv/bin/python app.py` ; option `--data-dir` (défaut : `agent/data`).
-- `data_store.py` isole encore la persistance Python ; le moteur C++ sera branché
-  via pybind11 (voir « Liaison pybind11 avec le moteur C++ »). Il faut garder ce
-  module compatible avec les formats de fichiers du C++.
+- `data_store.py` est un adaptateur mince : il valide et met en forme les
+  saisies, puis délègue au moteur C++ via `bibliotheque_core` (voir « Liaison
+  pybind11 avec le moteur C++ »). Il ne tient plus ni état ni persistance.
 - `app.py` crée la fenêtre et gère la navigation entre les pages ; `views.py`
   contient les pages et le pied de page commun, `panels.py` les panneaux latéraux
   des formulaires et `theme.py` centralise l'apparence.
@@ -77,23 +77,22 @@ après chaque étape, sans y consigner la conversation.
 - [x] 2. `bindings.cpp` : `Book`, `User`, `Library`, `FileManager`, copies
   `books()` / `users()`, `remove_user`, nettoyage dans `remove_book`.
 - [x] 3. Persistance C++ : sauvegarde atomique et backup écrasable.
-- [ ] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
-  pré-validation des lignes.
-- [ ] 5. UI : rollback de `panels.py` via `remove_user`.
+- [x] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
+  validation des saisies et délégation au moteur C++.
+- [x] 5. UI : rollback de `panels.py` via `remove_user`.
 - [ ] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
   régression CLI et tests UI.
 - [ ] 7. Documentation : commandes de build et architecture à jour.
 
-**État d'avancement :** étapes 1 à 3 terminées, étape 4 à faire.
-**Dernière vérification :** module `bibliotheque_core` importé (version 0.1.0),
-types `Book`, `User`, `Library` et `FileManager` liés, sauvegarde atomique et
-backup écrasable vérifiés sur une copie des données, CLI recompilée et
-statistiques 39/26/13/27 relues.
+**État d'avancement :** étapes 1 à 5 terminées, étape 6 à faire.
+**Dernière vérification :** `data_store.py` branché sur `bibliotheque_core`
+(chargement 39/27, ajout d'utilisateur `USR028`, emprunt/retour, rollback après
+échec de sauvegarde), CLI recompilée et statistiques 39/26/13/27 relues.
 
 ### Reprise
 
-Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 4
-(adaptateur `data_store.py`). Ne rien recommencer des étapes 1 à 3.
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 6
+(vérifications). Ne rien recommencer des étapes 1 à 5.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -107,6 +106,13 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   l'élément est absent. Les propriétés de `Book` et `User` sont en lecture seule.
 - `remove_user` refuse la suppression d'un utilisateur qui a encore des
   emprunts en cours.
+- Le module expose `create_book`, `create_user`, `search_books`,
+  `check_out_book_checked` et `return_book_checked` ; les refus métier lèvent
+  `LibraryError`, traduite en `StoreError` par `data_store.py`.
+- `data_store.py` ne tient plus l'état : `LibraryStore` enveloppe `core.Library`
+  et `core.FileManager`. Les validations Python se limitent au trim, au refus du
+  vide et de `|`, et à la mise en forme du nom ; doublons, identifiants et règles
+  d'emprunt restent dans `library.cpp`.
 - Persistance C++ : chaque fichier est écrit dans `<fichier>.tmp` puis renommé
   sur sa cible (remplacement atomique) ; `books.txt` et `users.txt` sont préparés
   tous les deux avant les renommages. `createBackup()` écrase `<fichier>.backup`

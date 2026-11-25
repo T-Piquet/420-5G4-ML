@@ -177,7 +177,7 @@ class AddUserPanel(SidePanel):
         try:
             self.store.save()
         except OSError as exc:
-            self.store.users.remove(user)
+            self.store.remove_user(user.user_id)
             self._show_message(f"Erreur de sauvegarde : {exc}", error=True)
             self.name_entry.focus_set()
             return
