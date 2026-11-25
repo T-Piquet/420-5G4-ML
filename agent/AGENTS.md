@@ -76,7 +76,7 @@ après chaque étape, sans y consigner la conversation.
   `bibliotheque_core` généré dans `GUI/`, import vérifié.
 - [x] 2. `bindings.cpp` : `Book`, `User`, `Library`, `FileManager`, copies
   `books()` / `users()`, `remove_user`, nettoyage dans `remove_book`.
-- [ ] 3. Persistance C++ : sauvegarde atomique et backup écrasable.
+- [x] 3. Persistance C++ : sauvegarde atomique et backup écrasable.
 - [ ] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
   pré-validation des lignes.
 - [ ] 5. UI : rollback de `panels.py` via `remove_user`.
@@ -84,15 +84,16 @@ après chaque étape, sans y consigner la conversation.
   régression CLI et tests UI.
 - [ ] 7. Documentation : commandes de build et architecture à jour.
 
-**État d'avancement :** étapes 1 et 2 terminées, étape 3 à faire.
+**État d'avancement :** étapes 1 à 3 terminées, étape 4 à faire.
 **Dernière vérification :** module `bibliotheque_core` importé (version 0.1.0),
-types `Book`, `User`, `Library` et `FileManager` liés, CLI recompilée et
-statistiques 39/26/13/27 lues sur une copie des données.
+types `Book`, `User`, `Library` et `FileManager` liés, sauvegarde atomique et
+backup écrasable vérifiés sur une copie des données, CLI recompilée et
+statistiques 39/26/13/27 relues.
 
 ### Reprise
 
-Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 3
-(persistance C++). Ne rien recommencer des étapes 1 et 2.
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 4
+(adaptateur `data_store.py`). Ne rien recommencer des étapes 1 à 3.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -106,6 +107,11 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   l'élément est absent. Les propriétés de `Book` et `User` sont en lecture seule.
 - `remove_user` refuse la suppression d'un utilisateur qui a encore des
   emprunts en cours.
+- Persistance C++ : chaque fichier est écrit dans `<fichier>.tmp` puis renommé
+  sur sa cible (remplacement atomique) ; `books.txt` et `users.txt` sont préparés
+  tous les deux avant les renommages. `createBackup()` écrase `<fichier>.backup`
+  de la même façon et renvoie `bool`. Pas de `fsync` : l'atomicité protège des
+  erreurs d'écriture, pas d'une coupure de courant.
 - Le `.so` est produit dans `GUI/` et ignoré par Git ; ne jamais le commiter.
 - Ne jamais ajouter `-isystem /usr/include` aux options de compilation : GCC
   casse alors sa chaîne d'inclusion (`#include_next <stdlib.h>`). Les chemins

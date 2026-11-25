@@ -1,1 +1,5 @@
 build/*
+
+# Artefacts de persistance : temporaires d'écriture atomique et backups.
+data/*.tmp
+data/*.backup
