@@ -50,8 +50,10 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   réaffiche toutes les cartes ;
 - filtre `Tous` / `Disponibles`, appliqué immédiatement et combiné à la
   recherche ; la liste des disponibles vient du moteur C++ (`getAvailableBooks`)
-  et `Entrée` sur un champ vide conserve le filtre ; bouton `Livre +` encore
-  inactif ;
+  et `Entrée` sur un champ vide conserve le filtre ;
+- bouton `Livre +` qui ouvre un panneau latéral d'ajout : titre, auteur et ISBN
+  obligatoires, ISBN unique, message d'erreur ou de confirmation dans le panneau,
+  champs vidés après un ajout réussi et liste mise à jour immédiatement ;
 - emprunt depuis une carte disponible : un panneau latéral propose l'emprunteur
   (menu `Nom (USRXXX)`), l'emprunt est enregistré par le moteur C++ puis
   sauvegardé. Les cartes, les statistiques et le message du pied de page sont
@@ -82,9 +84,6 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   de page « Sauvegarde créée. », « Aucun fichier à sauvegarder. » ou l'erreur
   (terracotta). Un nouveau clic écrase les backups précédents ;
 - thème beige et vert unique, sans mode sombre.
-
-L'ajout de livre sera ajouté dans une prochaine étape. La méthode correspondante
-existe déjà dans `data_store.py`.
 
 ## Apparence
 

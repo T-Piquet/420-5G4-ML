@@ -133,7 +133,7 @@ class AddUserPanel(SidePanel):
 
         ctk.CTkButton(
             buttons,
-            text="Annuler",
+            text="Fermer",
             font=theme.font(14),
             width=100,
             height=36,
@@ -194,6 +194,146 @@ class AddUserPanel(SidePanel):
         )
         self.on_saved(user)
         self.name_entry.focus_set()
+
+    def _show_message(self, text: str, error: bool = False) -> None:
+        self.message_label.configure(
+            text=text,
+            text_color=theme.TERRACOTTA if error else theme.SAGE,
+        )
+
+
+class AddBookPanel(SidePanel):
+    """Formulaire d'ajout de livre."""
+
+    TITLE = "Ajouter un livre"
+
+    def __init__(
+        self,
+        parent: ctk.CTkBaseClass,
+        store: LibraryStore,
+        on_saved: Callable[[Book], None],
+    ) -> None:
+        super().__init__(parent)
+        self.store = store
+        self.on_saved = on_saved
+
+    def _build_form(self, body: ctk.CTkFrame) -> None:
+        body.grid_columnconfigure(0, weight=1)
+        body.grid_rowconfigure(6, weight=1)
+
+        def add_label(text: str, row: int) -> None:
+            ctk.CTkLabel(
+                body,
+                text=text,
+                font=theme.font(15, "bold"),
+                text_color=theme.TEXT,
+                anchor="w",
+            ).grid(row=row, column=0, sticky="ew", pady=(0, 6))
+
+        def add_entry(placeholder: str, row: int) -> ctk.CTkEntry:
+            widget = ctk.CTkEntry(
+                body,
+                height=40,
+                corner_radius=theme.CORNER_RADIUS,
+                border_width=0,
+                fg_color=theme.SURFACE,
+                text_color=theme.TEXT,
+                placeholder_text=placeholder,
+                placeholder_text_color=theme.TEXT_MUTED,
+                font=theme.font(14),
+            )
+            widget.grid(row=row, column=0, sticky="ew", pady=(0, 12))
+            return widget
+
+        add_label("Titre", 0)
+        self.title_entry = add_entry("Titre ici", 1)
+        add_label("Auteur", 2)
+        self.author_entry = add_entry("Auteur ici", 3)
+        add_label("ISBN", 4)
+        self.isbn_entry = add_entry("ISBN ici", 5)
+
+        ctk.CTkLabel(
+            body,
+            text="L'ISBN identifie le livre : il doit être unique.",
+            font=theme.font(11),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=self.WIDTH - 48,
+        ).grid(row=6, column=0, sticky="new", pady=(0, 6))
+
+        buttons = ctk.CTkFrame(body, fg_color="transparent")
+        buttons.grid(row=7, column=0, sticky="e")
+
+        ctk.CTkButton(
+            buttons,
+            text="Fermer",
+            font=theme.font(14),
+            width=100,
+            height=36,
+            corner_radius=theme.CORNER_RADIUS,
+            border_width=0,
+            fg_color=theme.SURFACE,
+            hover_color=theme.HOVER,
+            text_color=theme.TEXT,
+            command=self.close,
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(
+            buttons,
+            text="Ajouter",
+            font=theme.font(14),
+            width=110,
+            height=36,
+            corner_radius=theme.CORNER_RADIUS,
+            border_width=0,
+            fg_color=theme.SAGE,
+            hover_color=theme.SAGE_HOVER,
+            text_color=theme.BACKGROUND,
+            command=self._submit,
+        ).pack(side="left")
+
+        self.message_label = ctk.CTkLabel(
+            body,
+            text="",
+            font=theme.font(12, slant="italic"),
+            text_color=theme.TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=self.WIDTH - 48,
+        )
+        self.message_label.grid(row=8, column=0, sticky="ew", pady=(16, 0))
+
+        self._initial_focus = self.title_entry
+
+    def _submit(self) -> None:
+        try:
+            book = self.store.add_book(
+                self.title_entry.get(),
+                self.author_entry.get(),
+                self.isbn_entry.get(),
+            )
+        except StoreError as exc:
+            self._show_message(str(exc), error=True)
+            return
+
+        try:
+            self.store.save()
+        except OSError as exc:
+            # Le moteur a déjà modifié la mémoire : on annule l'ajout pour
+            # rester cohérent avec les fichiers, inchangés.
+            try:
+                self.store.remove_book(book.isbn)
+            except StoreError:
+                pass
+            self._show_message(f"Erreur de sauvegarde : {exc}", error=True)
+            return
+
+        for entry in (self.title_entry, self.author_entry, self.isbn_entry):
+            entry.delete(0, "end")
+        self._show_message(f"Livre ajouté : « {book.title} » (ISBN {book.isbn}).")
+        self.on_saved(book)
+        self.title_entry.focus_set()
 
     def _show_message(self, text: str, error: bool = False) -> None:
         self.message_label.configure(
@@ -299,7 +439,7 @@ class BorrowPanel(SidePanel):
 
         ctk.CTkButton(
             buttons,
-            text="Annuler",
+            text="Fermer",
             font=theme.font(14),
             width=100,
             height=36,

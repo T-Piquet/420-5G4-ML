@@ -81,9 +81,12 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   est remis en place. La corbeille d'une carte supprime le livre immédiatement,
   sans confirmation : le moteur retire aussi l'ISBN des listes d'emprunt, puis
   cartes, statistiques et message du pied de page sont mis à jour ; en cas
-  d'échec d'écriture, l'état est relu depuis le disque. `Livre +` et l'ajout de
-  livre restent à brancher (prochaine étape). Mettre cette section à jour à
-  chaque évolution de l'UI.
+  d'échec d'écriture, l'état est relu depuis le disque. `Livre +` ouvre un
+  panneau latéral (titre, auteur, ISBN) : l'ajout passe par
+  `LibraryStore.add_book()`, sauvegarde, vide les champs et met à jour la
+  grille et les statistiques ; en cas d'échec d'écriture, le livre est retiré
+  en mémoire. Toutes les actions de l'écran Livres sont branchées. Mettre cette
+  section à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -121,30 +124,34 @@ après chaque étape, sans y consigner la conversation.
 - [x] 13. Suppression branchée : clic sur la corbeille, `LibraryStore.remove_book()`
   puis `save()` sans confirmation, restauration par `load()` en cas d'échec
   d'écriture, message du pied de page.
+- [x] 14. Ajout de livre branché : `Livre +` ouvre `AddBookPanel`, appel à
+  `LibraryStore.add_book()` puis `save()`, rollback par `remove_book()` en cas
+  d'échec d'écriture, champs vidés et messages dans le panneau.
 
-**État d'avancement :** étapes 1 à 13 terminées ; ajout de livre à brancher.
-**Dernière vérification :** étape 13 sur copies (`/tmp/opencode/etape13/`), base
-réelle 40/25/15/28 (40 livres, 25 disponibles, 15 empruntés, 28 utilisateurs ;
-`O Llama|USR028` ajouté et deux emprunts de `USR013` depuis la GUI). 9 contrôles
-suppression : livre disponible retiré (39 livres, fichier utilisateurs intact),
-rechargement depuis les fichiers, livre emprunté retiré avec ISBN nettoyé chez
-l'emprunteur (mémoire et disque), ISBN inconnu refusé, clic réel sur la corbeille
-(carte, statistiques, message et fichiers à jour), suppression d'un livre
-emprunté depuis l'UI, échec de `save` avec état relu du disque et fichiers
-intacts, livre déjà absent (message d'erreur, grille réalignée). Rappels :
-24 moteur, 8 CLI, 8 UI, 6 sauvegarde, 13 recherche, 13 filtre, 11 emprunt,
-10 retour, soit 102 contrôles. Étape 7 : `agent/README.md` réécrit (deux clients,
-build pybind11, GUI, architecture et formats) ; build documenté rejoué dans
-`/tmp/opencode/build-doc`. Rebuild étape 10 effectué avec
-`BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`. Les étapes 11 à 13 ne touchent pas
-au C++ : pas de rebuild.
-`agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` et les deux
-emprunts de l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
+**État d'avancement :** étapes 1 à 14 terminées ; toutes les actions GUI sont
+branchées.
+**Dernière vérification :** étape 14 sur copies (`/tmp/opencode/etape14/`), base
+réelle 39/25/14/28 (39 livres, 25 disponibles, 14 empruntés, 28 utilisateurs ;
+`O Llama|USR028` ajouté, deux emprunts de `USR013` et un livre supprimé depuis la
+GUI). 12 contrôles ajout : champs nettoyés et livre disponible, statistiques
+livres/disponibles +1, utilisateurs inchangés, rechargement depuis les fichiers,
+ISBN dupliqué refusé, champs vides et `|` refusés, panneau ouvert par
+`Livre +`, ajout complet (carte, statistiques, message, champs vidés, fichier),
+doublon et titre vide sans ajout, échec de `save` avec ajout annulé et fichiers
+intacts, nouvelle soumission après l'échec, visibilité sous `Disponibles`.
+Rappels : 24 moteur, 8 CLI, 8 UI, 6 sauvegarde, 13 recherche, 13 filtre,
+11 emprunt, 10 retour, 9 suppression, soit 114 contrôles. Étape 7 :
+`agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
+formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`. Rebuild étape
+10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`. Les étapes 11 à 14
+ne touchent pas au C++ : pas de rebuild.
+`agent/data` n'a pas été modifié par les tests (hors ajout, emprunts et
+suppression de l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
 Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
-branchement des actions GUI. Ne rien recommencer des étapes 1 à 13.
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 14.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -235,7 +242,16 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 13.
   de reconstruire ; message d'erreur. Un `StoreError` (livre introuvable)
   rafraîchit la grille. Succès : cartes et statistiques rafraîchies, message
   (`« titre » supprimé.`). Aucun changement C++ à l'étape 13.
-- Actions GUI encore inertes (`Livre +`) : prochaine étape.
+- Ajout de livre branché : `Livre +` est exposé en `self.add_book_button` et
+  ouvre `AddBookPanel` (`panels.py`), une seule instance à la fois. Le panneau
+  propose `Titre`, `Auteur`, `ISBN` et le rappel d'unicité ; `_submit()` appelle
+  `LibraryStore.add_book()` puis `save()`. En cas d'`OSError`, `remove_book()`
+  annule l'ajout en mémoire et la saisie est conservée ; `StoreError` (champ
+  vide, `|`, ISBN déjà présent) est affichée sans vider les champs. Succès :
+  champs vidés, message `Livre ajouté : « titre » (ISBN …).`, panneau maintenu
+  ouvert, `_refresh_cards()` et `footer.update_stats()`. Aucun changement C++ à
+  l'étape 14.
+- Toutes les actions de l'écran Livres sont désormais branchées.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
   client X qui détient réellement le grab.

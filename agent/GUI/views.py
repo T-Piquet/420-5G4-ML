@@ -10,7 +10,7 @@ import customtkinter as ctk
 
 import theme
 from data_store import Book, LibraryStore, StoreError, User
-from panels import AddUserPanel, BorrowPanel
+from panels import AddBookPanel, AddUserPanel, BorrowPanel
 
 BOOK_COLUMNS = 3
 USER_COLUMNS = 4
@@ -277,6 +277,7 @@ class BooksView(ctk.CTkFrame):
         self._active_query = ""
         self._active_filter = "all"
         self._borrow_panel: BorrowPanel | None = None
+        self._add_book_panel: AddBookPanel | None = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
@@ -392,8 +393,7 @@ class BooksView(ctk.CTkFrame):
         self.filter_menu.set("Tous")
         self.filter_menu.grid(row=0, column=1, sticky="w")
 
-        # Le formulaire d'ajout de livre arrivera à l'étape suivante.
-        ctk.CTkButton(
+        self.add_book_button = ctk.CTkButton(
             row,
             text="Livre +",
             font=theme.font(15),
@@ -404,7 +404,9 @@ class BooksView(ctk.CTkFrame):
             fg_color=theme.SAGE,
             hover_color=theme.SAGE_HOVER,
             text_color=theme.BACKGROUND,
-        ).grid(row=0, column=3, sticky="e")
+            command=self._open_add_book,
+        )
+        self.add_book_button.grid(row=0, column=3, sticky="e")
 
     def _build_cards(self) -> None:
         self.cards_frame = ctk.CTkScrollableFrame(
@@ -436,6 +438,25 @@ class BooksView(ctk.CTkFrame):
         self._populate_cards(
             self.store.filter_books(self._active_query, self._active_filter)
         )
+
+    def _open_add_book(self) -> None:
+        """Ouvre le panneau d'ajout de livre, une seule instance à la fois."""
+        panel = self._add_book_panel
+        if panel is not None and panel.is_open:
+            panel.lift()
+            panel.focus_force()
+            return
+        self._add_book_panel = AddBookPanel(
+            self.winfo_toplevel(),
+            self.store,
+            self._on_book_added,
+        )
+        self._add_book_panel.show()
+
+    def _on_book_added(self, _book: Book) -> None:
+        """Rafraîchit la grille et les statistiques après un ajout réussi."""
+        self._refresh_cards()
+        self.footer.update_stats()
 
     def _open_borrow(self, book: Book) -> None:
         """Ouvre le panneau de choix de l'emprunteur pour ce livre."""
