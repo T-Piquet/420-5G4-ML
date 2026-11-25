@@ -61,8 +61,8 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   mise en forme du nom, identifiant `USRXXX` généré, messages et rafraîchissement
   immédiat. `Voir livres` ramène à l'écran Livres. `Livre +`, la recherche, le
   filtre, l'ajout de livre, l'emprunt, le retour, la suppression et
-  `Créer sauvegarde` restent à brancher. Mettre cette section à jour à chaque
-  évolution de l'UI.
+  `Créer sauvegarde` restent à brancher (étape distincte, après la
+  documentation). Mettre cette section à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -80,19 +80,23 @@ après chaque étape, sans y consigner la conversation.
 - [x] 4. Adaptateur `data_store.py` : API conservée, module obligatoire,
   validation des saisies et délégation au moteur C++.
 - [x] 5. UI : rollback de `panels.py` via `remove_user`.
-- [ ] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
+- [x] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
   régression CLI et tests UI.
 - [ ] 7. Documentation : commandes de build et architecture à jour.
 
-**État d'avancement :** étapes 1 à 5 terminées, étape 6 à faire.
-**Dernière vérification :** `data_store.py` branché sur `bibliotheque_core`
-(chargement 39/27, ajout d'utilisateur `USR028`, emprunt/retour, rollback après
-échec de sauvegarde), CLI recompilée et statistiques 39/26/13/27 relues.
+**État d'avancement :** étapes 1 à 6 terminées, étape 7 à faire.
+**Dernière vérification :** étape 6 sur copies (`/tmp/opencode/etape6/`), base
+réelle 40/27/13/27 (40 livres, 27 disponibles, 13 empruntés, 27 utilisateurs).
+24 contrôles moteur (parité aller-retour octet pour octet, CRUD, emprunt/retour,
+rollback, atomicité des deux fichiers, backup écrasable et restauration),
+8 contrôles CLI (scénario complet, relance, mode mémoire, parité croisée) et
+6 contrôles UI (cartes et pied de page, ajout `USR028`, refus, rollback).
+`data/` inchangé (sha256), aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
-Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 6
-(vérifications). Ne rien recommencer des étapes 1 à 5.
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 7
+(documentation). Ne rien recommencer des étapes 1 à 6.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -126,6 +130,13 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   destructif dessus, toujours travailler sur une copie (`/tmp/opencode/...`).
 - Aucun repli Python prévu : si `bibliotheque_core` manque, la GUI doit échouer
   clairement plutôt que revenir à la persistance Python.
+- `LibraryStore` n'expose pas encore `create_backup()` : le bouton GUI devra
+  passer par `core.FileManager` (à ajouter lors du branchement des actions).
+- Actions GUI encore inertes (`Livre +`, recherche, filtre, emprunt, retour,
+  suppression, `Créer sauvegarde`) : étape distincte, après la documentation.
+- Tests UI : `SidePanel.show()` peut échouer (`grab failed: another application
+  has grab`) quand un autre client X détient le grab ; piloter alors le panneau
+  sans `show()`, la logique du formulaire est inchangée.
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
