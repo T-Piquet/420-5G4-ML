@@ -263,6 +263,7 @@ class BooksView(ctk.CTkFrame):
         self.store = store
         self.on_show_users = on_show_users
         self._active_query = ""
+        self._active_filter = "all"
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
@@ -356,10 +357,12 @@ class BooksView(ctk.CTkFrame):
             text_color=theme.TEXT_MUTED,
         ).grid(row=0, column=0, sticky="w", padx=(0, 8))
 
-        # Filtre encore inactif : seules les valeurs affichées changent.
+        # Filtre appliqué immédiatement ; seuls les livres disponibles sont
+        # proposés comme restriction.
         self.filter_menu = ctk.CTkOptionMenu(
             row,
-            values=["Tous", "Disponibles", "Empruntés"],
+            values=["Tous", "Disponibles"],
+            command=self._on_filter_change,
             width=170,
             height=34,
             corner_radius=theme.CORNER_RADIUS,
@@ -411,6 +414,16 @@ class BooksView(ctk.CTkFrame):
 
         self._populate_cards()
 
+    def _on_filter_change(self, value: str) -> None:
+        """Applique le filtre choisi dans le menu, sans toucher à la recherche."""
+        self._active_filter = {"Tous": "all", "Disponibles": "available"}[value]
+        self._refresh_cards()
+
+    def _refresh_cards(self) -> None:
+        self._populate_cards(
+            self.store.filter_books(self._active_query, self._active_filter)
+        )
+
     def _on_search_return(self, _event: Event | None = None) -> str | None:
         """Entrée ne réagit que sur un champ vide : réaffiche toute la bibliothèque."""
         if self.search_entry.get().strip():
@@ -418,13 +431,13 @@ class BooksView(ctk.CTkFrame):
             return None
 
         self._active_query = ""
-        self._populate_cards()
+        self._refresh_cards()
         return "break"
 
     def _apply_search(self, _event: Event | None = None) -> None:
         """Filtre les cartes sur le texte courant (titre ou auteur)."""
         self._active_query = self.search_entry.get().strip()
-        self._populate_cards(self.store.search(self._active_query))
+        self._refresh_cards()
 
     def _populate_cards(self, books: list[Book] | None = None) -> None:
         visible = self.store.books if books is None else books
@@ -432,11 +445,12 @@ class BooksView(ctk.CTkFrame):
             child.destroy()
 
         if not visible:
-            text = (
-                f"Aucun livre ne correspond à « {self._active_query} »."
-                if self._active_query
-                else "Aucun livre."
-            )
+            if self._active_query:
+                text = f"Aucun livre ne correspond à « {self._active_query} »."
+            elif self._active_filter != "all":
+                text = "Aucun livre dans ce filtre."
+            else:
+                text = "Aucun livre."
             ctk.CTkLabel(
                 self.cards_frame,
                 text=text,

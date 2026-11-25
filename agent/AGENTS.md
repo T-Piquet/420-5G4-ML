@@ -55,12 +55,14 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
 - Version de test actuelle : un bandeau « Gestionnaire de la Bibliothèque » coiffe
   la page Livres, écran principal, avec ses cartes sur trois colonnes (titre,
   auteur, ISBN, actions inertes), la recherche et le filtre `Tous` /
-  `Disponibles` / `Empruntés`. La recherche n'applique le texte qu'au clic sur la
+  `Disponibles`. La recherche n'applique le texte qu'au clic sur la
   loupe : elle parcourt les titres et les auteurs (sous-chaîne, casse ASCII
   ignorée) et ne laisse que les cartes correspondantes ; une requête vide ramène
   tout, une requête sans résultat affiche un message avec la saisie. La touche
   `Entrée` ne réaffiche toutes les cartes que si le champ est vide ; avec du
-  texte, elle ne lance rien.
+  texte, elle ne lance rien. Le filtre s'applique immédiatement, se combine avec
+  la recherche et ne propose que `Tous` ou les livres disponibles (pas de filtre
+  « Empruntés ») ; `Entrée` sur champ vide conserve le filtre courant.
   `Voir utilisateurs` ouvre la page Utilisateurs en lecture seule (cartes sur
   quatre colonnes, statistiques réelles en pied de page) ;
   son bouton `Utilisateur +` ouvre un panneau latéral fonctionnel : validation et
@@ -68,9 +70,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   immédiat. `Voir livres` ramène à l'écran Livres. `Créer sauvegarde`, dans le
   pied de page commun, copie les deux fichiers via `LibraryStore.create_backup()`
   et affiche un message discret à côté des boutons (« Sauvegarde créée. »,
-  « Aucun fichier à sauvegarder. », échec en terracotta). `Livre +`, le filtre,
-  l'ajout de livre, l'emprunt, le retour et la suppression restent à brancher
-  (prochaine étape). Mettre cette section à jour à chaque évolution de l'UI.
+  « Aucun fichier à sauvegarder. », échec en terracotta). `Livre +`, l'ajout de
+  livre, l'emprunt, le retour et la suppression restent à brancher (prochaine
+  étape). Mettre cette section à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -96,29 +98,33 @@ après chaque étape, sans y consigner la conversation.
 - [x] 9. Recherche branchée : clic sur la loupe, texte appliqué à ce moment-là,
   titres et auteurs via `LibraryStore.search()`, cartes filtrées et message si
   aucun résultat.
+- [x] 10. Filtre branché : menu `Tous` / `Disponibles`, `available_books` exposé
+  dans `bindings.cpp`, combinaison avec la recherche via
+  `LibraryStore.filter_books()`.
 
-**État d'avancement :** étapes 1 à 9 terminées ; branchement des autres actions
+**État d'avancement :** étapes 1 à 10 terminées ; branchement des autres actions
 GUI à faire.
-**Dernière vérification :** étape 9 sur copies (`/tmp/opencode/etape9/`), base
+**Dernière vérification :** étape 10 sur copies (`/tmp/opencode/etape10/`), base
 réelle 40/27/13/28 (40 livres, 27 disponibles, 13 empruntés, 28 utilisateurs ;
-`O Llama|USR028` ajouté depuis la GUI). 13 contrôles UI sur la recherche : saisie
-sans clic sans effet, clic réel sur le Canvas, 5 cartes de Victor Hugo, résultats
-conservés tant que la loupe n'est pas recliquée, casse ASCII (`MADAME BOVARY`),
-titre accentué (`Misérables`), auteur, aucun résultat avec message, requête vide
-qui ramène les 40 cartes et statistiques globales inchangées, `Entrée` sur champ
-vide qui réaffiche tout, `Entrée` avec du texte inerte, espaces seuls traités
-comme vide, loupe toujours fonctionnelle après `Entrée`. Rappel : 24
-contrôles moteur, 8 CLI, 8 UI et 6 sur `Créer sauvegarde` (étape 8). Étape 7 :
+`O Llama|USR028` ajouté depuis la GUI). 13 contrôles filtre : `available_books`
+égal à 27 ISBN cohérents avec les statistiques, délégation à
+`getAvailableBooks`, 5 livres de Hugo dont 4 disponibles, clés inconnues en
+`ValueError`, menu limité à `Tous` / `Disponibles`, 27 cartes disponibles avec
+bouton `Emprunter`, retour à 40, combinaison `hugo` + `Disponibles` (4 cartes,
+« Les Contemplations » exclu), recherche conservée en revenant à `Tous`, `Entrée`
+sur champ vide qui garde le filtre (27), message de recherche sans résultat,
+message « Aucun livre dans ce filtre. » sur une base entièrement empruntée.
+Rappels : 24 moteur, 8 CLI, 8 UI, 6 sauvegarde, 13 recherche. Étape 7 :
 `agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
-formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`, module `0.1.0`,
-CLI et `app.py --help` vérifiés.
+formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`. Rebuild étape
+10 effectué avec `BUILD_PYTHON_BINDINGS=ON` ; module `0.1.0`.
 `agent/data` n'a pas été modifié par les tests (hors l'ajout `USR028` de
 l'utilisateur) ; aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
 Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
-branchement des actions GUI. Ne rien recommencer des étapes 1 à 9.
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 10.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -169,7 +175,17 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 9.
   uniquement quand le champ est vide (`_on_search_return`), sinon elle ne fait
   rien. Le pied de page reste global. Limite :
   `toLower()` est ASCII, donc `etranger` ne trouve pas « L'Étranger ».
-- Actions GUI encore inertes (`Livre +`, filtre, emprunt, retour, suppression) :
+- Filtre branché dans `BooksView` : le menu ne propose que `Tous` et
+  `Disponibles` ; `_on_filter_change()` met à jour `_active_filter` (`all` /
+  `available`) et appelle `_refresh_cards()`, qui interroge
+  `LibraryStore.filter_books(query, availability)`. Sans requête, l'adaptateur
+  renvoie directement `books` ou `available_books` (C++ `getAvailableBooks`,
+  exposé dans `bindings.cpp`) ; avec requête, il croise `search_books` et les
+  ISBN disponibles. Le filtre se combine donc avec la recherche et `Entrée` sur
+  champ vide le conserve. Messages : requête sans résultat, puis
+  « Aucun livre dans ce filtre. » si le filtre seul est vide. Le pied de page
+  reste global ; revenir sur la page réinitialise le menu à `Tous`.
+- Actions GUI encore inertes (`Livre +`, emprunt, retour, suppression) :
   prochaine étape.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un

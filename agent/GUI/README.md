@@ -48,8 +48,10 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   ramène toute la bibliothèque ; sans résultat, la grille affiche la requête.
   La touche `Entrée` ne lance rien avec du texte ; sur un champ vide, elle
   réaffiche toutes les cartes ;
-- filtre `Tous` / `Disponibles` / `Empruntés` et bouton `Livre +` présents mais
-  encore inactifs ;
+- filtre `Tous` / `Disponibles`, appliqué immédiatement et combiné à la
+  recherche ; la liste des disponibles vient du moteur C++ (`getAvailableBooks`)
+  et `Entrée` sur un champ vide conserve le filtre ; bouton `Livre +` encore
+  inactif ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,
   identifiant et nombre de livres empruntés ;
 - statistiques réelles en pied de page : livres, livres disponibles, livres
@@ -68,9 +70,9 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
   (terracotta). Un nouveau clic écrase les backups précédents ;
 - thème beige et vert unique, sans mode sombre.
 
-L'ajout de livre, l'emprunt, le retour, la suppression et le filtre seront
-ajoutés dans les prochaines étapes. Les méthodes correspondantes existent déjà
-dans `data_store.py`.
+L'ajout de livre, l'emprunt, le retour et la suppression seront ajoutés dans les
+prochaines étapes. Les méthodes correspondantes existent déjà dans
+`data_store.py`.
 
 ## Apparence
 

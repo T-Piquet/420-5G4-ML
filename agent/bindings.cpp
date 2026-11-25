@@ -68,6 +68,9 @@ PYBIND11_MODULE(bibliotheque_core, m) {
         .def("books", [](Library& library) {
             return copyBooks(library.getAllBooks());
         })
+        .def("available_books", [](Library& library) {
+            return copyBooks(library.getAvailableBooks());
+        })
         .def("users", [](Library& library) {
             return copyUsers(library.getAllUsers());
         })

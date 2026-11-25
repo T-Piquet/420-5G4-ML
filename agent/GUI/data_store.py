@@ -98,6 +98,10 @@ class LibraryStore:
     def users(self) -> list[User]:
         return self._library.users()
 
+    @property
+    def available_books(self) -> list[Book]:
+        return self._library.available_books()
+
     def find_book(self, isbn: str) -> Book | None:
         return self._library.find_book(isbn)
 
@@ -109,6 +113,31 @@ class LibraryStore:
         if not query:
             return self._library.books()
         return self._library.search_books(query)
+
+    def filter_books(
+        self, query: str = "", availability: str = "all"
+    ) -> list[Book]:
+        """Livres correspondant à `query`, restreints au filtre demandé.
+
+        `availability` vaut `all` ou `available` ; la sélection des livres
+        disponibles vient du moteur C++ (`getAvailableBooks`).
+        """
+        query = query.strip()
+
+        if not query:
+            if availability == "all":
+                return self._library.books()
+            if availability == "available":
+                return self._library.available_books()
+            raise ValueError(f"Filtre inconnu : {availability!r}")
+
+        results = self._library.search_books(query)
+        if availability == "all":
+            return results
+        if availability == "available":
+            available = {book.isbn for book in self._library.available_books()}
+            return [book for book in results if book.isbn in available]
+        raise ValueError(f"Filtre inconnu : {availability!r}")
 
     @property
     def stats(self) -> dict[str, int]:
