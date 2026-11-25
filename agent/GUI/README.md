@@ -45,7 +45,9 @@ Un affichage X11 est nécessaire (le devcontainer de `agent/` le fournit via
 - barre `Rechercher` : le texte n'est pris en compte qu'au clic sur la loupe ;
   la recherche porte sur les titres et les noms d'auteurs (sous-chaîne, casse
   ASCII ignorée) et n'affiche que les cartes correspondantes. Une requête vide
-  ramène toute la bibliothèque ; sans résultat, la grille affiche la requête ;
+  ramène toute la bibliothèque ; sans résultat, la grille affiche la requête.
+  La touche `Entrée` ne lance rien avec du texte ; sur un champ vide, elle
+  réaffiche toutes les cartes ;
 - filtre `Tous` / `Disponibles` / `Empruntés` et bouton `Livre +` présents mais
   encore inactifs ;
 - page Utilisateurs en lecture seule : cartes sur quatre colonnes avec nom,

@@ -323,6 +323,7 @@ class BooksView(ctk.CTkFrame):
             font=theme.font(14),
         )
         self.search_entry.grid(row=0, column=0, sticky="ew", padx=(14, 6), pady=4)
+        self.search_entry.bind("<Return>", self._on_search_return)
 
         self.search_icon = tk.Canvas(
             frame,
@@ -409,6 +410,16 @@ class BooksView(ctk.CTkFrame):
             self.cards_frame.grid_columnconfigure(column, weight=1, uniform="books")
 
         self._populate_cards()
+
+    def _on_search_return(self, _event: Event | None = None) -> str | None:
+        """Entrée ne réagit que sur un champ vide : réaffiche toute la bibliothèque."""
+        if self.search_entry.get().strip():
+            # Avec du texte, seule la loupe applique la recherche.
+            return None
+
+        self._active_query = ""
+        self._populate_cards()
+        return "break"
 
     def _apply_search(self, _event: Event | None = None) -> None:
         """Filtre les cartes sur le texte courant (titre ou auteur)."""

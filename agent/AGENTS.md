@@ -58,7 +58,9 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   `Disponibles` / `Empruntés`. La recherche n'applique le texte qu'au clic sur la
   loupe : elle parcourt les titres et les auteurs (sous-chaîne, casse ASCII
   ignorée) et ne laisse que les cartes correspondantes ; une requête vide ramène
-  tout, une requête sans résultat affiche un message avec la saisie.
+  tout, une requête sans résultat affiche un message avec la saisie. La touche
+  `Entrée` ne réaffiche toutes les cartes que si le champ est vide ; avec du
+  texte, elle ne lance rien.
   `Voir utilisateurs` ouvre la page Utilisateurs en lecture seule (cartes sur
   quatre colonnes, statistiques réelles en pied de page) ;
   son bouton `Utilisateur +` ouvre un panneau latéral fonctionnel : validation et
@@ -99,11 +101,13 @@ après chaque étape, sans y consigner la conversation.
 GUI à faire.
 **Dernière vérification :** étape 9 sur copies (`/tmp/opencode/etape9/`), base
 réelle 40/27/13/28 (40 livres, 27 disponibles, 13 empruntés, 28 utilisateurs ;
-`O Llama|USR028` ajouté depuis la GUI). 9 contrôles UI sur la recherche : saisie
+`O Llama|USR028` ajouté depuis la GUI). 13 contrôles UI sur la recherche : saisie
 sans clic sans effet, clic réel sur le Canvas, 5 cartes de Victor Hugo, résultats
 conservés tant que la loupe n'est pas recliquée, casse ASCII (`MADAME BOVARY`),
 titre accentué (`Misérables`), auteur, aucun résultat avec message, requête vide
-qui ramène les 40 cartes et statistiques globales inchangées. Rappel : 24
+qui ramène les 40 cartes et statistiques globales inchangées, `Entrée` sur champ
+vide qui réaffiche tout, `Entrée` avec du texte inerte, espaces seuls traités
+comme vide, loupe toujours fonctionnelle après `Entrée`. Rappel : 24
 contrôles moteur, 8 CLI, 8 UI et 6 sur `Créer sauvegarde` (étape 8). Étape 7 :
 `agent/README.md` réécrit (deux clients, build pybind11, GUI, architecture et
 formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`, module `0.1.0`,
@@ -161,7 +165,9 @@ branchement des actions GUI. Ne rien recommencer des étapes 1 à 9.
   `LibraryStore.search()` (moteur C++ `searchBooks` : titre **ou** auteur,
   sous-chaîne, casse ASCII). `_populate_cards(liste)` ne reçoit que les cartes
   concernées ; une liste vide affiche un message reprenant la requête.
-  La saisie seule ne déclenche rien ; le pied de page reste global. Limite :
+  La saisie seule ne déclenche rien ; `Entrée` réaffiche toutes les cartes
+  uniquement quand le champ est vide (`_on_search_return`), sinon elle ne fait
+  rien. Le pied de page reste global. Limite :
   `toLower()` est ASCII, donc `etranger` ne trouve pas « L'Étranger ».
 - Actions GUI encore inertes (`Livre +`, filtre, emprunt, retour, suppression) :
   prochaine étape.
