@@ -16,7 +16,8 @@ python3 -m venv .venv
 ```
 
 Le module C++ `bibliotheque_core` doit être construit au préalable ; la commande
-complète est décrite dans `agent/AGENTS.md` (section « Liaison pybind11 »).
+complète est décrite dans le `README.md` du dossier `agent/` (section
+« Construire l'interface C++ et la GUI »).
 
 ## Lancement
 

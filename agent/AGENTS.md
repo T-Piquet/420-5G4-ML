@@ -61,8 +61,8 @@ Tout le travail et la documentation de cette partie restent dans `agent/`.
   mise en forme du nom, identifiant `USRXXX` généré, messages et rafraîchissement
   immédiat. `Voir livres` ramène à l'écran Livres. `Livre +`, la recherche, le
   filtre, l'ajout de livre, l'emprunt, le retour, la suppression et
-  `Créer sauvegarde` restent à brancher (étape distincte, après la
-  documentation). Mettre cette section à jour à chaque évolution de l'UI.
+  `Créer sauvegarde` restent à brancher (prochaine étape). Mettre cette section
+  à jour à chaque évolution de l'UI.
 - Formulaire d'ajout d'utilisateur : le champ ID du prototype est remplacé par la
   génération automatique `USRXXX`. Nom obligatoire, sans chiffres, avec majuscule
   en début de mot et après un tiret (pas après une apostrophe).
@@ -82,9 +82,10 @@ après chaque étape, sans y consigner la conversation.
 - [x] 5. UI : rollback de `panels.py` via `remove_user`.
 - [x] 6. Vérifications : parité, CRUD, emprunt/retour, rollback, backup,
   régression CLI et tests UI.
-- [ ] 7. Documentation : commandes de build et architecture à jour.
+- [x] 7. Documentation : commandes de build et architecture à jour.
 
-**État d'avancement :** étapes 1 à 6 terminées, étape 7 à faire.
+**État d'avancement :** étapes 1 à 7 terminées ; branchement des actions GUI à
+faire.
 **Dernière vérification :** étape 6 sur copies (`/tmp/opencode/etape6/`), base
 réelle 40/27/13/27 (40 livres, 27 disponibles, 13 empruntés, 27 utilisateurs).
 40 contrôles : 24 moteur (parité aller-retour octet pour octet, CRUD,
@@ -92,12 +93,15 @@ emprunt/retour, rollback, atomicité des deux fichiers, backup via
 `LibraryStore.create_backup()` et restauration), 8 CLI (scénario complet,
 relance, mode mémoire, parité croisée) et 8 UI (cartes et pied de page, ajout
 `USR028`, refus, rollback, ouverture du panneau avec un grab étranger réel).
+Étape 7 : `agent/README.md` réécrit (deux clients, build pybind11, GUI,
+architecture et formats) ; build documenté rejoué dans `/tmp/opencode/build-doc`,
+module `0.1.0`, CLI et `app.py --help` vérifiés.
 `data/` inchangé (sha256), aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
 
-Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'étape 7
-(documentation). Ne rien recommencer des étapes 1 à 6.
+Point d'entrée d'une nouvelle session : lire cette section puis attaquer le
+branchement des actions GUI. Ne rien recommencer des étapes 1 à 7.
 
 - Build avec le module Python : les chemins du venv et de pybind11 sont explicites.
   Depuis `agent/` :
@@ -135,7 +139,7 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   `FileManager::createBackup()`, `False` s'il n'y a aucun fichier à sauvegarder,
   `OSError` si la copie échoue.
 - Actions GUI encore inertes (`Livre +`, recherche, filtre, emprunt, retour,
-  suppression, `Créer sauvegarde`) : étape distincte, après la documentation.
+  suppression, `Créer sauvegarde`) : prochaine étape.
 - `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
   le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
   client X qui détient réellement le grab.
