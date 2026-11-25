@@ -53,7 +53,13 @@ class SidePanel(ctk.CTkToplevel):
         y = self.parent.winfo_rooty() + theme.HEADER_HEIGHT
         self.geometry(f"{self.WIDTH}x{height}+{x}+{y}")
         self.wait_visibility()
-        self.grab_set()
+        try:
+            self.grab_set()
+        except tk.TclError:
+            # Un autre client X (par exemple une autre instance de la GUI)
+            # détient le grab : le panneau reste utilisable, simplement non
+            # modal. Ne pas laisser l'exception interrompre l'affichage.
+            pass
         self.lift()
         self.focus_force()
         if self._initial_focus is not None:

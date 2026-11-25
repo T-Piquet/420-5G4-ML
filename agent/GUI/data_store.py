@@ -76,6 +76,19 @@ class LibraryStore:
         if not self._files.save_library_data(self._library):
             raise OSError("Échec de la sauvegarde des données de la bibliothèque.")
 
+    def create_backup(self) -> bool:
+        """Copie les fichiers dans `<fichier>.backup`.
+
+        Renvoie False s'il n'y a aucun fichier à sauvegarder ; lève OSError si
+        la copie échoue réellement.
+        """
+        if not (self.books_file.exists() or self.users_file.exists()):
+            return False
+
+        if not self._files.create_backup():
+            raise OSError("Échec de la création de la sauvegarde.")
+        return True
+
     # ------------------------------------------------------------- lecture
     @property
     def books(self) -> list[Book]:

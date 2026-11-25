@@ -87,10 +87,11 @@ après chaque étape, sans y consigner la conversation.
 **État d'avancement :** étapes 1 à 6 terminées, étape 7 à faire.
 **Dernière vérification :** étape 6 sur copies (`/tmp/opencode/etape6/`), base
 réelle 40/27/13/27 (40 livres, 27 disponibles, 13 empruntés, 27 utilisateurs).
-24 contrôles moteur (parité aller-retour octet pour octet, CRUD, emprunt/retour,
-rollback, atomicité des deux fichiers, backup écrasable et restauration),
-8 contrôles CLI (scénario complet, relance, mode mémoire, parité croisée) et
-6 contrôles UI (cartes et pied de page, ajout `USR028`, refus, rollback).
+40 contrôles : 24 moteur (parité aller-retour octet pour octet, CRUD,
+emprunt/retour, rollback, atomicité des deux fichiers, backup via
+`LibraryStore.create_backup()` et restauration), 8 CLI (scénario complet,
+relance, mode mémoire, parité croisée) et 8 UI (cartes et pied de page, ajout
+`USR028`, refus, rollback, ouverture du panneau avec un grab étranger réel).
 `data/` inchangé (sha256), aucun `.tmp` ni `.backup` résiduel.
 
 ### Reprise
@@ -130,13 +131,14 @@ Point d'entrée d'une nouvelle session : lire cette section puis attaquer l'éta
   destructif dessus, toujours travailler sur une copie (`/tmp/opencode/...`).
 - Aucun repli Python prévu : si `bibliotheque_core` manque, la GUI doit échouer
   clairement plutôt que revenir à la persistance Python.
-- `LibraryStore` n'expose pas encore `create_backup()` : le bouton GUI devra
-  passer par `core.FileManager` (à ajouter lors du branchement des actions).
+- `LibraryStore` expose `create_backup()` : délégation à
+  `FileManager::createBackup()`, `False` s'il n'y a aucun fichier à sauvegarder,
+  `OSError` si la copie échoue.
 - Actions GUI encore inertes (`Livre +`, recherche, filtre, emprunt, retour,
   suppression, `Créer sauvegarde`) : étape distincte, après la documentation.
-- Tests UI : `SidePanel.show()` peut échouer (`grab failed: another application
-  has grab`) quand un autre client X détient le grab ; piloter alors le panneau
-  sans `show()`, la logique du formulaire est inchangée.
+- `SidePanel.show()` ignore un `grab failed` (grab détenu par un autre client X) :
+  le panneau s'ouvre et reste utilisable, simplement non modal. Vérifié avec un
+  client X qui détient réellement le grab.
 
 ### Thème et apparence
 - Source unique : `GUI/theme.py` (palette, polices, styles). Aucune couleur ne doit
