@@ -10,6 +10,23 @@ $ cmake ..
 $ make
 ```
 
+# Lancement facile
+
+Le script `bibliotheque-ui` compile automatiquement le projet au premier
+lancement puis ouvre l'interface graphique :
+```
+$ ./bibliotheque-ui
+```
+Pour utiliser un autre dossier de donnees :
+```
+$ ./bibliotheque-ui -d /chemin/vers/data
+```
+
+Le programme C++ classique reste disponible dans `build/bibliotheque` :
+```
+$ ./build/bibliotheque -d data
+```
+
 # Répertoire data
 
 Il contient 2 fichiers `books.txt`et `users.txt` que vous pouvez utilisez pour tester votre code.
@@ -38,14 +55,13 @@ $ BIBLIOTHEQUE_CORE_PATH=/chemin/vers/build python3 ui.py -d data
 Fonctionnalites de l'interface: ajout/suppression de livres, recherche et filtres,
 ajout d'utilisateurs, emprunts et retours, statistiques, enregistrement et sauvegarde.
 
-## Mode securise (enfant)
+## Simplicite d'utilisation
 
-L'interface demarre en **mode securise** : les operations qui modifient la
-bibliotheque sont verrouillees (consulation, recherche et statistiques restent
-disponibles). Pour les activer, cliquez sur `Deverrouiller` et resolvez le petit
-calcul reserve aux adultes. Le bouton `Verrouiller` reactive immediatement la
-protection.
-
-Les actions destructives demandent toujours une confirmation, la fermeture de la
-fenetre est confirmee et les dernieres modifications peuvent etre annulees avec
-le bouton `Annuler`.
+- **Ajouter un livre** : entrez seulement le titre et l'auteur. L'ISBN est
+  pre-rempli automatiquement avec un numero a 13 chiffres qui suit le meme
+  format que les livres existants (ex. 9782253096338). La touche Entree valide.
+- **Ajouter un utilisateur** : entrez seulement le nom. L'identifiant est
+  pre-rempli automatiquement (USR001, USR002, ...).
+- **Retourner un livre** : un seul clic, aucune confirmation.
+- **Annuler** : un bouton unique annule la derniere action (jusqu'a 25 actions).
+- Gros boutons et gros champs pour une prise en main immediate.

@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 import importlib
 import os
-import random
 import sys
 from pathlib import Path
 
@@ -147,9 +146,9 @@ def configure_styles(root: tk.Tk) -> ttk.Style:
     style.configure("StatValue.TLabel", background=PALETTE["panel_alt"], foreground=PALETTE["accent"],
                     font=(FONT, 18, "bold"))
     style.configure("DialogTitle.TLabel", background=PALETTE["panel"], foreground=PALETTE["text"],
-                    font=(FONT, 15, "bold"))
+                    font=(FONT, 16, "bold"))
     style.configure("Field.TLabel", background=PALETTE["panel"], foreground=PALETTE["muted"],
-                    font=(FONT, 9))
+                    font=(FONT, 10, "bold"))
     style.configure("Error.TLabel", background=PALETTE["panel"], foreground=PALETTE["danger"],
                     font=(FONT, 9))
     style.configure("Status.TLabel", background=PALETTE["header"], foreground=PALETTE["muted"],
@@ -158,31 +157,28 @@ def configure_styles(root: tk.Tk) -> ttk.Style:
                     font=(FONT, 9))
     style.configure("StatusError.TLabel", background=PALETTE["header"], foreground=PALETTE["danger"],
                     font=(FONT, 9))
-    style.configure("Safe.TLabel", background=PALETTE["panel"], foreground=PALETTE["warning"],
-                    font=(FONT, 9, "bold"))
 
     style.configure("TButton", background=PALETTE["surface"], foreground=PALETTE["text"],
-                    borderwidth=0, focusthickness=0, padding=(12, 7), font=(FONT, 9))
+                    borderwidth=0, focusthickness=0, padding=(14, 9), font=(FONT, 10))
     style.map("TButton",
               background=[("pressed", PALETTE["border"]), ("active", "#353c4c")],
               foreground=[("disabled", PALETTE["muted"])])
     style.configure("Accent.TButton", background=PALETTE["accent"], foreground=PALETTE["accent_text"],
-                    font=(FONT, 9, "bold"))
+                    font=(FONT, 10, "bold"), padding=(16, 9))
     style.map("Accent.TButton",
               background=[("pressed", "#4f7fdf"), ("active", PALETTE["accent_hover"])],
               foreground=[("active", PALETTE["accent_text"])])
-    style.configure("Danger.TButton", background="#3a2228", foreground=PALETTE["danger"])
+    style.configure("Danger.TButton", background="#3a2228", foreground=PALETTE["danger"],
+                    padding=(14, 9))
     style.map("Danger.TButton", background=[("active", "#4a2a32")])
-    style.configure("Ghost.TButton", background=PALETTE["panel"], foreground=PALETTE["text"])
+    style.configure("Ghost.TButton", background=PALETTE["panel"], foreground=PALETTE["text"],
+                    padding=(14, 9))
     style.map("Ghost.TButton", background=[("active", PALETTE["surface"])])
-    style.configure("Lock.TButton", background="#3b331e", foreground=PALETTE["warning"],
-                    font=(FONT, 9, "bold"))
-    style.map("Lock.TButton", background=[("active", "#4a4027")])
 
     style.configure("Dark.TEntry", fieldbackground=PALETTE["panel_alt"],
                     foreground=PALETTE["text"], insertcolor=PALETTE["text"],
                     bordercolor=PALETTE["border"], lightcolor=PALETTE["border"],
-                    darkcolor=PALETTE["border"], padding=7)
+                    darkcolor=PALETTE["border"], padding=9)
     style.map("Dark.TEntry",
               fieldbackground=[("focus", PALETTE["surface"])],
               bordercolor=[("focus", PALETTE["accent"])])
@@ -200,7 +196,7 @@ def configure_styles(root: tk.Tk) -> ttk.Style:
 
     style.configure("Treeview", background=PALETTE["panel"],
                     fieldbackground=PALETTE["panel"], foreground=PALETTE["text"],
-                    rowheight=30, borderwidth=0, font=(FONT, 10))
+                    rowheight=34, borderwidth=0, font=(FONT, 10))
     style.map("Treeview",
               background=[("selected", PALETTE["accent"])],
               foreground=[("selected", PALETTE["accent_text"])])
@@ -260,7 +256,7 @@ class BaseDialog(tk.Toplevel):
     def add_entry(self, label: str, initial: str = ""):
         ttk.Label(self.body, text=label, style="Field.TLabel").pack(anchor="w", pady=(0, 4))
         variable = tk.StringVar(value=initial)
-        entry = ttk.Entry(self.body, textvariable=variable, style="Dark.TEntry", width=42)
+        entry = ttk.Entry(self.body, textvariable=variable, style="Dark.TEntry", width=46)
         entry.pack(fill="x", pady=(0, 12))
         return variable, entry
 
@@ -302,12 +298,16 @@ class BaseDialog(tk.Toplevel):
 
 
 class BookDialog(BaseDialog):
-    def __init__(self, parent: tk.Misc):
-        super().__init__(parent, "Ajouter un livre", "Renseignez les informations du livre.")
+    def __init__(self, parent: tk.Misc, suggested_isbn: str = ""):
+        super().__init__(parent, "Ajouter un livre",
+                         "Entrez le titre et l'auteur. L'ISBN est deja pre-rempli.")
         self.title_var, self.title_entry = self.add_entry("Titre")
         self.author_var, _ = self.add_entry("Auteur")
-        self.isbn_var, _ = self.add_entry("ISBN")
-        self.add_buttons("Ajouter", self._on_ok)
+        self.isbn_var, _ = self.add_entry("ISBN (deja rempli)", initial=suggested_isbn)
+        self.add_buttons("Ajouter le livre", self._on_ok)
+        for widget in self.body.winfo_children():
+            if isinstance(widget, ttk.Entry):
+                widget.bind("<Return>", lambda _event: self._on_ok())
         self.title_entry.focus_set()
         self.show()
 
@@ -323,11 +323,15 @@ class BookDialog(BaseDialog):
 
 
 class UserDialog(BaseDialog):
-    def __init__(self, parent: tk.Misc):
-        super().__init__(parent, "Ajouter un utilisateur", "Renseignez le nom et l'identifiant.")
+    def __init__(self, parent: tk.Misc, suggested_id: str = ""):
+        super().__init__(parent, "Ajouter un utilisateur",
+                         "Entrez seulement le nom. L'identifiant est deja pre-rempli.")
         self.name_var, self.name_entry = self.add_entry("Nom")
-        self.id_var, _ = self.add_entry("Identifiant (ex. USR001)")
-        self.add_buttons("Ajouter", self._on_ok)
+        self.id_var, _ = self.add_entry("Identifiant (deja rempli)", initial=suggested_id)
+        self.add_buttons("Ajouter l'utilisateur", self._on_ok)
+        for widget in self.body.winfo_children():
+            if isinstance(widget, ttk.Entry):
+                widget.bind("<Return>", lambda _event: self._on_ok())
         self.name_entry.focus_set()
         self.show()
 
@@ -365,36 +369,6 @@ class BorrowDialog(BaseDialog):
             self.set_error("Choisissez un utilisateur.")
             return
         self.result = self._ids.get(choice)
-        self.destroy()
-
-
-class UnlockDialog(BaseDialog):
-    """Petit defi arithmetique pour eviter un deverrouillage accidentel."""
-
-    def __init__(self, parent: tk.Misc):
-        super().__init__(parent, "Deverrouiller le mode adulte",
-                         "Cette action est reservee aux adultes.")
-        self._left = random.randint(3, 9)
-        self._right = random.randint(4, 9)
-        self.answer_var, self.answer_entry = self.add_entry(
-            "Combien font {} x {} ?".format(self._left, self._right)
-        )
-        self.add_buttons("Deverrouiller", self._on_ok)
-        self.answer_entry.focus_set()
-        self.show()
-
-    def _on_ok(self):
-        try:
-            answer = int(self.answer_var.get().strip())
-        except ValueError:
-            self.set_error("Entrez un nombre.")
-            return
-        if answer != self._left * self._right:
-            self.set_error("Reponse incorrecte. Reessayez.")
-            self.answer_var.set("")
-            self.answer_entry.focus_set()
-            return
-        self.result = True
         self.destroy()
 
 
@@ -449,8 +423,6 @@ class LibraryApp:
         self.user_query = tk.StringVar()
         self.book_filter = tk.StringVar(value="Tous les livres")
         self.status = tk.StringVar(value="Donnees : {}".format(self.data_dir))
-        self.safe_status = tk.StringVar()
-        self.safe_mode = True
         self._history = []
 
         self._book_iids: dict[str, str] = {}
@@ -462,7 +434,7 @@ class LibraryApp:
         self._build_ui()
         self._bind_events()
         self.refresh_all()
-        self._update_safe_mode_ui()
+        self._update_undo_button()
 
     # ------------------------------------------------------------------ UI
     def _build_ui(self):
@@ -498,14 +470,9 @@ class LibraryApp:
 
         actions = ttk.Frame(self.root, style="Panel.TFrame", padding=(24, 10))
         actions.pack(side="top", fill="x")
-        self.lock_button = ttk.Button(actions, text="Deverrouiller", style="Lock.TButton",
-                                      command=self.toggle_safe_mode)
-        self.lock_button.pack(side="left")
-        self.safe_label = ttk.Label(actions, textvariable=self.safe_status, style="Safe.TLabel")
-        self.safe_label.pack(side="left", padx=(12, 0))
         self.undo_button = ttk.Button(actions, text="Annuler", style="Ghost.TButton",
-                                      command=self._guarded(self.undo_last))
-        self.undo_button.pack(side="left", padx=(12, 0))
+                                      command=self.undo_last)
+        self.undo_button.pack(side="left")
         ttk.Button(actions, text="Enregistrer", style="Ghost.TButton",
                    command=self.save_library).pack(side="left", padx=(8, 0))
         ttk.Button(actions, text="Sauvegarde", style="Ghost.TButton",
@@ -549,17 +516,17 @@ class LibraryApp:
 
         self.add_book_button = ttk.Button(toolbar, text="Ajouter un livre",
                                           style="Accent.TButton",
-                                          command=self._guarded(self.add_book))
+                                          command=self.add_book)
         self.add_book_button.pack(side="right")
         self.return_button = ttk.Button(toolbar, text="Retourner",
-                                        command=self._guarded(self.return_book))
+                                        command=self.return_book)
         self.return_button.pack(side="right", padx=(0, 8))
         self.borrow_button = ttk.Button(toolbar, text="Emprunter",
-                                        command=self._guarded(self.borrow_book))
+                                        command=self.borrow_book)
         self.borrow_button.pack(side="right", padx=(0, 8))
         self.remove_button = ttk.Button(toolbar, text="Supprimer",
                                         style="Danger.TButton",
-                                        command=self._guarded(self.remove_book))
+                                        command=self.remove_book)
         self.remove_button.pack(side="right", padx=(0, 8))
 
         container = ttk.Frame(tab, style="Panel.TFrame")
@@ -597,7 +564,7 @@ class LibraryApp:
         search.pack(side="left")
         self.add_user_button = ttk.Button(toolbar, text="Ajouter un utilisateur",
                                           style="Accent.TButton",
-                                          command=self._guarded(self.add_user))
+                                          command=self.add_user)
         self.add_user_button.pack(side="right")
 
         container = ttk.Frame(tab, style="Panel.TFrame")
@@ -627,56 +594,10 @@ class LibraryApp:
         self.root.bind("<Control-s>", lambda _event: self.save_library())
         self.root.bind("<F5>", lambda _event: self.refresh_all())
 
-    # ------------------------------------------------------------- securite
-    def _guarded(self, action):
-        def wrapped(*args, **kwargs):
-            if self.safe_mode:
-                show_message(
-                    self.root, "Mode securise",
-                    "Le mode securise est actif. Deverrouillez le mode adulte "
-                    "pour modifier la bibliotheque.",
-                )
-                return None
-            return action(*args, **kwargs)
-        return wrapped
-
-    def toggle_safe_mode(self):
-        if self.safe_mode:
-            dialog = UnlockDialog(self.root)
-            if not dialog.result:
-                self.set_status("Deverrouillage annule.", "info")
-                return
-            self.safe_mode = False
-            self._update_safe_mode_ui()
-            self.set_status(
-                "Mode adulte deverrouille. Les modifications sont autorisees.",
-                "success",
-            )
-        else:
-            self.safe_mode = True
-            self._update_safe_mode_ui()
-            self.set_status("Mode securise active. Consultation uniquement.", "info")
-
-    def _update_safe_mode_ui(self):
-        state = "disabled" if self.safe_mode else "normal"
-        for button in (
-            self.add_book_button,
-            self.remove_button,
-            self.borrow_button,
-            self.return_button,
-            self.add_user_button,
-        ):
-            button.configure(state=state)
-
+    # ------------------------------------------------------------- historique
+    def _update_undo_button(self):
         self.undo_button.configure(
-            state="normal" if (not self.safe_mode and self._history) else "disabled"
-        )
-        self.lock_button.configure(
-            text="Deverrouiller" if self.safe_mode else "Verrouiller"
-        )
-        self.safe_status.set(
-            "Mode securise (verrouille)" if self.safe_mode
-            else "Mode adulte (deverrouille)"
+            state="normal" if self._history else "disabled"
         )
 
     def _snapshot(self):
@@ -686,7 +607,7 @@ class LibraryApp:
         self._history.append(snapshot)
         if len(self._history) > 25:
             self._history.pop(0)
-        self._update_safe_mode_ui()
+        self._update_undo_button()
 
     def _restore(self, snapshot):
         books, users = snapshot
@@ -704,7 +625,7 @@ class LibraryApp:
         self._restore(snapshot)
         self.refresh_all()
         saved = self._autosave()
-        self._update_safe_mode_ui()
+        self._update_undo_button()
         self.set_status(
             "Derniere action annulee."
             + ("" if saved else " Echec de l'enregistrement."),
@@ -825,8 +746,26 @@ class LibraryApp:
         return self.library.find_book_by_isbn(isbn) if isbn else None
 
     # ------------------------------------------------------------- actions
+    def _suggested_isbn(self) -> str:
+        existing = {book.isbn for book in self.library.get_all_books()}
+        numeric = [
+            int(isbn) for isbn in existing
+            if isbn.isdigit() and len(isbn) == 13
+        ]
+        candidate = max(numeric) + 1 if numeric else 9780000000001
+        while str(candidate) in existing:
+            candidate += 1
+        return str(candidate)
+
+    def _suggested_user_id(self) -> str:
+        existing = {user.user_id for user in self.library.get_all_users()}
+        number = 1
+        while "USR{:03d}".format(number) in existing:
+            number += 1
+        return "USR{:03d}".format(number)
+
     def add_book(self):
-        dialog = BookDialog(self.root)
+        dialog = BookDialog(self.root, self._suggested_isbn())
         if not dialog.result:
             return
         title, author, isbn = dialog.result
@@ -845,7 +784,7 @@ class LibraryApp:
         )
 
     def add_user(self):
-        dialog = UserDialog(self.root)
+        dialog = UserDialog(self.root, self._suggested_user_id())
         if not dialog.result:
             return
         name, user_id = dialog.result
@@ -936,11 +875,6 @@ class LibraryApp:
             show_message(self.root, "Livre deja disponible",
                          "Ce livre n'est pas emprunte.")
             return
-        if not ask_confirmation(
-            self.root, "Retourner le livre",
-            "Marquer '{}' ({}) comme retourne ?".format(book.title, book.isbn),
-        ):
-            return
         snapshot = self._snapshot()
         if self.library.return_book(book.isbn):
             self._remember(snapshot)
@@ -972,11 +906,6 @@ class LibraryApp:
         self.set_status("Sauvegarde creee dans {}.".format(self.data_dir), "success")
 
     def on_close(self):
-        if not ask_confirmation(
-            self.root, "Quitter l'application",
-            "Quitter l'application ? Les donnees seront enregistrees.",
-        ):
-            return
         if not self.file_manager.save_library_data(self.library):
             self.set_status("Echec de l'enregistrement. Fermeture annulee.", "error")
             show_message(self.root, "Erreur d'enregistrement",
