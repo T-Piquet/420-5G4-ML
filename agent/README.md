@@ -37,3 +37,15 @@ $ BIBLIOTHEQUE_CORE_PATH=/chemin/vers/build python3 ui.py -d data
 
 Fonctionnalites de l'interface: ajout/suppression de livres, recherche et filtres,
 ajout d'utilisateurs, emprunts et retours, statistiques, enregistrement et sauvegarde.
+
+## Mode securise (enfant)
+
+L'interface demarre en **mode securise** : les operations qui modifient la
+bibliotheque sont verrouillees (consulation, recherche et statistiques restent
+disponibles). Pour les activer, cliquez sur `Deverrouiller` et resolvez le petit
+calcul reserve aux adultes. Le bouton `Verrouiller` reactive immediatement la
+protection.
+
+Les actions destructives demandent toujours une confirmation, la fermeture de la
+fenetre est confirmee et les dernieres modifications peuvent etre annulees avec
+le bouton `Annuler`.

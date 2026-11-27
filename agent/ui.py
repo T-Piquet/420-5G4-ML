@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import os
+import random
 import sys
 from pathlib import Path
 
@@ -157,6 +158,8 @@ def configure_styles(root: tk.Tk) -> ttk.Style:
                     font=(FONT, 9))
     style.configure("StatusError.TLabel", background=PALETTE["header"], foreground=PALETTE["danger"],
                     font=(FONT, 9))
+    style.configure("Safe.TLabel", background=PALETTE["panel"], foreground=PALETTE["warning"],
+                    font=(FONT, 9, "bold"))
 
     style.configure("TButton", background=PALETTE["surface"], foreground=PALETTE["text"],
                     borderwidth=0, focusthickness=0, padding=(12, 7), font=(FONT, 9))
@@ -172,6 +175,9 @@ def configure_styles(root: tk.Tk) -> ttk.Style:
     style.map("Danger.TButton", background=[("active", "#4a2a32")])
     style.configure("Ghost.TButton", background=PALETTE["panel"], foreground=PALETTE["text"])
     style.map("Ghost.TButton", background=[("active", PALETTE["surface"])])
+    style.configure("Lock.TButton", background="#3b331e", foreground=PALETTE["warning"],
+                    font=(FONT, 9, "bold"))
+    style.map("Lock.TButton", background=[("active", "#4a4027")])
 
     style.configure("Dark.TEntry", fieldbackground=PALETTE["panel_alt"],
                     foreground=PALETTE["text"], insertcolor=PALETTE["text"],
@@ -362,6 +368,36 @@ class BorrowDialog(BaseDialog):
         self.destroy()
 
 
+class UnlockDialog(BaseDialog):
+    """Petit defi arithmetique pour eviter un deverrouillage accidentel."""
+
+    def __init__(self, parent: tk.Misc):
+        super().__init__(parent, "Deverrouiller le mode adulte",
+                         "Cette action est reservee aux adultes.")
+        self._left = random.randint(3, 9)
+        self._right = random.randint(4, 9)
+        self.answer_var, self.answer_entry = self.add_entry(
+            "Combien font {} x {} ?".format(self._left, self._right)
+        )
+        self.add_buttons("Deverrouiller", self._on_ok)
+        self.answer_entry.focus_set()
+        self.show()
+
+    def _on_ok(self):
+        try:
+            answer = int(self.answer_var.get().strip())
+        except ValueError:
+            self.set_error("Entrez un nombre.")
+            return
+        if answer != self._left * self._right:
+            self.set_error("Reponse incorrecte. Reessayez.")
+            self.answer_var.set("")
+            self.answer_entry.focus_set()
+            return
+        self.result = True
+        self.destroy()
+
+
 class MessageDialog(BaseDialog):
     def __init__(self, parent: tk.Misc, title: str, message: str):
         super().__init__(parent, title)
@@ -413,6 +449,9 @@ class LibraryApp:
         self.user_query = tk.StringVar()
         self.book_filter = tk.StringVar(value="Tous les livres")
         self.status = tk.StringVar(value="Donnees : {}".format(self.data_dir))
+        self.safe_status = tk.StringVar()
+        self.safe_mode = True
+        self._history = []
 
         self._book_iids: dict[str, str] = {}
         self._isbn_to_iid: dict[str, str] = {}
@@ -423,6 +462,7 @@ class LibraryApp:
         self._build_ui()
         self._bind_events()
         self.refresh_all()
+        self._update_safe_mode_ui()
 
     # ------------------------------------------------------------------ UI
     def _build_ui(self):
@@ -458,8 +498,16 @@ class LibraryApp:
 
         actions = ttk.Frame(self.root, style="Panel.TFrame", padding=(24, 10))
         actions.pack(side="top", fill="x")
+        self.lock_button = ttk.Button(actions, text="Deverrouiller", style="Lock.TButton",
+                                      command=self.toggle_safe_mode)
+        self.lock_button.pack(side="left")
+        self.safe_label = ttk.Label(actions, textvariable=self.safe_status, style="Safe.TLabel")
+        self.safe_label.pack(side="left", padx=(12, 0))
+        self.undo_button = ttk.Button(actions, text="Annuler", style="Ghost.TButton",
+                                      command=self._guarded(self.undo_last))
+        self.undo_button.pack(side="left", padx=(12, 0))
         ttk.Button(actions, text="Enregistrer", style="Ghost.TButton",
-                   command=self.save_library).pack(side="left")
+                   command=self.save_library).pack(side="left", padx=(8, 0))
         ttk.Button(actions, text="Sauvegarde", style="Ghost.TButton",
                    command=self.create_backup).pack(side="left", padx=(8, 0))
         ttk.Button(actions, text="Actualiser", style="Ghost.TButton",
@@ -499,12 +547,20 @@ class LibraryApp:
         filter_box.pack(side="left", padx=(10, 0))
         filter_box.bind("<<ComboboxSelected>>", lambda _event: self.refresh_books())
 
-        ttk.Button(toolbar, text="Ajouter un livre", style="Accent.TButton",
-                   command=self.add_book).pack(side="right")
-        ttk.Button(toolbar, text="Retourner", command=self.return_book).pack(side="right", padx=(0, 8))
-        ttk.Button(toolbar, text="Emprunter", command=self.borrow_book).pack(side="right", padx=(0, 8))
-        ttk.Button(toolbar, text="Supprimer", style="Danger.TButton",
-                   command=self.remove_book).pack(side="right", padx=(0, 8))
+        self.add_book_button = ttk.Button(toolbar, text="Ajouter un livre",
+                                          style="Accent.TButton",
+                                          command=self._guarded(self.add_book))
+        self.add_book_button.pack(side="right")
+        self.return_button = ttk.Button(toolbar, text="Retourner",
+                                        command=self._guarded(self.return_book))
+        self.return_button.pack(side="right", padx=(0, 8))
+        self.borrow_button = ttk.Button(toolbar, text="Emprunter",
+                                        command=self._guarded(self.borrow_book))
+        self.borrow_button.pack(side="right", padx=(0, 8))
+        self.remove_button = ttk.Button(toolbar, text="Supprimer",
+                                        style="Danger.TButton",
+                                        command=self._guarded(self.remove_book))
+        self.remove_button.pack(side="right", padx=(0, 8))
 
         container = ttk.Frame(tab, style="Panel.TFrame")
         container.pack(fill="both", expand=True)
@@ -529,7 +585,6 @@ class LibraryApp:
         self.books_tree.configure(yscrollcommand=scroll.set)
         self.books_tree.pack(side="left", fill="both", expand=True)
         scroll.pack(side="right", fill="y")
-        self.books_tree.bind("<Double-1>", lambda _event: self.borrow_book())
 
     def _build_users_tab(self):
         tab = ttk.Frame(self.notebook, style="Panel.TFrame", padding=16)
@@ -540,8 +595,10 @@ class LibraryApp:
         ttk.Label(toolbar, text="Recherche", style="Field.TLabel").pack(side="left", padx=(0, 8))
         search = ttk.Entry(toolbar, textvariable=self.user_query, style="Dark.TEntry", width=30)
         search.pack(side="left")
-        ttk.Button(toolbar, text="Ajouter un utilisateur", style="Accent.TButton",
-                   command=self.add_user).pack(side="right")
+        self.add_user_button = ttk.Button(toolbar, text="Ajouter un utilisateur",
+                                          style="Accent.TButton",
+                                          command=self._guarded(self.add_user))
+        self.add_user_button.pack(side="right")
 
         container = ttk.Frame(tab, style="Panel.TFrame")
         container.pack(fill="both", expand=True)
@@ -569,6 +626,90 @@ class LibraryApp:
         self.user_query.trace_add("write", lambda *_args: self.refresh_users())
         self.root.bind("<Control-s>", lambda _event: self.save_library())
         self.root.bind("<F5>", lambda _event: self.refresh_all())
+
+    # ------------------------------------------------------------- securite
+    def _guarded(self, action):
+        def wrapped(*args, **kwargs):
+            if self.safe_mode:
+                show_message(
+                    self.root, "Mode securise",
+                    "Le mode securise est actif. Deverrouillez le mode adulte "
+                    "pour modifier la bibliotheque.",
+                )
+                return None
+            return action(*args, **kwargs)
+        return wrapped
+
+    def toggle_safe_mode(self):
+        if self.safe_mode:
+            dialog = UnlockDialog(self.root)
+            if not dialog.result:
+                self.set_status("Deverrouillage annule.", "info")
+                return
+            self.safe_mode = False
+            self._update_safe_mode_ui()
+            self.set_status(
+                "Mode adulte deverrouille. Les modifications sont autorisees.",
+                "success",
+            )
+        else:
+            self.safe_mode = True
+            self._update_safe_mode_ui()
+            self.set_status("Mode securise active. Consultation uniquement.", "info")
+
+    def _update_safe_mode_ui(self):
+        state = "disabled" if self.safe_mode else "normal"
+        for button in (
+            self.add_book_button,
+            self.remove_button,
+            self.borrow_button,
+            self.return_button,
+            self.add_user_button,
+        ):
+            button.configure(state=state)
+
+        self.undo_button.configure(
+            state="normal" if (not self.safe_mode and self._history) else "disabled"
+        )
+        self.lock_button.configure(
+            text="Deverrouiller" if self.safe_mode else "Verrouiller"
+        )
+        self.safe_status.set(
+            "Mode securise (verrouille)" if self.safe_mode
+            else "Mode adulte (deverrouille)"
+        )
+
+    def _snapshot(self):
+        return (self.library.get_all_books(), self.library.get_all_users())
+
+    def _remember(self, snapshot):
+        self._history.append(snapshot)
+        if len(self._history) > 25:
+            self._history.pop(0)
+        self._update_safe_mode_ui()
+
+    def _restore(self, snapshot):
+        books, users = snapshot
+        library = self.core.Library()
+        for book in books:
+            library.add_book(book)
+        for user in users:
+            library.add_user(user)
+        self.library = library
+
+    def undo_last(self):
+        if not self._history:
+            return
+        snapshot = self._history.pop()
+        self._restore(snapshot)
+        self.refresh_all()
+        saved = self._autosave()
+        self._update_safe_mode_ui()
+        self.set_status(
+            "Derniere action annulee."
+            + ("" if saved else " Echec de l'enregistrement."),
+            "success" if saved else "error",
+        )
 
     # --------------------------------------------------------------- state
     def set_status(self, message: str, kind: str = "info"):
@@ -693,7 +834,9 @@ class LibraryApp:
             show_message(self.root, "Livre deja present",
                          "Un livre avec l'ISBN {} existe deja.".format(isbn))
             return
+        snapshot = self._snapshot()
         self.library.add_book(self.core.Book(title, author, isbn))
+        self._remember(snapshot)
         self.refresh_all()
         saved = self._autosave()
         self.set_status(
@@ -710,7 +853,9 @@ class LibraryApp:
             show_message(self.root, "Utilisateur deja present",
                          "Un utilisateur avec l'identifiant {} existe deja.".format(user_id))
             return
+        snapshot = self._snapshot()
         self.library.add_user(self.core.User(name, user_id))
+        self._remember(snapshot)
         self.refresh_all()
         saved = self._autosave()
         self.set_status(
@@ -735,7 +880,9 @@ class LibraryApp:
             danger=True,
         ):
             return
+        snapshot = self._snapshot()
         if self.library.remove_book(book.isbn):
+            self._remember(snapshot)
             self.refresh_all()
             saved = self._autosave()
             self.set_status(
@@ -765,7 +912,9 @@ class LibraryApp:
         dialog = BorrowDialog(self.root, users, book.title)
         if not dialog.result:
             return
+        snapshot = self._snapshot()
         if self.library.check_out_book(book.isbn, dialog.result):
+            self._remember(snapshot)
             self.refresh_all()
             saved = self._autosave()
             self.set_status(
@@ -792,7 +941,9 @@ class LibraryApp:
             "Marquer '{}' ({}) comme retourne ?".format(book.title, book.isbn),
         ):
             return
+        snapshot = self._snapshot()
         if self.library.return_book(book.isbn):
+            self._remember(snapshot)
             self.refresh_all()
             saved = self._autosave()
             self.set_status(
@@ -821,7 +972,17 @@ class LibraryApp:
         self.set_status("Sauvegarde creee dans {}.".format(self.data_dir), "success")
 
     def on_close(self):
-        self.file_manager.save_library_data(self.library)
+        if not ask_confirmation(
+            self.root, "Quitter l'application",
+            "Quitter l'application ? Les donnees seront enregistrees.",
+        ):
+            return
+        if not self.file_manager.save_library_data(self.library):
+            self.set_status("Echec de l'enregistrement. Fermeture annulee.", "error")
+            show_message(self.root, "Erreur d'enregistrement",
+                         "Impossible d'enregistrer les donnees. "
+                         "La fermeture a ete annulee.")
+            return
         self.root.destroy()
 
 
