@@ -1,14 +1,13 @@
 import customtkinter as ctk
 
+from maquette.window import LibraryApp
+
 
 def main() -> None:
-    ctk.set_appearance_mode("system")
+    ctk.set_appearance_mode("light")
     ctk.set_default_color_theme("blue")
 
-    app = ctk.CTk()
-    app.title("Application de test")
-    app.geometry("400x300")
-
+    app = LibraryApp()
     app.mainloop()
 
 
