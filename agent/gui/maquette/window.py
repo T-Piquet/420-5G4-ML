@@ -61,7 +61,7 @@ class LibraryApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("Bibliothèque — Maquette CustomTkinter")
+        self.title("Bibliothèque")
         self.geometry("1280x800")
         self.minsize(1180, 720)
         self.configure(fg_color=COLORS["bg"])
