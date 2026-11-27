@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <system_error>
 #include "filemanager.h"
 
 using namespace std;
@@ -66,6 +67,9 @@ bool FileManager::loadBooksFromFile(Library& library) {
     string line;
     int count = 0;
     while (getline(file, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         if (!line.empty()) {
             Book book;
             book.fromFileFormat(line);
@@ -90,6 +94,9 @@ bool FileManager::loadUsersFromFile(Library& library) {
     string line;
     int count = 0;
     while (getline(file, line)) {
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         if (!line.empty()) {
             User user;
             user.fromFileFormat(line);
@@ -111,13 +118,30 @@ bool FileManager::fileExists(const string& filename) {
 
 // Create backup
 void FileManager::createBackup() {
-    if (fileExists(booksFileName)) {
-        filesystem::copy_file(booksFileName, booksFileName + ".backup");
+    bool backupCreated = false;
+
+    auto backupFile = [&backupCreated](const string& filename) {
+        if (filename.empty() || !filesystem::exists(filename)) {
+            return;
+        }
+
+        error_code ec;
+        filesystem::copy_file(filename, filename + ".backup",
+                              filesystem::copy_options::overwrite_existing, ec);
+        if (ec) {
+            cout << "Erreur : Impossible de sauvegarder " << filename
+                 << " : " << ec.message() << "\n";
+        } else {
+            backupCreated = true;
+        }
+    };
+
+    backupFile(booksFileName);
+    backupFile(usersFileName);
+
+    if (backupCreated) {
+        cout << "Fichiers de sauvegarde créés.\n";
+    } else {
+        cout << "Aucun fichier à sauvegarder.\n";
     }
-    
-    if (fileExists(usersFileName)) {
-        filesystem::copy_file(usersFileName, usersFileName + ".backup");
-    }
-    
-    cout << "Fichiers de sauvegarde créés.\n";
 }

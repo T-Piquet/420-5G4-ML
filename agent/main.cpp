@@ -14,8 +14,7 @@ void clearScreen() {
 
 void pauseForInput() {
     cout << "\nAppuyez sur Entrée pour continuer...";
-    cin.ignore();
-    cin.get();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
 void displayMenu() {
@@ -51,6 +50,7 @@ void printUsage(const char* programName) {
 
 int main(int argc, char* argv[]) {
     string dataDir;
+    bool dataDirProvided = false;
 
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             dataDir = argv[++i];
+            dataDirProvided = true;
         } else {
             cerr << "Erreur : argument inconnu '" << arg << "'.\n";
             printUsage(argv[0]);
@@ -68,17 +69,31 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    string booksFile;
-    string usersFile;
-    if (!dataDir.empty()) {
+    if (dataDirProvided) {
         if (!filesystem::is_directory(dataDir)) {
             cerr << "Erreur : le répertoire " << dataDir << " n'existe pas.\n";
             printUsage(argv[0]);
             return 1;
         }
-        booksFile = (filesystem::path(dataDir) / "books.txt").string();
-        usersFile = (filesystem::path(dataDir) / "users.txt").string();
+    } else {
+        // Sans option -d, on cherche un répertoire contenant les fichiers de la
+        // bibliothèque (par exemple ./data ou ../data depuis le répertoire build).
+        const filesystem::path candidates[] = {"data", "../data", "agent/data"};
+        for (const auto& candidate : candidates) {
+            if (filesystem::is_directory(candidate) &&
+                (filesystem::exists(candidate / "books.txt") ||
+                 filesystem::exists(candidate / "users.txt"))) {
+                dataDir = candidate.string();
+                break;
+            }
+        }
+        if (dataDir.empty()) {
+            dataDir = filesystem::is_directory("data") ? "data" : ".";
+        }
     }
+
+    string booksFile = (filesystem::path(dataDir) / "books.txt").string();
+    string usersFile = (filesystem::path(dataDir) / "users.txt").string();
 
     Library library;
     FileManager fileManager(booksFile, usersFile);
@@ -94,13 +109,18 @@ int main(int argc, char* argv[]) {
         displayMenu();
         
         if (!(cin >> choice)) {
+            if (cin.eof()) {
+                cout << "\nFin de l'entrée. Sauvegarde des données avant la fermeture...\n";
+                fileManager.saveLibraryData(library);
+                break;
+            }
             cout << "Saisie invalide. Veuillez entrer un nombre.\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             pauseForInput();
             continue;
         }
-        cin.ignore(); // Clear newline from buffer
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Vider le reste de la ligne
         
         switch (choice) {
             case 1: { // Add Book

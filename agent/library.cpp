@@ -1,9 +1,18 @@
 #include <iostream>
 #include <algorithm>
+#include <cctype>
 
 #include "library.h"
 
 using namespace std;
+
+namespace {
+string toLower(string value) {
+    transform(value.begin(), value.end(), value.begin(),
+        [](unsigned char c) { return static_cast<char>(tolower(c)); });
+    return value;
+}
+}
 
 // Constructor
 Library::Library() {}
@@ -40,12 +49,10 @@ Book* Library::findBookByISBN(const string& isbn) {
 // Search books by title (case-insensitive partial match)
 vector<Book*> Library::searchBooksByTitle(const string& title) {
     vector<Book*> results;
-    string lowerTitle = title;
-    transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower);
+    string lowerTitle = toLower(title);
     
     for (auto& book : books) {
-        string bookTitle = book->getTitle();
-        transform(bookTitle.begin(), bookTitle.end(), bookTitle.begin(), ::tolower);
+        string bookTitle = toLower(book->getTitle());
         
         if (bookTitle.find(lowerTitle) != string::npos) {
             results.push_back(book.get());
@@ -57,12 +64,10 @@ vector<Book*> Library::searchBooksByTitle(const string& title) {
 // Search books by author (case-insensitive partial match)
 vector<Book*> Library::searchBooksByAuthor(const string& author) {
     vector<Book*> results;
-    string lowerAuthor = author;
-    transform(lowerAuthor.begin(), lowerAuthor.end(), lowerAuthor.begin(), ::tolower);
+    string lowerAuthor = toLower(author);
     
     for (auto& book : books) {
-        string bookAuthor = book->getAuthor();
-        transform(bookAuthor.begin(), bookAuthor.end(), bookAuthor.begin(), ::tolower);
+        string bookAuthor = toLower(book->getAuthor());
         
         if (bookAuthor.find(lowerAuthor) != string::npos) {
             results.push_back(book.get());

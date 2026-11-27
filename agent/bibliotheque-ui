@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Lanceur de l'interface graphique de la bibliotheque.
+# Compile automatiquement le module Python au premier lancement.
+#
+# Utilisation :
+#   ./bibliotheque-ui                # lance l'interface avec le dossier data par defaut
+#   ./bibliotheque-ui -d /chemin     # precise un autre dossier de donnees
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if ! ls "$DIR"/build/bibliotheque_core*.so >/dev/null 2>&1; then
+    echo "Premiere utilisation : compilation du projet..."
+    cmake -S "$DIR" -B "$DIR/build" >/dev/null
+    cmake --build "$DIR/build" -j "$(nproc)" >/dev/null
+    echo "Compilation terminee."
+fi
+
+exec python3 "$DIR/ui.py" "$@"
