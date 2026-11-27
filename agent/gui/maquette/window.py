@@ -16,7 +16,13 @@ from .components import (
 )
 from .models import Book, LibraryStore, User
 from .theme import COLORS, SPACING
-from .views import CatalogueView, DashboardView, PlaceholderView, UsersView
+from .views import (
+    CatalogueView,
+    DashboardView,
+    LoansView,
+    PlaceholderView,
+    UsersView,
+)
 
 
 class LibraryApp(ctk.CTk):
@@ -63,6 +69,8 @@ class LibraryApp(ctk.CTk):
         self.catalogue_filter = CatalogueView.FILTERS[0]
         self.users_query = ""
         self.users_filter = UsersView.FILTERS[0]
+        self.loans_query = ""
+        self.loans_sort = LoansView.SORTS[0]
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -110,6 +118,8 @@ class LibraryApp(ctk.CTk):
             view = CatalogueView(self.view_host, self)
         elif screen == "Utilisateurs":
             view = UsersView(self.view_host, self)
+        elif screen == "Emprunts":
+            view = LoansView(self.view_host, self)
         else:
             view = PlaceholderView(self.view_host, self, screen)
         view.grid(row=0, column=0, sticky="nsew")
@@ -147,7 +157,7 @@ class LibraryApp(ctk.CTk):
             self.show_toast(str(exc), "error")
             return
         self.show_toast(f"« {book.title} » a été retourné.")
-        self.show_screen("Tableau de bord")
+        self.show_screen(self.current_screen)
 
     def _after_change(self, message: str) -> None:
         self.show_toast(message)
