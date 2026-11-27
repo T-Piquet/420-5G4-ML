@@ -14,9 +14,9 @@ from .components import (
     Sidebar,
     Toast,
 )
-from .models import Book, LibraryStore
+from .models import Book, LibraryStore, User
 from .theme import COLORS, SPACING
-from .views import CatalogueView, DashboardView, PlaceholderView
+from .views import CatalogueView, DashboardView, PlaceholderView, UsersView
 
 
 class LibraryApp(ctk.CTk):
@@ -61,6 +61,8 @@ class LibraryApp(ctk.CTk):
         self._toast: Toast | None = None
         self.catalogue_query = ""
         self.catalogue_filter = CatalogueView.FILTERS[0]
+        self.users_query = ""
+        self.users_filter = UsersView.FILTERS[0]
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -106,6 +108,8 @@ class LibraryApp(ctk.CTk):
             view = DashboardView(self.view_host, self)
         elif screen == "Catalogue":
             view = CatalogueView(self.view_host, self)
+        elif screen == "Utilisateurs":
+            view = UsersView(self.view_host, self)
         else:
             view = PlaceholderView(self.view_host, self, screen)
         view.grid(row=0, column=0, sticky="nsew")
@@ -119,8 +123,10 @@ class LibraryApp(ctk.CTk):
     def open_add_user(self) -> None:
         AddUserModal(self, self.store, on_done=self._after_change)
 
-    def open_borrow(self, book: Book | None = None) -> None:
-        BorrowModal(self, self.store, on_done=self._after_change, book=book)
+    def open_borrow(self, book: Book | None = None,
+                    user: User | None = None) -> None:
+        BorrowModal(self, self.store, on_done=self._after_change,
+                    book=book, user=user)
 
     def open_return(self, book: Book | None = None) -> None:
         ReturnModal(self, self.store, on_done=self._after_change, book=book)

@@ -477,6 +477,243 @@ class CatalogueView(ctk.CTkFrame):
             on_confirm=lambda: self.app.delete_book(book))
 
 
+class UsersView(ctk.CTkFrame):
+    """Utilisateurs : recherche, filtres et gestion des comptes emprunteurs."""
+
+    FILTERS = ("Tous", "Avec emprunts", "Sans emprunt")
+
+    def __init__(self, master, app):
+        super().__init__(master, fg_color=COLORS["bg"], corner_radius=0)
+        self.app = app
+        self.store = app.store
+        self.query = getattr(app, "users_query", "")
+        self.filter = getattr(app, "users_filter", self.FILTERS[0])
+        if self.filter not in self.FILTERS:
+            self.filter = self.FILTERS[0]
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self._build_toolbar()
+        self._build_table()
+        self._refresh()
+
+    def _build_toolbar(self) -> None:
+        toolbar = ctk.CTkFrame(self, fg_color="transparent")
+        toolbar.grid(row=0, column=0, sticky="ew",
+                     padx=SPACING["page_x"], pady=(0, 14))
+        toolbar.grid_columnconfigure(0, weight=1)
+
+        search = ctk.CTkFrame(toolbar, fg_color=COLORS["surface"],
+                              corner_radius=10, border_width=1,
+                              border_color=COLORS["border"], height=42)
+        search.grid(row=0, column=0, sticky="ew", padx=(0, 12))
+        search.grid_propagate(False)
+        search.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(search, text="⌕", font=FONTS["icon_small"],
+                     text_color=COLORS["text_soft"]).grid(
+            row=0, column=0, padx=(12, 6))
+        self.search_var = StringVar(value=self.query)
+        self.search_entry = ctk.CTkEntry(
+            search, textvariable=self.search_var, height=38,
+            border_width=0, fg_color=COLORS["surface"],
+            text_color=COLORS["text"], font=FONTS["body"],
+            placeholder_text="Rechercher par nom ou identifiant…",
+            placeholder_text_color=COLORS["text_soft"])
+        self.search_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
+        self.search_var.trace_add("write", self._on_search)
+
+        self.filter_var = StringVar(value=self.filter)
+        self.filter_menu = ctk.CTkSegmentedButton(
+            toolbar, values=list(self.FILTERS), variable=self.filter_var,
+            command=self._on_filter, height=42, corner_radius=10,
+            font=FONTS["body"], text_color=COLORS["text_muted"],
+            selected_color=COLORS["accent"],
+            selected_hover_color=COLORS["accent_hover"],
+            unselected_color=COLORS["surface"],
+            unselected_hover_color=COLORS["surface_alt"])
+        self.filter_menu.grid(row=0, column=1, padx=(0, 12))
+
+        ctk.CTkButton(
+            toolbar, text="+  Ajouter un utilisateur", height=42,
+            corner_radius=10, fg_color=COLORS["accent"],
+            hover_color=COLORS["accent_hover"], text_color="#FFFFFF",
+            font=FONTS["body_bold"],
+            command=self.app.open_add_user).grid(row=0, column=2)
+
+    def _build_table(self) -> None:
+        card = Card(self)
+        card.grid(row=1, column=0, sticky="nsew",
+                  padx=SPACING["page_x"], pady=(0, SPACING["page_y"]))
+        card.grid_columnconfigure(0, weight=1)
+        card.grid_rowconfigure(2, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 10))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Liste des utilisateurs",
+                     font=FONTS["title"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Suivez les comptes et leurs emprunts",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+
+        self.count_badge = Badge(header, "", COLORS["purple_soft"],
+                                 COLORS["purple"])
+        self.count_badge.grid(row=0, column=1, rowspan=2, sticky="e")
+
+        columns = ctk.CTkFrame(card, fg_color="transparent")
+        columns.grid(row=1, column=0, sticky="ew", padx=(20, 34))
+        self._configure_columns(columns)
+        for index, title in enumerate(("UTILISATEUR", "IDENTIFIANT",
+                                       "EMPRUNTS", "ACTIONS")):
+            ctk.CTkLabel(columns, text=title, font=FONTS["caption"],
+                         text_color=COLORS["text_soft"], anchor="w").grid(
+                row=0, column=index, sticky="w", pady=(4, 6))
+        ctk.CTkFrame(columns, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=1, column=0, columnspan=4, sticky="ew")
+
+        self.rows = ctk.CTkScrollableFrame(
+            card, fg_color=COLORS["surface"], corner_radius=0,
+            scrollbar_button_color=COLORS["border"],
+            scrollbar_button_hover_color=COLORS["text_soft"])
+        self.rows.grid(row=2, column=0, sticky="nsew", padx=(20, 14),
+                       pady=(0, 16))
+        self._configure_columns(self.rows)
+
+    @staticmethod
+    def _configure_columns(frame) -> None:
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_columnconfigure(1, minsize=112)
+        frame.grid_columnconfigure(2, minsize=270)
+        frame.grid_columnconfigure(3, minsize=118)
+
+    def _refresh(self) -> None:
+        for child in self.rows.winfo_children():
+            child.destroy()
+        users = self._visible_users()
+        count = len(users)
+        self.count_badge.set_text(
+            f"{count} compte" if count == 1 else f"{count} comptes")
+        if not users:
+            self._build_empty()
+            return
+        for index, user in enumerate(users):
+            self._build_row(index * 2, user)
+
+    def _build_empty(self) -> None:
+        empty = ctk.CTkFrame(self.rows, fg_color="transparent")
+        empty.grid(row=0, column=0, columnspan=4, sticky="ew", pady=56)
+        empty.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(empty, text="◉", font=FONTS["icon_large"],
+                     text_color=COLORS["text_soft"]).grid(row=0, column=0)
+        if self.query.strip():
+            title = "Aucun utilisateur ne correspond à votre recherche"
+            hint = "Modifiez le nom ou l'identifiant recherché."
+        else:
+            title = "Aucun utilisateur dans cette catégorie"
+            hint = "Changez de filtre ou créez un nouveau compte."
+        ctk.CTkLabel(empty, text=title, font=FONTS["body_bold"],
+                     text_color=COLORS["text"]).grid(row=1, column=0,
+                                                     pady=(4, 0))
+        ctk.CTkLabel(empty, text=hint, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"]).grid(row=2, column=0,
+                                                           pady=(2, 0))
+
+    def _build_row(self, row: int, user) -> None:
+        identity = ctk.CTkFrame(self.rows, fg_color="transparent")
+        identity.grid(row=row, column=0, sticky="ew", padx=(0, 12),
+                      pady=(10, 0))
+        identity.grid_columnconfigure(1, weight=1)
+
+        avatar = ctk.CTkFrame(identity, width=38, height=38, corner_radius=19,
+                              fg_color=COLORS["accent_soft"])
+        avatar.grid_propagate(False)
+        avatar.grid(row=0, column=0, rowspan=2, padx=(0, 10))
+        ctk.CTkLabel(avatar, text=(user.name[:1].upper() or "?"),
+                     font=FONTS["body_bold"],
+                     text_color=COLORS["accent"]).place(
+            relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(identity, text=_shorten(user.name, 30),
+                     font=FONTS["body_bold"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=1, sticky="w")
+        count = len(user.borrowed_isbns)
+        if count == 0:
+            subtitle = "Aucun emprunt en cours"
+        elif count == 1:
+            subtitle = "1 emprunt en cours"
+        else:
+            subtitle = f"{count} emprunts en cours"
+        ctk.CTkLabel(identity, text=subtitle, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=1, sticky="w")
+
+        ctk.CTkLabel(self.rows, text=user.user_id, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=row, column=1, sticky="w", pady=(10, 0))
+
+        loans = ctk.CTkFrame(self.rows, fg_color="transparent")
+        loans.grid(row=row, column=2, sticky="w", pady=(10, 0))
+        if count:
+            label = f"{count} emprunt" if count == 1 else f"{count} emprunts"
+            Badge(loans, label, COLORS["warning_soft"],
+                  COLORS["warning"]).grid(row=0, column=0, sticky="w")
+            titles = []
+            for isbn in user.borrowed_isbns:
+                book = self.store.book_by_isbn(isbn)
+                titles.append(book.title if book else isbn)
+            ctk.CTkLabel(loans, text=_shorten(" · ".join(titles), 46),
+                         font=FONTS["body_small"],
+                         text_color=COLORS["text_soft"], anchor="w").grid(
+                row=1, column=0, sticky="w", pady=(3, 0))
+        else:
+            ctk.CTkLabel(loans, text="Aucun emprunt",
+                         font=FONTS["body_small"],
+                         text_color=COLORS["text_soft"], anchor="w").grid(
+                row=0, column=0, sticky="w")
+
+        actions = ctk.CTkFrame(self.rows, fg_color="transparent")
+        actions.grid(row=row, column=3, sticky="w", pady=(10, 0))
+        ctk.CTkButton(
+            actions, text="Emprunter", width=104, height=30,
+            corner_radius=8, fg_color=COLORS["accent_soft"],
+            hover_color=COLORS["accent"], text_color=COLORS["accent"],
+            font=FONTS["body_small"],
+            command=lambda u=user: self.app.open_borrow(user=u)).grid()
+
+        ctk.CTkFrame(self.rows, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=row + 1, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+
+    def _visible_users(self):
+        users = list(self.store.users)
+        if self.filter == "Avec emprunts":
+            users = [user for user in users if user.borrowed_isbns]
+        elif self.filter == "Sans emprunt":
+            users = [user for user in users if not user.borrowed_isbns]
+        query = self.query.strip().casefold()
+        if query:
+            users = [user for user in users
+                     if query in user.name.casefold()
+                     or query in user.user_id.casefold()]
+        return users
+
+    def _on_search(self, *_args) -> None:
+        self.query = self.search_var.get()
+        self.app.users_query = self.query
+        self._refresh()
+
+    def _on_filter(self, value: str) -> None:
+        self.filter = value
+        self.app.users_filter = value
+        self._refresh()
+
+
 class PlaceholderView(ctk.CTkFrame):
     """Écran temporaire pour les modules pas encore maquettés."""
 

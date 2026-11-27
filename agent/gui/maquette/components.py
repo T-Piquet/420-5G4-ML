@@ -554,7 +554,8 @@ class BorrowModal(BaseModal):
 
     def __init__(self, master, store: LibraryStore,
                  on_done: Callable[[str], None],
-                 book: Book | None = None):
+                 book: Book | None = None,
+                 user: User | None = None):
         self.store = store
         self.on_done = on_done
         books = store.available_books()
@@ -577,8 +578,16 @@ class BorrowModal(BaseModal):
                     book_values = [label] + [value for value in book_values
                                              if value != label]
                     break
+        selected_user = user_values[0]
+        if user is not None:
+            for label, candidate in self._users.items():
+                if candidate is user:
+                    selected_user = label
+                    user_values = [label] + [value for value in user_values
+                                             if value != label]
+                    break
         self.book_var = StringVar(value=selected_book)
-        self.user_var = StringVar(value=user_values[0])
+        self.user_var = StringVar(value=selected_user)
         self.book_menu = self.add_option(0, "Livre", book_values, self.book_var)
         self.user_menu = self.add_option(1, "Emprunteur", user_values, self.user_var)
         self.focus_widget = self.book_menu
