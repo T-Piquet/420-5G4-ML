@@ -35,11 +35,11 @@ copies `.backup` (sans `overwrite_existing`, donc un second passage peut échoue
   `FileManager` gère la sérialisation ; `Book`/`User` portent le format fichier.
 - Devcontainer fourni dans `.devcontainer/` (C++ + CMake + redirection X11).
 
-## Maquette CustomTkinter (plan à implémenter)
-Objectif : remplacer le placeholder `gui/app.py` par un prototype desktop
-customtkinter reproduisant les actions de `main.cpp`. Aucun changement au C++,
-au CMake ni à `data/` ; aucune connexion au backend C++.
-Ces fichiers n'existent pas encore.
+## Maquette CustomTkinter (prototype implémenté)
+Le prototype desktop customtkinter remplace le placeholder `gui/app.py` et
+reproduit les actions de `main.cpp`. Aucun changement au C++, au CMake ni à
+`data/` ; aucune connexion au backend C++.
+Ces fichiers sont implémentés dans `agent/gui/maquette/`.
 
 ### Arborescence prévue
 ```text
