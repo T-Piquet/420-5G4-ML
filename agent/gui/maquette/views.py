@@ -2,17 +2,35 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from tkinter import StringVar
 
 import customtkinter as ctk
 
 from .components import ActionCard, Badge, Card, ConfirmModal, StatCard
-from .models import Book, User
-from .theme import COLORS, FONTS, SPACING
+from .models import Book, DATA_DIR, User
+from .theme import COLORS, FONTS, MOIS, SPACING
+
+_PROJECT_ROOT = DATA_DIR.parents[1]
 
 
 def _shorten(text: str, limit: int) -> str:
     return text if len(text) <= limit else f"{text[:limit - 1]}…"
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(_PROJECT_ROOT))
+    except ValueError:
+        return str(path)
+
+
+def _format_size(size: int) -> str:
+    if size < 1024:
+        return f"{size} o"
+    if size < 1024 * 1024:
+        return f"{size / 1024:.1f} Ko".replace(".", ",")
+    return f"{size / (1024 * 1024):.1f} Mo".replace(".", ",")
 
 
 class DashboardView(ctk.CTkScrollableFrame):
@@ -1265,6 +1283,303 @@ class StatisticsView(ctk.CTkScrollableFrame):
         ctk.CTkFrame(rows, height=1, corner_radius=0,
                      fg_color=COLORS["border"]).grid(
             row=row + 1, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+
+
+class DataBackupView(ctk.CTkScrollableFrame):
+    """Données & sauvegarde : fichiers source et actions simulées."""
+
+    SOURCES = (
+        ("books.txt", "▤", COLORS["accent"], COLORS["accent_soft"]),
+        ("users.txt", "◉", COLORS["purple"], COLORS["purple_soft"]),
+    )
+
+    def __init__(self, master, app):
+        super().__init__(
+            master, fg_color=COLORS["bg"], corner_radius=0,
+            scrollbar_button_color=COLORS["border"],
+            scrollbar_button_hover_color=COLORS["text_soft"])
+        self.app = app
+        self.store = app.store
+        self.grid_columnconfigure(0, weight=1)
+
+        body = ctk.CTkFrame(self, fg_color="transparent")
+        body.grid(row=0, column=0, sticky="nsew",
+                  padx=SPACING["page_x"], pady=(0, 8))
+        body.grid_columnconfigure(0, weight=1)
+
+        self._build_summary(body)
+        self._build_lower(body)
+        self._build_history(body)
+
+    def _build_summary(self, parent) -> None:
+        stats = ctk.CTkFrame(parent, fg_color="transparent")
+        stats.grid(row=0, column=0, sticky="ew")
+        for column in range(4):
+            stats.grid_columnconfigure(column, weight=1, uniform="stats")
+
+        existing = sum(
+            1 for name, _symbol, _accent, _soft in self.SOURCES
+            if (DATA_DIR / name).exists())
+        cards = (
+            ("Livres chargés", str(self.store.total_books),
+             "ouvrages en mémoire", "▤",
+             COLORS["accent"], COLORS["accent_soft"]),
+            ("Utilisateurs", str(self.store.total_users),
+             "comptes en mémoire", "◉",
+             COLORS["purple"], COLORS["purple_soft"]),
+            ("Fichiers source", f"{existing} / {len(self.SOURCES)}",
+             "fichiers détectés", "◫",
+             COLORS["teal"], COLORS["teal_soft"]),
+            ("Mode", "Local",
+             "lecture seule · simulation", "◈",
+             COLORS["success"], COLORS["success_soft"]),
+        )
+        for index, (label, value, hint, symbol, accent, soft) in enumerate(cards):
+            card = StatCard(stats, label, value, hint, symbol, accent, soft)
+            card.grid(row=0, column=index, sticky="nsew", padx=8)
+
+    def _build_lower(self, parent) -> None:
+        lower = ctk.CTkFrame(parent, fg_color="transparent")
+        lower.grid(row=1, column=0, sticky="nsew", pady=(12, 0))
+        lower.grid_columnconfigure(0, weight=6)
+        lower.grid_columnconfigure(1, weight=4)
+
+        self._build_sources(lower).grid(
+            row=0, column=0, sticky="nsew", padx=(0, 8))
+        self._build_actions(lower).grid(
+            row=0, column=1, sticky="nsew", padx=(8, 0))
+
+    def _build_sources(self, parent) -> Card:
+        card = Card(parent)
+        card.grid_columnconfigure(0, weight=1)
+
+        existing = sum(
+            1 for name, _symbol, _accent, _soft in self.SOURCES
+            if (DATA_DIR / name).exists())
+        plural = "fichier" if existing == 1 else "fichiers"
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 10))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Fichiers source", font=FONTS["title"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Données pipe-séparées chargées en lecture seule",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+        Badge(header, f"{existing} {plural}", COLORS["teal_soft"],
+              COLORS["teal"]).grid(row=0, column=1, rowspan=2, sticky="e")
+
+        rows = ctk.CTkFrame(card, fg_color="transparent")
+        rows.grid(row=1, column=0, sticky="ew", padx=20)
+        rows.grid_columnconfigure(0, weight=1)
+        for index, source in enumerate(self.SOURCES):
+            self._build_source_row(rows, index, *source)
+
+        note = ctk.CTkFrame(card, fg_color=COLORS["accent_soft"],
+                            corner_radius=10)
+        note.grid(row=2, column=0, sticky="ew", padx=20, pady=(2, 18))
+        note.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(note, text="i", font=FONTS["badge"],
+                     text_color=COLORS["accent"], width=20).grid(
+            row=0, column=0, padx=(12, 8), pady=8)
+        ctk.CTkLabel(note, text="Lecture seule · aucune écriture réelle.",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["accent"], anchor="w").grid(
+            row=0, column=1, sticky="w", padx=(0, 12), pady=8)
+        return card
+
+    def _build_source_row(self, parent, row: int, name: str, symbol: str,
+                          accent: str, soft: str) -> None:
+        path = DATA_DIR / name
+        exists = path.exists()
+        meta = self._source_meta(name, path, exists)
+
+        frame = ctk.CTkFrame(parent, fg_color=COLORS["surface_alt"],
+                             corner_radius=10, border_width=1,
+                             border_color=COLORS["border"])
+        frame.grid(row=row, column=0, sticky="ew", pady=(0, 10))
+        frame.grid_columnconfigure(1, weight=1)
+
+        icon = ctk.CTkFrame(frame, width=38, height=38, corner_radius=10,
+                            fg_color=soft)
+        icon.grid_propagate(False)
+        icon.grid(row=0, column=0, rowspan=2, padx=(12, 10), pady=10)
+        ctk.CTkLabel(icon, text=symbol, font=FONTS["icon"],
+                     text_color=accent).place(relx=0.5, rely=0.5,
+                                              anchor="center")
+
+        ctk.CTkLabel(frame, text=name, font=FONTS["body_bold"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=1, sticky="w", pady=(10, 0))
+        ctk.CTkLabel(frame, text=_shorten(_display_path(path), 48),
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=1, sticky="w", pady=(0, 10))
+
+        Badge(frame, meta["status"], meta["soft"], meta["color"]).grid(
+            row=0, column=2, sticky="e", padx=(10, 12), pady=(10, 0))
+        ctk.CTkLabel(frame, text=meta["detail"], font=FONTS["body_small"],
+                     text_color=COLORS["text_soft"], anchor="e").grid(
+            row=1, column=2, sticky="e", padx=(10, 12), pady=(0, 10))
+
+    def _source_meta(self, name: str, path: Path, exists: bool) -> dict:
+        if not exists:
+            return {
+                "status": "Introuvable",
+                "color": COLORS["danger"],
+                "soft": COLORS["danger_soft"],
+                "detail": "données de secours",
+            }
+        count = (self.store.total_books if name == "books.txt"
+                 else self.store.total_users)
+        unit = "entrée" if count == 1 else "entrées"
+        try:
+            size = _format_size(path.stat().st_size)
+        except OSError:
+            size = "taille inconnue"
+        return {
+            "status": "Présent",
+            "color": COLORS["success"],
+            "soft": COLORS["success_soft"],
+            "detail": f"{count} {unit} · {size}",
+        }
+
+    def _build_actions(self, parent) -> Card:
+        card = Card(parent)
+        card.grid_columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(16, 10))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Sauvegarde & export", font=FONTS["title"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Actions simulées du menu principal",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+        Badge(header, "Simulation", COLORS["warning_soft"],
+              COLORS["warning"]).grid(row=0, column=1, rowspan=2, sticky="e")
+
+        body = ctk.CTkFrame(card, fg_color="transparent")
+        body.grid(row=1, column=0, sticky="ew", padx=20)
+        body.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkButton(
+            body, text="Sauvegarder les données", height=44,
+            corner_radius=10, fg_color=COLORS["accent"],
+            hover_color=COLORS["accent_hover"], text_color="#FFFFFF",
+            font=FONTS["body_bold"],
+            command=lambda: self.app.simulate_data_action("save")).grid(
+            row=0, column=0, sticky="ew")
+        ctk.CTkLabel(body, text="Menu 12 · enregistre les livres et les "
+                               "utilisateurs en mémoire.",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(5, 12))
+
+        ctk.CTkButton(
+            body, text="Créer une sauvegarde", height=44,
+            corner_radius=10, fg_color=COLORS["surface"],
+            hover_color=COLORS["warning_soft"], text_color=COLORS["warning"],
+            border_width=1, border_color=COLORS["warning"],
+            font=FONTS["body_bold"],
+            command=lambda: self.app.simulate_data_action("backup")).grid(
+            row=2, column=0, sticky="ew")
+        ctk.CTkLabel(body, text="Menu 13 · copie les fichiers source vers "
+                               "des fichiers .backup.",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=3, column=0, sticky="w", pady=(5, 0))
+
+        ctk.CTkFrame(body, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=4, column=0, sticky="ew", pady=(12, 8))
+        ctk.CTkLabel(
+            body, text="Aucun fichier n'est réellement écrit dans cette "
+                       "maquette.",
+            font=FONTS["body_small"], text_color=COLORS["text_soft"],
+            anchor="w", justify="left", wraplength=320).grid(
+            row=5, column=0, sticky="w", pady=(0, 14))
+        return card
+
+    def _build_history(self, parent) -> None:
+        card = Card(parent)
+        card.grid(row=2, column=0, sticky="nsew", pady=(12, 0))
+        card.grid_columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(14, 8))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Dernière action simulée",
+                     font=FONTS["title"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Historique de la session, sans effet "
+                                 "sur les fichiers",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+
+        action = getattr(self.app, "last_simulated_action", None)
+        if action is None:
+            self._build_empty_history(card)
+            return
+
+        if action["action"] == "backup":
+            accent, soft, symbol = (COLORS["warning"],
+                                    COLORS["warning_soft"], "◫")
+        else:
+            accent, soft, symbol = (COLORS["success"],
+                                    COLORS["success_soft"], "↓")
+
+        row = ctk.CTkFrame(card, fg_color=COLORS["surface_alt"],
+                           corner_radius=10, border_width=1,
+                           border_color=COLORS["border"])
+        row.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 14))
+        row.grid_columnconfigure(1, weight=1)
+
+        icon = ctk.CTkFrame(row, width=34, height=34, corner_radius=9,
+                            fg_color=soft)
+        icon.grid_propagate(False)
+        icon.grid(row=0, column=0, rowspan=2, padx=(12, 10), pady=10)
+        ctk.CTkLabel(icon, text=symbol, font=FONTS["icon"],
+                     text_color=accent).place(relx=0.5, rely=0.5,
+                                              anchor="center")
+
+        ctk.CTkLabel(row, text=action["title"], font=FONTS["body_bold"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=1, sticky="w", pady=(10, 0))
+        ctk.CTkLabel(row, text=action["detail"], font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w",
+                     justify="left", wraplength=720).grid(
+            row=1, column=1, sticky="w", pady=(0, 10))
+
+        moment = action["time"]
+        stamp = (f"{moment.day} {MOIS[moment.month - 1]} {moment.year} "
+                 f"à {moment:%H:%M}")
+        right = ctk.CTkFrame(row, fg_color="transparent")
+        right.grid(row=0, column=2, rowspan=2, sticky="e", padx=(12, 12))
+        Badge(right, "Simulation", COLORS["warning_soft"],
+              COLORS["warning"]).grid(row=0, column=0, sticky="e")
+        ctk.CTkLabel(right, text=stamp, font=FONTS["body_small"],
+                     text_color=COLORS["text_soft"], anchor="e").grid(
+            row=1, column=0, sticky="e", pady=(3, 0))
+
+    def _build_empty_history(self, card) -> None:
+        empty = ctk.CTkFrame(card, fg_color=COLORS["surface_alt"],
+                             corner_radius=10)
+        empty.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 14))
+        empty.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(empty, text="◫", font=FONTS["icon_small"],
+                     text_color=COLORS["text_soft"], width=26).grid(
+            row=0, column=0, padx=(12, 8), pady=10)
+        ctk.CTkLabel(empty, text="Aucune action simulée · utilisez les "
+                               "boutons ci-dessus.",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=0, column=1, sticky="w", padx=(0, 12), pady=10)
 
 
 class PlaceholderView(ctk.CTkFrame):

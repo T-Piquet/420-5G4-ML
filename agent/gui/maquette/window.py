@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import customtkinter as ctk
 
 from .components import (
@@ -19,6 +21,7 @@ from .theme import COLORS, SPACING
 from .views import (
     CatalogueView,
     DashboardView,
+    DataBackupView,
     LoansView,
     PlaceholderView,
     StatisticsView,
@@ -72,6 +75,7 @@ class LibraryApp(ctk.CTk):
         self.users_filter = UsersView.FILTERS[0]
         self.loans_query = ""
         self.loans_sort = LoansView.SORTS[0]
+        self.last_simulated_action: dict | None = None
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -123,6 +127,8 @@ class LibraryApp(ctk.CTk):
             view = LoansView(self.view_host, self)
         elif screen == "Statistiques":
             view = StatisticsView(self.view_host, self)
+        elif screen == "Données & sauvegarde":
+            view = DataBackupView(self.view_host, self)
         else:
             view = PlaceholderView(self.view_host, self, screen)
         view.grid(row=0, column=0, sticky="nsew")
@@ -179,6 +185,29 @@ class LibraryApp(ctk.CTk):
                 toast.destroy()
 
         self.after(3200, _dismiss)
+
+    def simulate_data_action(self, action: str) -> None:
+        now = datetime.now()
+        if action == "backup":
+            title = "Création d'une sauvegarde"
+            detail = ("Des copies .backup de books.txt et users.txt "
+                      "auraient été créées à côté des fichiers source.")
+            toast = ("Création d'une sauvegarde simulée. Aucun fichier "
+                     ".backup n'a été écrit.")
+        else:
+            title = "Sauvegarde des données"
+            detail = ("Les livres et les utilisateurs en mémoire auraient "
+                      "été enregistrés dans les fichiers source.")
+            toast = ("Données sauvegardées (simulation). Aucun fichier "
+                     "n'a été modifié.")
+        self.last_simulated_action = {
+            "action": action,
+            "title": title,
+            "detail": detail,
+            "time": now,
+        }
+        self.show_screen(self.current_screen)
+        self.show_toast(toast)
 
     def _confirm_quit(self) -> None:
         ConfirmModal(
