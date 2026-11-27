@@ -143,6 +143,32 @@ class LibraryStore:
             return 0
         return round(self.available_count / self.total_books * 100)
 
+    @property
+    def borrowed_rate(self) -> int:
+        if not self.books:
+            return 0
+        return round(self.borrowed_count / self.total_books * 100)
+
+    @property
+    def users_with_loans(self) -> int:
+        return sum(1 for user in self.users if user.borrowed_isbns)
+
+    @property
+    def users_without_loans(self) -> int:
+        return self.total_users - self.users_with_loans
+
+    @property
+    def average_loans_per_user(self) -> float:
+        if not self.users:
+            return 0.0
+        return round(self.borrowed_count / self.total_users, 1)
+
+    def top_borrowers(self, limit: int = 5) -> list[User]:
+        ranked = sorted(
+            self.users,
+            key=lambda user: (-len(user.borrowed_isbns), user.name.casefold()))
+        return [user for user in ranked if user.borrowed_isbns][:limit]
+
     def add_book(self, book: Book) -> None:
         if not book.title or not book.author or not book.isbn:
             raise ValueError("Titre, auteur et ISBN sont obligatoires.")

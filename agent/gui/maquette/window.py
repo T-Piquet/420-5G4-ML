@@ -21,6 +21,7 @@ from .views import (
     DashboardView,
     LoansView,
     PlaceholderView,
+    StatisticsView,
     UsersView,
 )
 
@@ -120,6 +121,8 @@ class LibraryApp(ctk.CTk):
             view = UsersView(self.view_host, self)
         elif screen == "Emprunts":
             view = LoansView(self.view_host, self)
+        elif screen == "Statistiques":
+            view = StatisticsView(self.view_host, self)
         else:
             view = PlaceholderView(self.view_host, self, screen)
         view.grid(row=0, column=0, sticky="nsew")

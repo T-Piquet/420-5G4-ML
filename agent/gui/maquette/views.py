@@ -963,6 +963,310 @@ class LoansView(ctk.CTkFrame):
         self._refresh()
 
 
+class StatisticsView(ctk.CTkScrollableFrame):
+    """Statistiques : indicateurs clés, répartition et activité des emprunteurs."""
+
+    def __init__(self, master, app):
+        super().__init__(
+            master, fg_color=COLORS["bg"], corner_radius=0,
+            scrollbar_button_color=COLORS["border"],
+            scrollbar_button_hover_color=COLORS["text_soft"])
+        self.app = app
+        self.store = app.store
+        self.grid_columnconfigure(0, weight=1)
+
+        body = ctk.CTkFrame(self, fg_color="transparent")
+        body.grid(row=0, column=0, sticky="nsew",
+                  padx=SPACING["page_x"], pady=(0, 12))
+        body.grid_columnconfigure(0, weight=1)
+
+        self._build_kpis(body)
+        self._build_breakdown(body)
+        self._build_borrowers(body)
+
+    def _build_kpis(self, parent) -> None:
+        stats = ctk.CTkFrame(parent, fg_color="transparent")
+        stats.grid(row=0, column=0, sticky="ew")
+        for column in range(4):
+            stats.grid_columnconfigure(column, weight=1, uniform="stats")
+
+        cards = (
+            ("Livres au total", str(self.store.total_books),
+             "ouvrages au catalogue", "▤",
+             COLORS["accent"], COLORS["accent_soft"]),
+            ("Disponibles", str(self.store.available_count),
+             "prêts possibles", "✓",
+             COLORS["success"], COLORS["success_soft"]),
+            ("Empruntés", str(self.store.borrowed_count),
+             "prêts en cours", "↗",
+             COLORS["warning"], COLORS["warning_soft"]),
+            ("Utilisateurs", str(self.store.total_users),
+             "comptes enregistrés", "◉",
+             COLORS["purple"], COLORS["purple_soft"]),
+        )
+        for index, (label, value, hint, symbol, accent, soft) in enumerate(cards):
+            card = StatCard(stats, label, value, hint, symbol, accent, soft)
+            card.grid(row=0, column=index, sticky="nsew", padx=8)
+
+    def _build_breakdown(self, parent) -> None:
+        lower = ctk.CTkFrame(parent, fg_color="transparent")
+        lower.grid(row=1, column=0, sticky="nsew", pady=(14, 0))
+        lower.grid_columnconfigure(0, weight=1, uniform="breakdown")
+        lower.grid_columnconfigure(1, weight=1, uniform="breakdown")
+
+        self._build_availability(lower).grid(
+            row=0, column=0, sticky="nsew", padx=(0, 8))
+        self._build_distribution(lower).grid(
+            row=0, column=1, sticky="nsew", padx=(8, 0))
+
+    def _build_availability(self, parent) -> Card:
+        card = Card(parent)
+        card.grid_columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 6))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Taux de disponibilité",
+                     font=FONTS["title"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Part de la collection prête au prêt",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+        Badge(header, f"{self.store.available_count} / {self.store.total_books}",
+              COLORS["success_soft"], COLORS["success"]).grid(
+            row=0, column=1, rowspan=2, sticky="e")
+
+        value = ctk.CTkFrame(card, fg_color="transparent")
+        value.grid(row=1, column=0, sticky="ew", padx=20, pady=(4, 0))
+        value.grid_columnconfigure(1, weight=1)
+        ctk.CTkLabel(value, text=f"{self.store.availability_rate} %",
+                     font=FONTS["stat_value"], text_color=COLORS["success"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(value, text="des ouvrages sont\nactuellement disponibles",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="e",
+                     justify="right").grid(row=0, column=1, sticky="e")
+
+        progress = ctk.CTkProgressBar(
+            card, height=10, corner_radius=5,
+            fg_color=COLORS["surface_alt"],
+            progress_color=COLORS["success"])
+        progress.grid(row=2, column=0, sticky="ew", padx=20, pady=(10, 0))
+        progress.set(self.store.availability_rate / 100)
+
+        legend = ctk.CTkFrame(card, fg_color="transparent")
+        legend.grid(row=3, column=0, sticky="ew", padx=20, pady=(16, 18))
+        legend.grid_columnconfigure(0, weight=1)
+        legend.grid_columnconfigure(1, weight=1)
+        self._add_legend(legend, 0, "Disponibles", self.store.available_count,
+                         COLORS["success"])
+        self._add_legend(legend, 1, "Empruntés", self.store.borrowed_count,
+                         COLORS["warning"])
+        return card
+
+    def _add_legend(self, parent, column: int, label: str, count: int,
+                    color: str) -> None:
+        item = ctk.CTkFrame(parent, fg_color="transparent")
+        item.grid(row=0, column=column, sticky="w",
+                  padx=(0, 10) if column == 0 else (10, 0))
+        ctk.CTkFrame(item, width=10, height=10, corner_radius=5,
+                     fg_color=color).grid(row=0, column=0, padx=(0, 7))
+        ctk.CTkLabel(item, text=label, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=0, column=1, sticky="w")
+        ctk.CTkLabel(item, text=str(count), font=FONTS["body_bold"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=2, sticky="w", padx=(6, 0))
+
+    def _build_distribution(self, parent) -> Card:
+        card = Card(parent)
+        card.grid_columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 6))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Répartition de la collection",
+                     font=FONTS["title"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Poids des statuts dans le catalogue",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+
+        self._add_bar(card, 1, "Livres disponibles",
+                      self.store.available_count, COLORS["success"])
+        self._add_bar(card, 3, "Livres empruntés",
+                      self.store.borrowed_count, COLORS["warning"])
+
+        ctk.CTkFrame(card, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=5, column=0, sticky="ew", padx=20, pady=(14, 12))
+
+        engagement = ctk.CTkFrame(card, fg_color="transparent")
+        engagement.grid(row=6, column=0, sticky="ew", padx=20, pady=(0, 18))
+        engagement.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(engagement, text="Utilisateurs avec emprunts",
+                     font=FONTS["body"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(
+            engagement, font=FONTS["body_bold"], text_color=COLORS["accent"],
+            anchor="e",
+            text=f"{self.store.users_with_loans} / {self.store.total_users}"
+        ).grid(row=0, column=1, sticky="e")
+        ctk.CTkLabel(
+            engagement,
+            text=f"En moyenne {self.store.average_loans_per_user} emprunt(s) "
+                 "par utilisateur enregistré",
+            font=FONTS["body_small"], text_color=COLORS["text_muted"],
+            anchor="w").grid(row=1, column=0, columnspan=2, sticky="w",
+                             pady=(2, 8))
+
+        ratio = 0
+        if self.store.total_users:
+            ratio = self.store.users_with_loans / self.store.total_users
+        users_progress = ctk.CTkProgressBar(
+            engagement, height=10, corner_radius=5,
+            fg_color=COLORS["surface_alt"],
+            progress_color=COLORS["accent"])
+        users_progress.grid(row=2, column=0, columnspan=2, sticky="ew")
+        users_progress.set(ratio)
+        return card
+
+    def _add_bar(self, parent, row: int, label: str, count: int,
+                 color: str) -> None:
+        total = max(self.store.total_books, 1)
+        ratio = count / total
+        percent = round(ratio * 100)
+
+        top = ctk.CTkFrame(parent, fg_color="transparent")
+        top.grid(row=row, column=0, sticky="ew", padx=20,
+                 pady=(10, 0))
+        top.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(top, text=label, font=FONTS["body"],
+                     text_color=COLORS["text"], anchor="w").grid(
+            row=0, column=0, sticky="w")
+        ctk.CTkLabel(top, text=f"{count} · {percent} %",
+                     font=FONTS["body_bold"], text_color=color,
+                     anchor="e").grid(row=0, column=1, sticky="e")
+
+        bar = ctk.CTkProgressBar(parent, height=9, corner_radius=5,
+                                 fg_color=COLORS["surface_alt"],
+                                 progress_color=color)
+        bar.grid(row=row + 1, column=0, sticky="ew", padx=20, pady=(6, 0))
+        bar.set(ratio)
+
+    def _build_borrowers(self, parent) -> None:
+        card = Card(parent)
+        card.grid(row=2, column=0, sticky="nsew", pady=(14, 0))
+        card.grid_columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=20, pady=(18, 10))
+        header.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(header, text="Emprunteurs les plus actifs",
+                     font=FONTS["title"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(header, text="Classement par nombre d'emprunts en cours",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=0, sticky="w", pady=(1, 0))
+
+        borrowers = self.store.top_borrowers()
+        Badge(header, f"{len(borrowers)} emprunteur(s)",
+              COLORS["purple_soft"], COLORS["purple"]).grid(
+            row=0, column=1, rowspan=2, sticky="e")
+
+        columns = ctk.CTkFrame(card, fg_color="transparent")
+        columns.grid(row=1, column=0, sticky="ew", padx=20)
+        self._configure_borrower_columns(columns)
+        for index, title in enumerate(("UTILISATEUR", "IDENTIFIANT",
+                                       "EMPRUNTS", "LIVRES")):
+            ctk.CTkLabel(columns, text=title, font=FONTS["caption"],
+                         text_color=COLORS["text_soft"], anchor="w").grid(
+                row=0, column=index, sticky="w", pady=(4, 6))
+        ctk.CTkFrame(columns, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=1, column=0, columnspan=4, sticky="ew")
+
+        rows = ctk.CTkFrame(card, fg_color="transparent")
+        rows.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 14))
+        self._configure_borrower_columns(rows)
+        if not borrowers:
+            self._build_empty_borrowers(rows)
+            return
+        for index, user in enumerate(borrowers):
+            self._build_borrower_row(rows, index * 2, user)
+
+    @staticmethod
+    def _configure_borrower_columns(frame) -> None:
+        frame.grid_columnconfigure(0, weight=4)
+        frame.grid_columnconfigure(1, minsize=130)
+        frame.grid_columnconfigure(2, minsize=120)
+        frame.grid_columnconfigure(3, weight=5)
+
+    def _build_empty_borrowers(self, rows) -> None:
+        empty = ctk.CTkFrame(rows, fg_color="transparent")
+        empty.grid(row=0, column=0, columnspan=4, sticky="ew", pady=28)
+        empty.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(empty, text="✓", font=FONTS["icon_large"],
+                     text_color=COLORS["success"]).grid(row=0, column=0)
+        ctk.CTkLabel(empty, text="Aucun emprunt en cours",
+                     font=FONTS["body_bold"],
+                     text_color=COLORS["text"]).grid(row=1, column=0,
+                                                     pady=(4, 0))
+        ctk.CTkLabel(empty, text="Les utilisateurs n'ont aucun livre emprunté.",
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"]).grid(row=2, column=0)
+
+    def _build_borrower_row(self, rows, row: int, user) -> None:
+        identity = ctk.CTkFrame(rows, fg_color="transparent")
+        identity.grid(row=row, column=0, sticky="ew", padx=(0, 12),
+                      pady=(10, 0))
+        identity.grid_columnconfigure(1, weight=1)
+
+        avatar = ctk.CTkFrame(identity, width=36, height=36, corner_radius=18,
+                              fg_color=COLORS["purple_soft"])
+        avatar.grid_propagate(False)
+        avatar.grid(row=0, column=0, rowspan=2, padx=(0, 10))
+        ctk.CTkLabel(avatar, text=(user.name[:1].upper() or "?"),
+                     font=FONTS["body_bold"],
+                     text_color=COLORS["purple"]).place(
+            relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(identity, text=_shorten(user.name, 28),
+                     font=FONTS["body_bold"], text_color=COLORS["text"],
+                     anchor="w").grid(row=0, column=1, sticky="w")
+        count = len(user.borrowed_isbns)
+        subtitle = "1 emprunt en cours" if count == 1 else f"{count} emprunts en cours"
+        ctk.CTkLabel(identity, text=subtitle, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=1, column=1, sticky="w")
+
+        ctk.CTkLabel(rows, text=user.user_id, font=FONTS["body_small"],
+                     text_color=COLORS["text_muted"], anchor="w").grid(
+            row=row, column=1, sticky="w", pady=(10, 0))
+
+        badge_cell = ctk.CTkFrame(rows, fg_color="transparent")
+        badge_cell.grid(row=row, column=2, sticky="w", pady=(10, 0))
+        label = f"{count} emprunt" if count == 1 else f"{count} emprunts"
+        Badge(badge_cell, label, COLORS["warning_soft"],
+              COLORS["warning"]).grid(sticky="w")
+
+        titles = []
+        for isbn in user.borrowed_isbns:
+            book = self.store.book_by_isbn(isbn)
+            titles.append(book.title if book else isbn)
+        ctk.CTkLabel(rows, text=_shorten(" · ".join(titles), 54),
+                     font=FONTS["body_small"],
+                     text_color=COLORS["text_soft"], anchor="w").grid(
+            row=row, column=3, sticky="w", pady=(10, 0))
+
+        ctk.CTkFrame(rows, height=1, corner_radius=0,
+                     fg_color=COLORS["border"]).grid(
+            row=row + 1, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+
+
 class PlaceholderView(ctk.CTkFrame):
     """Écran temporaire pour les modules pas encore maquettés."""
 
