@@ -1,1 +1,3 @@
 build/*
+ui/.venv/
+ui/__pycache__/
