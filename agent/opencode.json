@@ -1,0 +1,42 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": {
+        "baseURL": "http://host.docker.internal:11434/v1"
+      },
+      "models": {
+        "qwen3-agent:latest": {
+          "name": "Qwen3 8B Agent",
+          "limit": {
+            "context": 12288,
+            "output": 4096
+          }
+        }
+      }
+    }
+  },
+  "model": "ollama/qwen3-agent:latest",
+  "agent": {
+    "plan": {
+      "steps": 4,
+      "permission": {
+        "read": "allow",
+        "question": "deny",
+        "task": "deny"
+      }
+    },
+    "build": {
+      "steps": 12,
+      "permission": {
+        "question": "deny"
+      }
+    }
+  },
+  "compaction": {
+    "auto": false,
+    "prune": false
+  }
+}

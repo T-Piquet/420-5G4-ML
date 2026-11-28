@@ -1,1 +1,23 @@
-build/*
+# Compilation C++
+build/
+*.so
+*.o
+*.a
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Sauvegardes générées
+*.bak
+*.backup
+
+# Fichiers temporaires
+*.tmp
+*.log
+
+# Configuration locale
+.env

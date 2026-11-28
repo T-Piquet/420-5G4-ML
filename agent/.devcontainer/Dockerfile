@@ -20,3 +20,22 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     fonts-noto-color-emoji fonts-noto-core fonts-dejavu-core fonts-noto-extra
 
 # ajouter installation ollama et opencode
+# Installation des outils supplémentaires
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Environnement Python et CustomTkinter
+RUN python3 -m venv --system-site-packages /opt/bibliotheque-venv \
+    && /opt/bibliotheque-venv/bin/python -m pip install --no-cache-dir customtkinter
+
+ENV PATH="/opt/bibliotheque-venv/bin:${PATH}"
+
+# Installation d'Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Installation d'OpenCode
+USER vscode
+
+RUN curl -fsSL https://opencode.ai/install | bash
+
+ENV PATH="/home/vscode/.opencode/bin:${PATH}"
